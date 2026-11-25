@@ -24,34 +24,9 @@
         .ap-card.is-locked .ap-pair{opacity:.55}
         .ap-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
         .ap-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
-        /* طرح‌های کوچک */
-        .mm{height:92px;border-radius:10px;overflow:hidden;background:rgb(var(--mm-bg));color:rgb(var(--mm-tx));border:1px solid rgb(var(--mm-mu) / .2);font-size:9px;line-height:1.4}
-        .mm b{font-size:11px;display:block}
-        .mm small{font-size:7px;color:rgb(var(--mm-mu))}
-        .mm .mm-bar{display:block;height:4px;border-radius:3px;background:rgb(var(--mm-mu) / .45)}
-        .mm .mm-pill{display:block;height:9px;width:44px;border-radius:999px;background:var(--mm-btn)}
-        .mm .mm-blk{display:block;background:rgb(var(--mm-bg3));border-radius:6px;min-height:20px}
-        .mm .mm-s{flex:1;height:18px}
-        .mm .mm-row{display:flex;gap:4px}
-        .mm .mm-line{display:block;height:1px;background:rgb(var(--mm-mu) / .35)}
-        .mm .mm-form{display:flex;gap:3px;align-items:center;padding:3px;border:1px solid rgb(var(--mm-mu) / .3);border-radius:6px;background:rgb(var(--mm-bg2));margin-top:4px}
-        .mm .mm-form .mm-bar{flex:1;height:5px}
-        .mm .mm-form .mm-pill{height:6px}
-        .mm-m{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px}
-        .mm-m .mm-row{width:100%;margin-top:4px}
-        .mm-v{display:grid;grid-template-columns:1.1fr 1fr;gap:5px;padding:7px}
-        .mm-v>div{display:flex;flex-direction:column;gap:4px}
-        .mm-v .mm-row{grid-column:span 2}
-        .mm-j{display:grid;grid-template-columns:1.4fr 1fr;gap:6px;padding:7px 8px;height:100%}
-        .mm-j>div{display:flex;flex-direction:column;gap:4px}
-        .mm-j .mm-serif{font-family:"MahruNaskh","Mahru",serif;font-size:14px;font-weight:700}
-        .mm-a{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 22px}
-        .mm-a .mm-ring{width:14px;height:14px;border-radius:50%;border:1px solid rgb(var(--mm-ac))}
-        .mm-a .mm-ghost{width:28px;height:8px;border-radius:999px;border:1px solid rgb(var(--mm-ac))}
-        .mm-a .mm-line{width:100%;margin-top:3px}
-        .mm-b{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:3px;padding:5px;height:100%}
-        .mm-b span{border-radius:7px;background:rgb(var(--mm-bg2));display:flex;align-items:center;justify-content:center}
+        /* طرح‌های کوچک: admin/appearance/mini-styles (بسته‌ی ۵الف، مشترک با «قالب‌ها»ی ابرمدیر) */
     </style>
+    @include('admin.appearance.mini-styles')
 
     <div class="max-w-6xl mx-auto">
         <div class="mb-5">
@@ -124,7 +99,7 @@
                                     @include('admin.appearance.mini', ['layout' => $lk, 'tokens' => $palette['light']])
                                 </div>
                                 <div class="flex items-center justify-between mt-2 text-sm gap-2">
-                                    <b class="flex items-center gap-2" style="color: var(--admin-text);"><span class="inline-block w-3 h-3 rounded-full" style="background: {{ $palette['swatch'] }}"></span>{{ $palette['name'] }}</b>
+                                    <b class="flex items-center gap-2" style="color: var(--admin-text);"><span class="inline-block w-3 h-3 rounded-full" style="background: {{ $palette['swatch'] }}"></span><span class="inline-block w-3 h-3 rounded-full -mr-3" style="background: rgb({{ $palette['light']['accent2'] }})" data-accent2-swatch></span>{{ $palette['name'] }}</b>
                                     @if ($open)
                                         @if ($appearance->site === $key)<span class="ap-badge" style="background: rgb(var(--m-gold) / .14); color: rgb(var(--m-gold));">فعال</span>@endif
                                     @else

@@ -488,4 +488,24 @@ class SalonTemplatesTest extends TestCase
         $this->assertStringContainsString('<header id="main-navbar" class="fixed top-0 inset-x-0 z-50">', $html);
         $this->assertStringContainsString('data-palette-footer', $html);
     }
+
+    public function test_appearance_pages_show_the_new_template_names_and_sketches(): void
+    {
+        $page = $this->actingAs($this->owner)->get(route('admin.appearance.edit'))->assertOk();
+        foreach (['شاهکار', 'روزنامه‌ی سالن', 'نمایشگاه', 'اپ'] as $name) {
+            $page->assertSee($name);
+        }
+        foreach (['signature', 'editorial', 'showcase', 'app'] as $layout) {
+            $page->assertSee('mm mm--'.$layout, false);
+        }
+        $page->assertSee('data-accent2-swatch', false)->assertSee('--mm-ac2:92 58 51;', false);
+        $this->assertSame(1, substr_count($page->getContent(), '.mm-sg{'), 'سبک طرح‌ها یک بار');
+
+        $super = User::factory()->create(['is_admin' => true, 'user_type' => 'staff']);
+        $super->roles()->attach(\App\Models\Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']));
+        $super->salons()->detach();
+        $this->actingAs($super)->get(route('superadmin.templates.index'))->assertOk()
+            ->assertSee('data-template-layout="signature"', false)->assertSee('data-template-layout="app"', false)
+            ->assertSee('mm mm--showcase', false);
+    }
 }

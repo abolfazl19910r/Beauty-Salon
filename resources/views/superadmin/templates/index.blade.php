@@ -96,6 +96,25 @@
         <div class="mb-6"><button type="submit" class="sa-btn">ذخیره</button></div>
     </form>
 
+    {{-- بسته‌ی ۵الف: طرح کوچک هر قالب ترکیبی (تیره و روشن با اولین پالت فهرست) --}}
+    @include('admin.appearance.mini-styles')
+    @php $__firstPalette = reset($palettes); @endphp
+    <div class="sa-card p-5 mb-5">
+        <div class="font-bold mb-3">قالب‌های سایت سالن</div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            @foreach ($layouts as $lk => $layout)
+                <div class="p-3 rounded-lg" style="border: 1px solid var(--sa-border);" data-template-layout="{{ $lk }}">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        @include('admin.appearance.mini', ['layout' => $lk, 'tokens' => $__firstPalette['dark']])
+                        @include('admin.appearance.mini', ['layout' => $lk, 'tokens' => $__firstPalette['light']])
+                    </div>
+                    <b class="block mt-2">{{ $layout['name'] }}</b>
+                    <div class="text-xs mt-1 leading-6" style="color: var(--sa-text-dim);">{{ $layout['description'] }}</div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
     <div class="sa-card p-5">
         <div class="font-bold mb-3">قالب‌ها و تعداد سالن‌هایی که انتخابشان کرده‌اند</div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
@@ -106,7 +125,7 @@
             @foreach ($layouts as $lk => $layout)
                 @foreach ($palettes as $pk => $palette)
                     <div class="p-3 rounded-lg" style="border: 1px solid var(--sa-border);" data-template-usage="{{ $lk }}:{{ $pk }}">
-                        <div class="flex items-center gap-2"><span class="inline-block w-3 h-3 rounded-full" style="background: {{ $palette['swatch'] }}"></span><b>{{ $layout['name'] }} · {{ $palette['name'] }}</b></div>
+                        <div class="flex items-center gap-2"><span class="inline-block w-3 h-3 rounded-full" style="background: {{ $palette['swatch'] }}"></span><span class="inline-block w-3 h-3 rounded-full -mr-3" style="background: rgb({{ $palette['light']['accent2'] }})"></span><b>{{ $layout['name'] }} · {{ $palette['name'] }}</b></div>
                         <div class="text-xs mt-1" style="color: var(--sa-text-dim);">{{ to_persian_num((string) ($usage["$lk:$pk"] ?? 0)) }} سالن</div>
                     </div>
                 @endforeach
