@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin\Gallery;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Gallery\StoreGalleryImageRequest;
+use App\Http\Requests\Admin\Gallery\UpdateGalleryImageLinksRequest;
 use App\Models\GalleryImage;
+use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
 use App\Repositories\Contracts\GalleryImageRepositoryInterface;
+use App\Repositories\Contracts\SpecialistRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -14,14 +17,18 @@ class AdminGalleryController extends Controller
 {
     public function __construct(
         private readonly GalleryImageRepositoryInterface $galleryImageRepository,
+        private readonly BeautyServiceRepositoryInterface $serviceRepository,
+        private readonly SpecialistRepositoryInterface $specialistRepository,
     ) {}
 
     public function index(): View
     {
-        $images = $this->galleryImageRepository->getAllOrdered();
+        $images = $this->galleryImageRepository->getAllOrdered()->load(['service:id,name', 'specialist:id,name']);
 
         return view('admin.gallery.index', [
             'images' => $images,
+            'serviceOptions' => $this->serviceRepository->query()->select('id', 'name')->orderBy('name')->get(),
+            'specialistOptions' => $this->specialistRepository->getNameOptions(),
             'imagesCount' => $images->count(),
             'usedSpace' => $this->calculateUsedSpace(),
         ]);
@@ -35,11 +42,26 @@ class AdminGalleryController extends Controller
             'title' => $request->validated('title'),
             'description' => $request->validated('description') ?? '',
             'image_path' => $path,
+            'service_id' => $request->validated('service_id'),
+            'specialist_id' => $request->validated('specialist_id'),
             'order' => $this->galleryImageRepository->count() + 1,
         ]);
 
         return redirect()->route('admin.gallery.index')
             ->with('success', 'تصویر با موفقیت اضافه شد.');
+    }
+
+    public function updateLinks(UpdateGalleryImageLinksRequest $request, GalleryImage $image): RedirectResponse
+    {
+        $this->ensureSalonOwnership($image->salon_id);
+
+        $this->galleryImageRepository->update($image, [
+            'service_id' => $request->validated('service_id'),
+            'specialist_id' => $request->validated('specialist_id'),
+        ]);
+
+        return redirect()->route('admin.gallery.index')
+            ->with('success', 'پیوند نمونه‌کار ذخیره شد.');
     }
 
     public function destroy(GalleryImage $image): RedirectResponse

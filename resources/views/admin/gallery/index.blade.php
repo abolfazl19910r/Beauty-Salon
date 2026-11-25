@@ -35,7 +35,7 @@
         @endif
 
         <form action="{{ route('admin.gallery.store') }}" method="POST" enctype="multipart/form-data"
-              class="rounded-xl p-5 mb-5 grid grid-cols-1 md:grid-cols-4 gap-3 items-end"
+              class="rounded-xl p-5 mb-5 grid grid-cols-1 md:grid-cols-3 gap-3 items-end"
               style="background:var(--admin-surface); border:1px solid var(--admin-border);">
             @csrf
             <div class="md:col-span-1">
@@ -53,10 +53,31 @@
                        class="w-full px-3 py-2 rounded-lg" style="border:1px solid var(--admin-border); color:var(--admin-text);">
             </div>
             <div class="md:col-span-1">
+                <label class="block text-sm mb-1" style="color:var(--admin-text);">خدمت (اختیاری)</label>
+                <select name="service_id" class="w-full px-3 py-2 rounded-lg" style="border:1px solid var(--admin-border); color:var(--admin-text); background:var(--admin-surface);">
+                    <option value="">— بدون پیوند —</option>
+                    @foreach($serviceOptions as $option)
+                        <option value="{{ $option->id }}" @selected(old('service_id') == $option->id)>{{ $option->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="md:col-span-1">
+                <label class="block text-sm mb-1" style="color:var(--admin-text);">کارشناس (اختیاری)</label>
+                <select name="specialist_id" class="w-full px-3 py-2 rounded-lg" style="border:1px solid var(--admin-border); color:var(--admin-text); background:var(--admin-surface);">
+                    <option value="">— بدون پیوند —</option>
+                    @foreach($specialistOptions as $option)
+                        <option value="{{ $option->id }}" @selected(old('specialist_id') == $option->id)>{{ $option->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="md:col-span-1">
                 <button type="submit" class="w-full px-4 py-2 rounded-lg text-sm text-m-onsolid" style="background-color: var(--admin-accent);">
                     افزودن تصویر
                 </button>
             </div>
+            <p class="md:col-span-3 text-xs" style="color:var(--admin-text-dim);">
+                با پیوند خدمت و کارشناس، قالب «نمایشگاه» نام کارشناس را روی نمونه‌کار می‌نویسد و رزرو همان خدمت با همان کارشناس را پیشنهاد می‌دهد.
+            </p>
         </form>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -68,6 +89,32 @@
                         @if($image->description)
                             <p class="text-xs mt-0.5 truncate" style="color:var(--admin-text-dim);">{{ $image->description }}</p>
                         @endif
+                        <p class="text-xs mt-1 truncate" style="color:var(--admin-text-dim);" data-gallery-link-label>
+                            @if($image->service || $image->specialist)
+                                {{ collect([$image->service?->name, $image->specialist?->name])->filter()->implode(' · ') }}
+                            @else
+                                بدون پیوند خدمت/کارشناس
+                            @endif
+                        </p>
+                        <details class="mt-2">
+                            <summary class="text-xs cursor-pointer" style="color:var(--admin-accent);">پیوند خدمت و کارشناس</summary>
+                            <form action="{{ route('admin.gallery.links', $image) }}" method="POST" class="mt-2 space-y-2">
+                                @csrf @method('PUT')
+                                <select name="service_id" aria-label="خدمت" class="w-full px-2 py-1.5 rounded-lg text-xs" style="border:1px solid var(--admin-border); color:var(--admin-text); background:var(--admin-surface);">
+                                    <option value="">— بدون خدمت —</option>
+                                    @foreach($serviceOptions as $option)
+                                        <option value="{{ $option->id }}" @selected($image->service_id == $option->id)>{{ $option->name }}</option>
+                                    @endforeach
+                                </select>
+                                <select name="specialist_id" aria-label="کارشناس" class="w-full px-2 py-1.5 rounded-lg text-xs" style="border:1px solid var(--admin-border); color:var(--admin-text); background:var(--admin-surface);">
+                                    <option value="">— بدون کارشناس —</option>
+                                    @foreach($specialistOptions as $option)
+                                        <option value="{{ $option->id }}" @selected($image->specialist_id == $option->id)>{{ $option->name }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="submit" class="w-full px-2 py-1.5 rounded-lg text-xs text-m-onsolid" style="background-color: var(--admin-accent);">ذخیره‌ی پیوند</button>
+                            </form>
+                        </details>
                         <div class="flex items-center justify-between mt-3">
                             <div class="flex gap-1">
                                 <form action="{{ route('admin.gallery.move-up', $image) }}" method="POST">

@@ -6,6 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreGalleryImageRequest extends FormRequest
 {
+    use GalleryLinkRules;
+
     public function authorize(): bool
     {
         return auth()->check() && auth()->user()->is_admin;
@@ -18,6 +20,7 @@ class StoreGalleryImageRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'image' => ['required', 'image', \App\Support\ImageUpload::EXTENSIONS, 'max:2048'],
             'order' => ['nullable', 'integer'],
+            ...$this->linkRules(),
         ];
     }
 
