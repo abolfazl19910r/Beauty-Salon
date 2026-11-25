@@ -32,10 +32,13 @@
             </div>
         </div>
 
+        {{-- بسته‌ی ۵الف: نام کوتاه مشتری (حریم خصوصی، همان قاعده‌ی صفحه‌ی «نظرها»ی سالن) --}}
+        <p class="mb-6 text-center text-sm"><a href="{{ route('salon.reviews', ['specialist' => $specialist->id]) }}" class="underline" style="color: var(--rasta-gold);">نظر مشتری‌ها درباره‌ی همه‌ی کارشناس‌های سالن</a></p>
+
         @forelse($reviews as $review)
             <div class="rounded-xl p-5 mb-4" style="background: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.1);">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="font-bold">{{ $review->user->name ?? 'کاربر رستا' }}</span>
+                    <span class="font-bold">{{ \App\Support\Customer\CustomerName::short($review->user?->name) }}</span>
                     <span style="color: var(--rasta-gold);">{{ str_repeat('★', $review->overall_rating) }}{{ str_repeat('☆', 5 - $review->overall_rating) }}</span>
                 </div>
                 @if($review->service)

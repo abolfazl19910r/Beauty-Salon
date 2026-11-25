@@ -39,4 +39,10 @@ interface ReviewRepositoryInterface extends RepositoryInterface
      *     three_star: int, two_star: int, one_star: int}
      */
     public function getSpecialistStats(int $specialistId): array;
+
+    /** بسته‌ی ۵الف: صفحه‌ی عمومی «نظرها»ی سالن — نظرهای تأییدشده‌ی همه‌ی کارشناسان (فیلتر specialist، rating) */
+    public function paginateApprovedForSalon(array $filters, int $perPage = 12): LengthAwarePaginator;
+
+    /** @return array{total: int, average: float, distribution: array<int, int>} */
+    public function getSalonStats(): array;
 }

@@ -22,6 +22,9 @@
             <a href="{{ route('courses.index') }}" class="block py-2 nav-link">دوره‌ها</a>
         @endif
         <a href="{{ route('blog.index') }}" class="block py-2 nav-link">وبلاگ</a>
+        @if (($__reviewsCount ?? 0) > 0)
+            <a href="{{ route('salon.reviews') }}" class="block py-2 nav-link">نظرها</a>
+        @endif
         @auth
             @if ($__isCustomer)
                 @foreach ($__accountTabs as $__tab)

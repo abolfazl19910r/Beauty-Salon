@@ -38,6 +38,7 @@
         .sg-lead{margin-top:16px;font-size:17px;line-height:2;color:rgb(var(--m-mu));max-width:46ch}
         .sg-stat b{font-family:var(--m-display);font-size:30px;font-weight:500;color:rgb(var(--m-gold))}
         .sg-stat div{font-size:13px;color:rgb(var(--m-mu))}
+        a.sg-stat:hover div{text-decoration:underline}
         .sg-form{position:relative;background:rgb(var(--m-card));border:1px solid rgb(var(--m-gold) / .27);padding:26px;display:flex;flex-direction:column;gap:16px}
         .sg-form h2{font-family:var(--m-display);font-size:24px;font-weight:500;margin:0}
         .sg-field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:rgb(var(--m-mu))}
@@ -79,7 +80,7 @@
                 <p class="sg-lead">{{ \Illuminate\Support\Str::limit($currentSalonBio, 170) }}</p>
                 <div class="flex flex-wrap gap-8 mt-7" data-sg-stats>
                     @if ($sgReviews > 0)
-                        <div class="sg-stat"><b>{{ fa_num($reviewStats['avg'], 1) }}</b><div>از {{ fa_num($sgReviews) }} نظر</div></div>
+                        <a href="{{ route('salon.reviews') }}" class="sg-stat" data-sg-reviews><b>{{ fa_num($reviewStats['avg'], 1) }}</b><div>از {{ fa_num($sgReviews) }} نظر</div></a>
                     @endif
                     @if ($sgYears)
                         <div class="sg-stat"><b>{{ fa_num($sgYears) }}</b><div>سال سابقه</div></div>

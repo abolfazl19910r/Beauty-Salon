@@ -10,6 +10,10 @@
                 <p class="text-m-tx/60 text-sm leading-7">
                     {{ $currentSalonBio }}
                 </p>
+                {{-- بسته‌ی ۵الف: صفحه‌ی «نظرها»ی سالن، فقط با نظر تأییدشده --}}
+                @if (($__reviewsCount ?? 0) > 0)
+                    <a href="{{ route('salon.reviews') }}" class="inline-block mt-2 text-sm text-m-gold2 hover:underline" data-footer-reviews>نظر مشتری‌ها ({{ fa_num($__reviewsCount) }})</a>
+                @endif
             </div>
 
             <div>

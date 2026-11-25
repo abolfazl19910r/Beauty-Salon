@@ -63,7 +63,7 @@ class HomeController extends Controller
                     ->with('user:id,name')->latest('id')->take(6)->get()
                     ->map(fn (\App\Models\Review $r) => (object) [
                         // حریم خصوصی: نام کوچک و حرف اول نام خانوادگی
-                        'name' => self::shortName((string) $r->user?->name),
+                        'name' => \App\Support\Customer\CustomerName::short($r->user?->name),
                         'rating' => (int) $r->overall_rating,
                         'text' => (string) $r->comment,
                     ])->all(),
@@ -87,15 +87,5 @@ class HomeController extends Controller
             : [];
 
         return view($appearance->homeView(), compact('services', 'specialists', 'reviewStats', 'template'));
-    }
-
-    private static function shortName(string $name): string
-    {
-        $parts = preg_split('/\s+/u', trim($name)) ?: [];
-        if ($parts === [] || $parts[0] === '') {
-            return 'مشتری';
-        }
-
-        return count($parts) > 1 ? $parts[0].' '.mb_substr(end($parts), 0, 1).'.' : $parts[0];
     }
 }

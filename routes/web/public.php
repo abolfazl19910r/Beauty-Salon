@@ -31,3 +31,6 @@ Route::get('/announcements/active', [\App\Http\Controllers\User\AnnouncementCont
 
 // بسته‌ی ۵الف: روزها و ساعت‌های خالی فرم رزرو قالب «شاهکار» (بی ورود؛ رزرو قطعی همچنان bookings.create پشت ورود است)
 Route::get('/free-slots', \App\Http\Controllers\User\BookingQuickSlotsController::class)->middleware('throttle:60,1')->name('salon.free-slots');
+
+// بسته‌ی ۵الف: صفحه‌ی عمومی «نظرها»ی سالن (فقط‌خواندنی؛ ثبت نظر فقط از پیوند پیامک)
+Route::get('/reviews', [\App\Http\Controllers\User\SalonReviewController::class, 'index'])->name('salon.reviews');

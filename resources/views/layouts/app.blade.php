@@ -66,6 +66,8 @@
     $__siteAppearance = app(\App\Support\Themes\CurrentAppearance::class)->get();
     $__siteLayout = $__siteAppearance->isDefaultSite() ? 'mahru' : $__siteAppearance->layout;
     $__headerVariant = in_array($__siteLayout, ['signature', 'app'], true) ? $__siteLayout : 'default';
+    // بسته‌ی ۵الف: پیوند «نظرها» (پانویس، کشوی موبایل) فقط وقتی سالن نظر تأییدشده دارد
+    $__reviewsCount = $__navSalon ? (int) \Illuminate\Support\Facades\Cache::remember("salon_reviews_count:{$__navSalon->id}", 1800, fn () => \App\Models\Review::query()->where('is_approved', true)->count()) : 0;
 @endphp
 @include('partials.site-header.'.$__headerVariant)
 

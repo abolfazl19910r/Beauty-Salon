@@ -82,7 +82,7 @@
                     <a href="{{ $apDirections }}" target="_blank" rel="noopener" class="ap-act"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>مسیریابی</a>
                 @endif
                 @if ($apReviews > 0)
-                    <a href="{{ route('specialists.top-rated') }}" class="ap-act"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.5a.56.56 0 011.04 0l2.13 4.32 4.77.69a.56.56 0 01.31.96l-3.45 3.36.81 4.75a.56.56 0 01-.81.59L12 15.92l-4.27 2.25a.56.56 0 01-.81-.59l.81-4.75-3.45-3.36a.56.56 0 01.31-.96l4.77-.69z"/></svg>نظرها</a>
+                    <a href="{{ route('salon.reviews') }}" class="ap-act"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.5a.56.56 0 011.04 0l2.13 4.32 4.77.69a.56.56 0 01.31.96l-3.45 3.36.81 4.75a.56.56 0 01-.81.59L12 15.92l-4.27 2.25a.56.56 0 01-.81-.59l.81-4.75-3.45-3.36a.56.56 0 01.31-.96l4.77-.69z"/></svg>نظرها</a>
                 @else
                     <a href="{{ route('services.index') }}" class="ap-act"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>خدمات</a>
                 @endif

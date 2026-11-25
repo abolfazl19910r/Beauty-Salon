@@ -196,4 +196,32 @@ class ReviewRepository extends BaseRepository implements ReviewRepositoryInterfa
             'one_star' => $reviews->clone()->where('overall_rating', 1)->count(),
         ];
     }
+
+    public function paginateApprovedForSalon(array $filters, int $perPage = 12): LengthAwarePaginator
+    {
+        return $this->model->with(['user:id,name', 'specialist:id,name', 'service:id,name'])
+            ->approved()
+            ->when(! empty($filters['specialist']), fn ($q) => $q->where('specialist_id', (int) $filters['specialist']))
+            ->when(! empty($filters['rating']), fn ($q) => $q->where('overall_rating', (int) $filters['rating']))
+            ->recent()
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    public function getSalonStats(): array
+    {
+        $counts = $this->model->approved()
+            ->select('overall_rating', DB::raw('count(*) as c'))
+            ->groupBy('overall_rating')
+            ->pluck('c', 'overall_rating');
+        $distribution = [];
+        foreach ([5, 4, 3, 2, 1] as $star) {
+            $distribution[$star] = (int) ($counts[$star] ?? 0);
+        }
+        $total = array_sum($distribution);
+        $sum = array_sum(array_map(fn ($star, $n) => $star * $n, array_keys($distribution), $distribution));
+
+        return ['total' => $total, 'average' => $total > 0 ? round($sum / $total, 1) : 0.0, 'distribution' => $distribution];
+    }
 }

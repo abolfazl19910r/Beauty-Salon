@@ -88,6 +88,11 @@ class SitemapController extends Controller
             }
         }
 
+        // بسته‌ی ۵الف: صفحه‌ی «نظرها» فقط وقتی نظر تأییدشده هست
+        if (\App\Models\Review::query()->where('is_approved', true)->exists()) {
+            $urls[] = ['loc' => route('salon.reviews')];
+        }
+
         if ($salon->hasFeature(Feature::TreatmentCourses)) {
             $urls[] = ['loc' => route('courses.index')];
             CoursePackage::query()->onSale()->get(['id', 'updated_at'])

@@ -18,6 +18,9 @@
             @if ($currentSalonBio)
                 <p class="mt-2.5 m-foot__dim max-w-[34ch]">{{ \Illuminate\Support\Str::limit($currentSalonBio, 160) }}</p>
             @endif
+            @if (($__reviewsCount ?? 0) > 0)
+                <a href="{{ route('salon.reviews') }}" class="inline-block mt-2 underline underline-offset-4 m-foot__dim hover:text-white" data-footer-reviews>نظر مشتری‌ها ({{ fa_num($__reviewsCount) }})</a>
+            @endif
         </div>
         <div>
             <b class="m-foot__h">ساعت کاری</b>
