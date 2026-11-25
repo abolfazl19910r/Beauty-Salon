@@ -24,18 +24,22 @@
 .mm-sg .mm-f{background:rgb(var(--mm-bg2));border:1px solid rgb(var(--mm-ac) / .3);padding:4px;display:flex;flex-direction:column;gap:3px}
 .mm-sg .mm-f .mm-row i{flex:1;height:7px;border-radius:3px;border:1px solid rgb(var(--mm-ac) / .35)}
 .mm-sg .mm-f .mm-row i:first-child{background:rgb(var(--mm-ac));border-color:transparent}
-/* روزنامه‌ی سالن: خط تاریخ، نام نسخ بین خط دوتایی، ستون‌ها و کارت تیره‌ی پیشنهاد */
+/* روزنامه‌ی سالن: خط تاریخ، نام نسخ و دکمه‌ی چهارگوش بین خط دوتایی و خط زیرین، کاور و کارت تیره‌ی پیشنهاد */
 .mm-ed{display:flex;flex-direction:column;gap:3px;padding:6px 8px;height:100%}
 .mm-ed .mm-dbl{display:block;height:3px;border-top:1px solid rgb(var(--mm-tx));border-bottom:1px solid rgb(var(--mm-tx))}
-.mm-ed .mm-serif{text-align:center;font-size:13px}
+.mm-ed .mm-mast{display:flex;justify-content:space-between;align-items:center}
+.mm-ed .mm-serif{font-size:13px;font-weight:700}
+.mm-ed .mm-sq{width:22px;height:8px;background:rgb(var(--mm-ac))}
 .mm-ed .mm-cols{display:grid;grid-template-columns:1.3fr 1fr;gap:5px;flex:1}
-.mm-ed .mm-dark{background:rgb(var(--mm-tx));border-radius:2px}
-/* نمایشگاه: قاب ثابت نمونه‌کار با بندانگشتی‌ها، کنارش کارت نوبت و خدمات */
+.mm-ed .mm-dark{background:rgb(var(--mm-tx))}
+/* نمایشگاه: متن (نام کوفی، کارت نوبت، خدمات) و کنارش قاب ثابت نمونه‌کار با بندانگشتی‌ها */
 .mm-sc{display:grid;grid-template-columns:1fr 1fr;height:100%}
 .mm-sc .mm-art{position:relative}
 .mm-sc .mm-thumbs{position:absolute;bottom:5px;right:5px;left:5px;display:flex;gap:3px}
 .mm-sc .mm-thumbs i{flex:1;height:10px;border-radius:2px;background:rgb(255 255 255 / .55)}
-.mm-sc>div:last-child{display:flex;flex-direction:column;gap:4px;padding:7px}
+.mm-sc>div:first-child{display:flex;flex-direction:column;gap:4px;padding:7px}
+.mm-sc .mm-art{margin:5px;border-radius:9px}
+.mm .mm-kufi{font-family:"MahruKufi","Mahru",sans-serif;font-weight:800}
 .mm-sc .mm-slot{border:1px solid rgb(var(--mm-ac) / .45);border-radius:5px;padding:3px;color:rgb(var(--mm-ac))}
 /* اپ: کارت سالن با حلقه و دکمه، نوار تیره‌ی ساعت‌ها و کاشی‌ها */
 .mm-ap{display:grid;grid-template-columns:.9fr 1.5fr;gap:4px;padding:5px;height:100%}

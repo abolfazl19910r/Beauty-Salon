@@ -105,8 +105,8 @@ final class SalonAppearance
         [$legacyLayout, $legacyPalette] = [ThemeCatalog::legacyLayout($this->layout), $this->palette];
 
         return [
-            // بسته‌ی ۵الف: اپ‌های نصب‌شده فقط کلیدهای قدیمی چیدمان را می‌شناسند (src/lib/salonTheme.ts)؛ key/layout قدیمی می‌ماند
-            // تا build تازه‌ی ۵ب، کلید تازه در template و template_key
+            // بسته‌ی ۵الف/۵ب: اپ‌های پیش از 0.4.0 فقط کلیدهای قدیمی چیدمان را می‌شناسند؛ key/layout قدیمی برای آن‌ها می‌ماند و
+            // اپ 0.4.0 به بعد template و template_key را می‌خواند (src/lib/salonTheme.ts)
             'key' => $legacyPalette === null ? $this->site : $legacyLayout.':'.$legacyPalette,
             'layout' => $legacyLayout,
             'template' => $this->layout,

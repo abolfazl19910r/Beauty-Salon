@@ -15,12 +15,12 @@
                 <span class="mm-f"><i class="mm-bar" style="width:60%"></i><i class="mm-bar"></i><span class="mm-row"><i></i><i></i><i></i><i></i></span><span class="mm-row"><i></i><i></i><i></i></span><i class="mm-pill" style="width:100%"></i></span></div>
             @break
         @case('editorial')
-            <div class="mm-ed"><small>سه‌شنبه ۳ آذر · امروز باز تا ۲۱</small><span class="mm-dbl"></span><span class="mm-serif">سالن</span><i class="mm-line"></i>
-                <div class="mm-cols"><span class="mm-art" style="border-radius:2px"></span><span class="mm-dark"></span></div></div>
+            <div class="mm-ed"><small>سه‌شنبه ۳ آذر · امروز باز تا ۲۱</small><span class="mm-dbl"></span><span class="mm-mast"><span class="mm-serif">سالن</span><i class="mm-sq"></i></span><i class="mm-line"></i>
+                <div class="mm-cols"><span class="mm-art" style="border-radius:0"></span><span class="mm-dark"></span></div></div>
             @break
         @case('showcase')
-            <div class="mm-sc"><span class="mm-art"><span class="mm-thumbs"><i></i><i></i><i></i><i></i></span></span>
-                <div><b>سالن</b><span class="mm-slot">نزدیک‌ترین نوبت</span><i class="mm-bar"></i><i class="mm-bar" style="width:70%"></i><span class="mm-row"><i class="mm-blk mm-s"></i><i class="mm-blk mm-s"></i></span></div></div>
+            <div class="mm-sc"><div><b class="mm-kufi">سالن</b><span class="mm-slot">نزدیک‌ترین نوبت</span><i class="mm-bar"></i><i class="mm-bar" style="width:70%"></i><span class="mm-row"><i class="mm-blk mm-s"></i><i class="mm-blk mm-s"></i></span></div>
+                <span class="mm-art"><span class="mm-thumbs"><i></i><i></i><i></i><i></i></span></span></div>
             @break
         @case('app')
             <div class="mm-ap"><span class="mm-cardx"><span class="mm-ring"></span><b>سالن</b><i class="mm-bar" style="width:80%"></i><i class="mm-pill" style="width:90%"></i></span>
