@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
-@section('title', $currentSalonName . ' | سالن زیبایی لوکس')
+{{-- عنوان = فقط نام سالن (layouts/app نام را تکرار نمی‌کند؛ ادعای «لوکس» برداشته شد) --}}
+@section('title', $currentSalonName)
 
 @section('full-width', true)
 

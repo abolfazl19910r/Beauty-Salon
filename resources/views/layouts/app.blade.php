@@ -10,12 +10,17 @@
     @include('partials.favicons')
     @include('partials.pwa-shell')
 
-    <title>@yield('title') | {{ $currentSalonName }}</title>
+    @php
+        // عنوان صفحه + نام سالن؛ وقتی عنوان خود نام سالن است (صفحه‌ی خانه‌ی همه‌ی قالب‌ها) نام دو بار نیاید (یافته‌ی ۵ج، مثل 0489)
+        $__pageTitle = trim($__env->yieldContent('title'));
+        $__fullTitle = $__pageTitle === '' || $__pageTitle === $currentSalonName ? $currentSalonName : $__pageTitle.' | '.$currentSalonName;
+    @endphp
+    <title>{{ $__fullTitle }}</title>
     {{-- سئو (۲۰۲۶-۱۱-۲۳): صفحه‌های عمومی سالن تأییدشده canonical/description/OG می‌گیرند و خانه JSON-LD ‏BeautySalon؛
          صفحه‌های مشتری واردشده و پیش‌نمایش سالن احرازنشده noindex. description صفحه: @section('description') --}}
     @php $seoSalon = app(\App\Support\CurrentSalon::class)->get(); @endphp
     @include('partials.seo', [
-        'seoTitle' => trim($__env->yieldContent('title')).' | '.$currentSalonName,
+        'seoTitle' => $__fullTitle,
         'seoDescription' => trim($__env->yieldContent('description')) ?: ($seoSalon ? \App\Support\Seo\StructuredData::salonDescription($seoSalon) : null),
         'seoImage' => $seoSalon ? \App\Support\Seo\StructuredData::salonImage($seoSalon) : null,
         'seoJsonLd' => $seoSalon && request()->routeIs('home') ? [\App\Support\Seo\StructuredData::salon($seoSalon)] : [],
