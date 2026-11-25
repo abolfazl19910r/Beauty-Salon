@@ -185,6 +185,21 @@ class TemplateHomesTest extends TestCase
         $this->assertMatchesRegularExpression('/class="m-art sc-frame__art"[^>]*data-palette-art/', $html);
     }
 
+    public function test_cover_falls_back_to_the_first_gallery_photo_with_a_file_even_behind_many_missing_ones(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        \Illuminate\Support\Facades\Storage::disk('public')->put('gallery/real.jpg', 'x');
+        foreach (range(1, 9) as $i) {
+            GalleryImage::factory()->create(['is_active' => true, 'order' => $i, 'image_path' => "gallery/missing-$i.jpg"]);
+        }
+        GalleryImage::factory()->create(['is_active' => true, 'order' => 20, 'image_path' => 'gallery/real.jpg']);
+        $this->choose('editorial:sage');
+
+        $html = $this->get(route('home'))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/data-ed-cover[^>]*>\s*<img src="[^"]*gallery\/real\.jpg"/', $html);
+        $this->assertStringNotContainsString('missing-', $html);
+    }
+
     public function test_gallery_changes_refresh_the_showcase_frame(): void
     {
         $this->choose('showcase:sage');

@@ -34,6 +34,9 @@ final class TemplateHomeData
     /** قاب «نمایشگاه» حداکثر این تعداد نمونه‌کار را ورق می‌زند. */
     public const SHOWCASE_FRAMES = 8;
 
+    /** چند رکورد اول گالری برای پیدا کردن عکس‌هایی که فایلشان هست بررسی می‌شود. */
+    private const GALLERY_SCAN = 200;
+
     /** با هر تغییر گالری (AdminGalleryController) — شمار نمونه‌کار، کاور جایگزین و قاب «نمایشگاه» تازه شوند. */
     public static function forgetGallery(int $salonId): void
     {
@@ -130,7 +133,8 @@ final class TemplateHomeData
 
     /**
      * عکس‌های فعال گالری به‌ترتیب که فایلشان واقعاً روی دیسک هست (آزمون Chrome ۲۰۲۶-۱۱-۲۶: رکوردهای نمونه‌ی seed بی فایل،
-     * قاب و بندانگشتی‌های شکسته می‌ساختند). حداکثر ۵ برابر $limit رکورد بررسی می‌شود؛ نتیجه در cache خود صفحه‌ها می‌ماند.
+     * قاب و بندانگشتی‌های شکسته می‌ساختند). تا ۲۰۰ رکورد اول بررسی می‌شود (آزمون دوم: ۸ رکورد بی فایل جلوی عکس واقعی
+     * بودند و پنجره‌ی «۵ برابر» کاور جایگزین را پیدا نمی‌کرد)؛ نتیجه در cache خود صفحه‌ها می‌ماند.
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, GalleryImage>
      */
@@ -139,7 +143,7 @@ final class TemplateHomeData
         $disk = \Illuminate\Support\Facades\Storage::disk('public');
 
         return GalleryImage::query()->where('is_active', true)->orderBy('order')->orderBy('id')
-            ->take($limit * 5)->get()
+            ->take(self::GALLERY_SCAN)->get(['id', 'title', 'image_path', 'service_id', 'specialist_id', 'order'])
             ->filter(fn (GalleryImage $g) => $g->image_path && $disk->exists($g->image_path))
             ->take($limit)->values();
     }

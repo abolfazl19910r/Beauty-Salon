@@ -68,7 +68,7 @@
         .sc-aside{padding:0 20px}
         @media (min-width:1024px){.sc-aside{padding:16px 0 16px 16px}}
         .sc-frame{position:relative;height:440px;border-radius:30px;overflow:hidden}
-        @media (min-width:1024px){.sc-frame{position:sticky;top:92px;height:calc(100vh - 108px);min-height:560px;max-height:1300px}}
+        @media (min-width:1024px){.sc-frame{position:sticky;top:92px;height:calc(100vh - 108px);min-height:420px;max-height:1300px}}
         .sc-frame__art{position:absolute;inset:0;border-radius:30px}
         .sc-frame__over{position:absolute;inset:0;padding:22px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;background:linear-gradient(to top,rgb(0 0 0 / .38),transparent 45%)}
         @media (min-width:1024px){.sc-frame__over{padding:34px}}
