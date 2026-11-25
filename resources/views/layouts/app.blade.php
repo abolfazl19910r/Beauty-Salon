@@ -41,8 +41,8 @@
     @stack('styles')
     @include('partials.ui-handlers')
 </head>
-{{-- بسته‌ی ۵ج: فاصله‌ی بدنه برای منوی پایین و ناحیه‌ی امن آیفون در partials/pwa-shell --}}
-<body class="font-vazir min-h-screen flex flex-col overflow-x-clip {{ auth()->check() && \App\Support\Customer\CustomerMenu::isCustomer(auth()->user()) ? 'm-has-bottom-nav' : '' }}" dir="rtl">
+{{-- بسته‌ی ۵ج: مشتری واردشده و مهمان در گوشی منوی پایین دارند (فاصله‌ی بدنه و ناحیه‌ی امن در partials/pwa-shell) --}}
+<body class="font-vazir min-h-screen flex flex-col overflow-x-clip {{ ! auth()->check() || \App\Support\Customer\CustomerMenu::isCustomer(auth()->user()) ? 'm-has-bottom-nav' : '' }}" dir="rtl">
 @if (! empty($salonUnverifiedPreview))
     {{-- بسته‌ی مجوز 5د: کادر سالنِ هنوز تأییدنشده پیش‌نمایش می‌بیند --}}
     <div class="bg-m-warn/20 border-b border-m-warn/40 text-center text-sm py-2 px-4" data-unverified-preview role="status">
@@ -234,6 +234,9 @@
 @if ($__isCustomer)
     {{-- بسته‌ی ۴ ظاهری: منوی پایین ثابت موبایل «خانه / نوبت‌ها / [+ رزرو] / کیف پول / پروفایل» در همه‌ی صفحه‌ها برای مشتری واردشده --}}
     @include('partials.site-bottom-nav', ['items' => \App\Support\Customer\CustomerMenu::bottom($__accountTabs), 'attr' => 'data-customer-bottom'])
+@elseif (! auth()->check())
+    {{-- بسته‌ی ۵ج: مهمان (بیشتر کسانی که با لینک یا QR می‌آیند) «خانه / خدمات / [+ رزرو] / کارشناسان / ورود» --}}
+    @include('partials.site-bottom-nav', ['items' => \App\Support\Customer\CustomerMenu::guestBottom(), 'attr' => 'data-guest-bottom'])
 @endif
 {{-- بنر «باز کردن در اپ» اندروید: صفحه‌ی خانه‌ی همه‌ی قالب‌ها (پیش‌تر فقط طلایی ماهرو) --}}
 @if (request()->routeIs('home') && $__navSalon)

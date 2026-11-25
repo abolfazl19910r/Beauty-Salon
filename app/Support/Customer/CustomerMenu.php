@@ -139,4 +139,22 @@ final class CustomerMenu
 
         return $items;
     }
+
+    /**
+     * بسته‌ی ۵ج: منوی پایین موبایل مهمان (مشتری واردنشده) — «خانه / خدمات / [+ رزرو] / کارشناسان / ورود»، همان شکل منوی مشتری.
+     *
+     * @return list<array{key: string, url: string, label: string, icon: string, active: bool, badge: int}>
+     */
+    public static function guestBottom(): array
+    {
+        $items = [
+            ['home', route('home'), 'خانه', self::TABS['dashboard']['icon'], ['home']],
+            ['services', route('services.index'), 'خدمات', 'M4 6h16M4 12h16M4 18h10', ['services.*']],
+            ['book', route('bookings.create'), 'رزرو', 'M12 5v14m-7-7h14', ['bookings.create', 'bookings.confirm']],
+            ['specialists', route('specialists.search'), 'کارشناسان', 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', ['specialists.*']],
+            ['login', route('salon.login'), 'ورود', 'M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1', ['salon.login', 'salon.register']],
+        ];
+
+        return array_map(fn (array $i) => ['key' => $i[0], 'url' => $i[1], 'label' => $i[2], 'icon' => $i[3], 'active' => request()->routeIs(...$i[4]), 'badge' => 0], $items);
+    }
 }

@@ -1,6 +1,6 @@
 {{--
-    منوی پایین ثابت موبایل سایت سالن (بسته‌ی ۴ ظاهری، مشتری واردشده) — دکمه‌ی گرد وسط «رزرو»، نشان شمار.
-    ناحیه‌ی امن آیفون: .m-bottom-nav (partials/pwa-shell). ورودی: $items (CustomerMenu::bottom)، $attr (نشانه‌ی data-*).
+    منوی پایین ثابت موبایل سایت سالن (بسته‌ی ۴ ظاهری برای مشتری؛ بسته‌ی ۵ج برای مهمان) — دکمه‌ی گرد وسط «رزرو»، نشان شمار.
+    ناحیه‌ی امن آیفون: .m-bottom-nav (partials/pwa-shell). ورودی: $items (CustomerMenu::bottom / guestBottom)، $attr (نشانه‌ی data-*).
 --}}
 <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-m-gold/15 bg-m-bg2/95 backdrop-blur grid grid-cols-5 m-bottom-nav" aria-label="منوی پایین" {{ $attr }}>
     @foreach ($items as $__item)
