@@ -151,7 +151,9 @@ html[data-theme=dark] .m-theme-btn .m-sun{display:none}
 html[data-theme=light] .m-theme-btn .m-moon{display:none}
 
 /* صفحه‌بندی پیش‌فرض لاراول (vendor/pagination: bg-white ثابت) */
-nav[role=navigation] a.relative,nav[role=navigation] span.relative,nav[role=navigation] span[aria-disabled] span{background:rgb(var(--m-card))!important;color:rgb(var(--m-tx))!important;border-color:var(--m-line2)!important}
+/* بسته‌ی ۵ج: دکمه‌های «قبلی/بعدی» موبایل لاراول ۱۳ کلاس relative ندارند (inline-flex) و در تم تیره سفید می‌ماندند */
+nav[role=navigation] a.relative,nav[role=navigation] span.relative,nav[role=navigation] span[aria-disabled] span,nav[role=navigation] a.inline-flex,nav[role=navigation] span.inline-flex{background:rgb(var(--m-card))!important;color:rgb(var(--m-tx))!important;border-color:var(--m-line2)!important}
+nav[role=navigation] span.cursor-not-allowed,nav[role=navigation] span[aria-disabled] span{opacity:.5}
 nav[role=navigation] span[aria-current=page] span{background:var(--m-btn)!important;color:var(--m-on-gold)!important;border-color:transparent!important}
 nav[role=navigation] p{color:rgb(var(--m-mu))!important}
 
