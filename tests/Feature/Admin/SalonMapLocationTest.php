@@ -117,7 +117,7 @@ class SalonMapLocationTest extends TestCase
         $this->assertNull($salon->map_url);
     }
 
-    public function test_home_page_shows_the_address_and_a_click_to_load_map(): void
+    public function test_footer_shows_directions_and_a_click_to_load_map(): void
     {
         $salon = Salon::where('slug', 'rasta')->firstOrFail();
         $salon->update(['address' => 'تهران، خیابان ولیعصر', 'map_url' => 'https://maps.app.goo.gl/X', 'map_lat' => null, 'map_lng' => null]);

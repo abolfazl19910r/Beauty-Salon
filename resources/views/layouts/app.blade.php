@@ -403,7 +403,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <span>آدرس: {{ $currentSalonAddress }}</span>
+                            <span class="persian-number">آدرس: {{ \App\Support\Fa::digits($currentSalonAddress) }}</span>
                         </p>
                     @endif
                     @if ($currentSalonPhone)
@@ -418,6 +418,26 @@
                         <p>اطلاعات تماس سالن به‌زودی اضافه می‌شود.</p>
                     @endunless
                 </div>
+                {{-- مسیریابی و نقشه در فوتر (آزمون ویندوز بسته‌ی ۴، تصمیم ابوالفضل؛ جای بخش جدای صفحه‌ی اصلی): همان لینکی که
+                     مشتری در داشبورد می‌بیند. نقشه‌ی OpenStreetMap فقط با مختصات و فقط با کلیک بار می‌شود. --}}
+                @php
+                    $__locSalon = app(\App\Support\CurrentSalon::class)->get();
+                    $__directions = $__locSalon ? \App\Support\SalonMapLocation::directionsUrl($__locSalon) : null;
+                    $__osm = $__locSalon ? \App\Support\SalonMapLocation::osmEmbedUrl($__locSalon) : null;
+                @endphp
+                @if ($__directions || $__osm)
+                    <div class="flex flex-wrap gap-2 mt-4" data-salon-location>
+                        @if ($__directions)
+                            <a href="{{ $__directions }}" target="_blank" rel="noopener" class="btn-gold rounded-full px-4 py-1.5 text-xs font-bold" data-location-directions>مسیریابی</a>
+                        @endif
+                        @if ($__osm)
+                            <button type="button" class="rounded-full px-4 py-1.5 text-xs border border-m-gold/30 text-m-tx/80 hover:bg-m-gold/10" data-location-map-load aria-expanded="false">نمایش نقشه</button>
+                        @endif
+                    </div>
+                    @if ($__osm)
+                        <div class="hidden mt-3 rounded-xl overflow-hidden border border-m-gold/15 h-48 relative" data-location-map data-src="{{ $__osm }}"></div>
+                    @endif
+                @endif
             </div>
 
             <div>
@@ -462,6 +482,22 @@
 </footer>
 
 <script @nonce>
+    // نقشه‌ی فوتر فقط با کلیک بار می‌شود
+    document.querySelector('[data-location-map-load]')?.addEventListener('click', function () {
+        var box = document.querySelector('[data-location-map]');
+        if (!box.firstChild) {
+            var frame = document.createElement('iframe');
+            frame.src = box.dataset.src;
+            frame.title = 'نقشه‌ی محل سالن';
+            frame.referrerPolicy = 'no-referrer';
+            frame.className = 'absolute inset-0 w-full h-full border-0';
+            box.appendChild(frame);
+        }
+        var open = box.classList.toggle('hidden') === false;
+        this.setAttribute('aria-expanded', open ? 'true' : 'false');
+        this.textContent = open ? 'بستن نقشه' : 'نمایش نقشه';
+    });
+
     document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
         document.getElementById('mobile-menu').classList.toggle('hidden');
     });
