@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
-{{-- ⭐ بسته‌ی «و» — چیدمان «مجله»: تیتر خیلی درشت با نسخ، ستون‌بندی با خط‌های نازک، گوشه‌های تیز، فهرست شماره‌دار خدمات. --}}
+{{--
+    ⭐ بسته‌ی ۵ب — قالب «روزنامه‌ی سالن» (editorial = روزنامه + پیشنهاد + پکیج‌ها؛ بوم «۴ قالب ترکیبی»، پیش‌نمایش مریم‌گلی روشن):
+    صفحه‌ی اول روزنامه؛ تیتر نسخ از tagline با روتیتر «دسته‌ها، از سال …»، کاور (عکس کاور ← اولین عکس گالری ← طرح پالت)؛ ستون کنار
+    با «پیشنهاد ویژه» (فقط کد «نمایش در سایت»)، نقل از نظرهای تأییدشده و دو عدد واقعی؛ خدمات شماره‌دار، پکیج‌های فروشی و خط
+    باشگاه مشتریان؛ کارشناسان با خط ضخیم بالای نام. داده: HomeController + TemplateHomeData (نبود هر تکه ← آن تکه پنهان).
+--}}
 
 @section('title', $currentSalonName)
 
@@ -8,98 +13,179 @@
 
 @section('content')
     @php
-        $jServices = collect($services ?? []);
-        $jSpecialists = collect($specialists ?? []);
-        $jHero = $jServices->first(fn ($s) => $s->image_url);
-        $jNum = fn (int $i) => to_persian_num(str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT));
+        $edCategories = collect($template['menu'] ?? [])->pluck('name')->reject(fn ($n) => $n === 'خدمات')->unique()->take(3)->implode('، '); // «خدمات» = بی دسته
+        $edSince = $currentSalonExperienceYears !== null ? (int) now()->year - (int) $currentSalonExperienceYears - 621 : null;
+        $edKicker = collect([$edCategories ?: null, $edSince ? 'از سال '.\App\Support\Fa::digits((string) $edSince) : null])->filter()->implode('، ');
+        $edServices = collect($services ?? [])->values();
+        $edPackages = $template['packages'] ?? [];
+        $edOffer = $template['offer'] ?? null;
+        $edQuote = $template['quote'] ?? null;
+        $edReviews = (int) ($reviewStats['count'] ?? 0);
+        $edYears = $currentSalonExperienceYears ?? null;
+        $edRewards = (int) ($template['rewards'] ?? 0);
+        $edNext = $template['nextFree'] ?? [];
     @endphp
     <style>
-        .j-rule{border-color:var(--m-line2)}
-        .j-strong{border-color:rgb(var(--m-tx) / .85)}
-        .j-hero{display:grid}
-        @media (min-width:1024px){.j-hero{grid-template-columns:1.25fr 1fr}}
-        .j-display{font-family:var(--m-display, "Mahru");font-weight:700;line-height:1.2}
-        .j-kick{font-size:12px;font-weight:700;color:rgb(var(--m-gold));letter-spacing:.06em}
-        .j-link{font-weight:700;color:rgb(var(--m-gold));border-bottom:2px solid rgb(var(--m-gold));padding-bottom:3px}
-        .j-item{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--m-line)}
-        .j-num{font-family:var(--m-display, "Mahru");color:rgb(var(--m-gold));font-size:20px;font-weight:700}
+        .ed{color:rgb(var(--m-tx))}
+        .ed-wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+        @media (min-width:768px){.ed-wrap{padding:0 24px}}
+        .ed-rule{border-bottom:1px solid rgb(var(--m-tx))}
+        .ed-thin{border-bottom:1px solid rgb(var(--m-tx) / .16)}
+        .ed-lead-grid{display:grid;gap:32px;padding:32px 0}
+        @media (min-width:1024px){.ed-lead-grid{grid-template-columns:1.25fr 1px .75fr;gap:40px;padding:44px 0}}
+        .ed-vrule{display:none;background:rgb(var(--m-tx))}
+        @media (min-width:1024px){.ed-vrule{display:block}}
+        .ed-kicker{margin:0;font-size:15px;font-weight:700;color:rgb(var(--m-accent2))}
+        .ed h1{margin:12px 0 0;font-family:var(--m-display);font-weight:700;font-size:38px;line-height:1.4}
+        @media (min-width:768px){.ed h1{font-size:60px;line-height:1.35}}
+        .ed-lead{margin:16px 0 0;font-size:17.5px;line-height:2;color:rgb(var(--m-mu));max-width:54ch}
+        .ed-cover{margin-top:26px;height:220px}
+        @media (min-width:768px){.ed-cover{height:300px}}
+        .ed-offer{background:rgb(var(--m-foot-bg));color:#fff;padding:24px;border:1px solid rgb(255 255 255 / .08)}
+        .ed-offer span{font-size:13px;color:rgb(var(--m-foot-ac))}
+        .ed-offer b{display:block;font-family:var(--m-display);font-size:32px;margin-top:6px;line-height:1.5}
+        .ed-offer p{margin:6px 0 14px;font-size:14px;opacity:.8}
+        .ed-offer a{display:inline-block;background:rgb(var(--m-foot-ac));color:var(--m-foot-on);padding:10px 20px;font-weight:800}
+        .ed-quote{margin:8px 0 0;font-family:var(--m-display);font-size:23px;line-height:1.7}
+        .ed-num b{font-family:var(--m-display);font-size:32px}
+        .ed-num div{font-size:13px;color:rgb(var(--m-mu))}
+        .ed h2{margin:0 0 8px;font-family:var(--m-display);font-weight:700;font-size:32px}
+        @media (min-width:768px){.ed h2{font-size:36px}}
+        .ed-li{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:baseline;padding:14px 0;border-bottom:1px solid rgb(var(--m-tx) / .16);color:rgb(var(--m-tx))}
+        .ed-li:hover b.ed-li__name{color:rgb(var(--m-gold))}
+        .ed-li__no{font-family:var(--m-display);font-size:19px;color:rgb(var(--m-accent2))}
+        .ed-small{font-size:13px;color:rgb(var(--m-mu))}
+        .ed-pkg{padding:16px 0;border-bottom:1px solid rgb(var(--m-tx) / .16);display:flex;justify-content:space-between;align-items:center;gap:16px;color:rgb(var(--m-tx))}
+        .ed-pkg:hover b.ed-pkg__name{color:rgb(var(--m-gold))}
+        .ed-club{margin:14px 0 0;font-size:14px;color:rgb(var(--m-accent2))}
+        .ed-person{color:rgb(var(--m-tx));display:block}
+        .ed-person__art{height:200px}
+        @media (min-width:768px){.ed-person__art{height:220px}}
+        .ed-person__name{padding-top:12px;border-top:3px solid rgb(var(--m-tx));margin-top:12px;font-family:var(--m-display);font-size:22px}
+        .ed-person small{font-size:13.5px;color:rgb(var(--m-gold))}
     </style>
 
-    <div class="mx-[calc(50%-50vw)] w-screen pt-2" dir="rtl">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex flex-wrap justify-between gap-3 py-3 text-xs text-m-mu border-b j-rule persian-number">
-                <span>{{ $currentSalonName }}@if ($currentSalonAddress) · {{ $currentSalonAddress }}@endif</span>
-                @if ($currentSalonHours)<span>{{ $currentSalonHours[0] }}</span>@endif
-                @if (($reviewStats['count'] ?? 0) > 0)<span>{{ fa_num($reviewStats['avg'], 1) }} از {{ to_persian_num((string) $reviewStats['count']) }} نظر</span>@endif
-            </div>
-
-            <section class="j-hero border-b j-rule">
-                <div class="py-10 lg:py-14 lg:pl-10 lg:border-l j-rule flex flex-col">
-                    <div class="j-kick mb-4">{{ $currentSalonTagline }}</div>
-                    <h1 class="j-display text-5xl md:text-7xl text-m-tx mb-6">{{ $currentSalonName }}</h1>
-                    <p class="text-m-mu leading-9 text-lg mb-8 max-w-xl">{{ \Illuminate\Support\Str::limit($currentSalonBio, 200) }}</p>
-                    <div class="flex flex-wrap gap-6 items-center mt-auto">
-                        <a href="{{ route('bookings.create') }}" class="btn-gold px-8 py-3.5">رزرو نوبت</a>
-                        <a href="{{ route('services.index') }}" class="j-link text-sm">فهرست خدمات و قیمت‌ها</a>
-                    </div>
-                </div>
-                <div class="min-h-[320px] lg:min-h-[520px] bg-m-bg3">
-                    @if ($jHero)
-                        <img src="{{ $jHero->image_url }}" alt="{{ $jHero->name }}" loading="lazy" class="w-full h-full object-cover">
+    <div class="ed" dir="rtl" data-template-home="editorial">
+        <div class="ed-wrap">
+            <section class="ed-lead-grid ed-rule" aria-labelledby="ed-title">
+                <div>
+                    @if ($edKicker !== '')
+                        <p class="ed-kicker">{{ $edKicker }}</p>
                     @endif
+                    <h1 id="ed-title">{{ $currentSalonTagline }}</h1>
+                    @if ($currentSalonBio)
+                        <p class="ed-lead">{{ \Illuminate\Support\Str::limit($currentSalonBio, 220) }}</p>
+                    @endif
+                    <x-palette-art class="ed-cover" :src="$template['cover'] ?? null" :variant="1" :alt="$currentSalonName" data-ed-cover />
                 </div>
-            </section>
-
-            <section id="services" class="grid lg:grid-cols-[240px_1fr] border-b j-rule">
-                <div class="py-8 lg:pl-10 lg:border-l j-rule">
-                    <div class="j-kick mb-2">فهرست</div>
-                    <h2 class="j-display text-4xl text-m-tx mb-2">خدمات</h2>
-                    <p class="text-sm text-m-mu leading-7">قیمت‌ها از حداقل است و پس از مشاوره قطعی می‌شود.</p>
-                </div>
-                <div class="grid md:grid-cols-2 gap-x-10 py-4 lg:pr-10">
-                    @forelse ($jServices as $i => $service)
-                        <a href="{{ route('bookings.create', ['service' => $service->id]) }}" class="j-item hover:bg-m-tx/5">
-                            <span class="j-num">{{ $jNum($i) }}</span>
-                            <span><b class="text-m-tx font-semibold">{{ $service->name }}</b><small class="block text-xs text-m-mu persian-number">{{ to_persian_num((string) $service->duration) }} دقیقه</small></span>
-                            <span class="font-bold text-m-tx persian-number whitespace-nowrap">{{ fa_num($service->price) }}</span>
+                <div class="ed-vrule" aria-hidden="true"></div>
+                <aside class="flex flex-col gap-[22px]" aria-label="پیشنهاد و نظرها">
+                    @if ($edOffer)
+                        <div class="ed-offer" data-ed-offer>
+                            <span>پیشنهاد ویژه</span>
+                            <b>{{ $edOffer['title'] }}</b>
+                            <p>کد {{ $edOffer['code'] }}@if ($edOffer['until'])، تا {{ $edOffer['until'] }}@endif</p>
+                            <a href="{{ route('bookings.create') }}">رزرو با تخفیف</a>
+                        </div>
+                    @else
+                        <div class="ed-offer" data-ed-book>
+                            <span>نوبت آنلاین</span>
+                            <b>رزرو در چند ثانیه</b>
+                            <p>خدمت، کارشناس و ساعت خالی را خودتان انتخاب کنید.</p>
+                            <a href="{{ route('bookings.create') }}">رزرو نوبت</a>
+                        </div>
+                    @endif
+                    @if ($edQuote)
+                        <a href="{{ route('salon.reviews') }}" class="block text-m-tx" data-ed-quote>
+                            <span class="ed-small">از نظرهای تأییدشده</span>
+                            <blockquote class="ed-quote">«{{ $edQuote }}»</blockquote>
                         </a>
-                    @empty
-                        <p class="text-m-mu py-6">فهرست خدمات به‌زودی اضافه می‌شود.</p>
-                    @endforelse
-                </div>
+                    @endif
+                    @if ($edReviews > 0 || $edYears)
+                        <div class="flex gap-[26px] pt-4 border-t border-m-tx/15" data-ed-numbers>
+                            @if ($edReviews > 0)
+                                <a href="{{ route('salon.reviews') }}" class="ed-num text-m-tx"><b>{{ fa_num($reviewStats['avg'], 1) }}</b><div>از {{ fa_num($edReviews) }} نظر</div></a>
+                            @endif
+                            @if ($edYears)
+                                <div class="ed-num"><b>{{ fa_num($edYears) }}</b><div>سال سابقه</div></div>
+                            @endif
+                        </div>
+                    @endif
+                </aside>
             </section>
 
-            @if ($jSpecialists->isNotEmpty())
-                <section id="specialists" class="py-10">
-                    <div class="flex items-baseline justify-between mb-6">
-                        <h2 class="j-display text-3xl text-m-tx">کارشناسان</h2>
-                        <a href="{{ route('specialists.search') }}" class="j-link text-sm">همه</a>
-                    </div>
+            @if ($edServices->isNotEmpty() || $edPackages !== [])
+                <section class="grid gap-12 py-11 ed-rule {{ $edServices->isNotEmpty() && $edPackages !== [] ? 'lg:grid-cols-2' : '' }}">
+                    @if ($edServices->isNotEmpty())
+                        <div data-ed-services>
+                            <h2>خدمات</h2>
+                            <ol class="list-none m-0 p-0 {{ $edPackages === [] ? 'lg:columns-2 lg:gap-12' : '' }}">
+                                @foreach ($edServices as $service)
+                                    <li class="break-inside-avoid">
+                                        <a href="{{ route('bookings.create', ['service' => $service->id]) }}" class="ed-li">
+                                            <span class="ed-li__no">{{ fa_num(str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT)) }}</span>
+                                            <span><b class="ed-li__name block">{{ $service->name }}</b><span class="ed-small">{{ fa_num($service->duration) }} دقیقه</span></span>
+                                            <b>{{ fa_money($service->price) }}</b>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ol>
+                            @if (($template['serviceCount'] ?? 0) > $edServices->count())
+                                <a href="{{ route('services.index') }}" class="inline-block mt-4 font-bold text-m-gold">همه‌ی {{ fa_num($template['serviceCount']) }} خدمت</a>
+                            @endif
+                        </div>
+                    @endif
+                    @if ($edPackages !== [])
+                        <div data-ed-packages>
+                            <h2>پکیج‌ها</h2>
+                            @foreach ($edPackages as $package)
+                                <a href="{{ route('courses.show', $package['id']) }}" class="ed-pkg">
+                                    <span>
+                                        <b class="ed-pkg__name block text-[17px]">{{ $package['name'] }}</b>
+                                        <span class="ed-small">{{ fa_num($package['sessions']) }} جلسه@if ($package['interval'])، {{ $package['interval'] }}@endif</span>
+                                    </span>
+                                    <span class="text-left shrink-0">
+                                        @if ($package['list'])
+                                            <span class="ed-small line-through">{{ fa_money($package['list']) }}</span>
+                                        @endif
+                                        <b class="block">{{ fa_money($package['price']) }}</b>
+                                    </span>
+                                </a>
+                            @endforeach
+                            @if ($edRewards > 0)
+                                <p class="ed-club" data-ed-club>
+                                    باشگاه مشتریان: با هر نوبت امتیاز بگیرید و با {{ fa_num($edRewards) }} جایزه عوض کنید.
+                                    <a href="{{ route('loyalty.index') }}" class="underline">باشگاه من</a>
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+                </section>
+            @endif
+
+            @if ($edPackages === [] && $edRewards > 0)
+                <p class="ed-club py-5 ed-thin" data-ed-club>
+                    باشگاه مشتریان: با هر نوبت امتیاز بگیرید و با {{ fa_num($edRewards) }} جایزه عوض کنید.
+                    <a href="{{ route('loyalty.index') }}" class="underline">باشگاه من</a>
+                </p>
+            @endif
+
+            @if (collect($specialists ?? [])->isNotEmpty())
+                <section class="pt-11 pb-14" aria-labelledby="ed-team-title">
+                    <h2 id="ed-team-title" class="!mb-5">کارشناسان</h2>
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                        @foreach ($jSpecialists as $specialist)
-                            <a href="{{ route('specialists.show', $specialist) }}" class="block group">
-                                <div class="h-56 bg-m-bg3 overflow-hidden">
-                                    @if ($specialist->photoUrl())
-                                        <img src="{{ $specialist->photoUrl() }}" alt="{{ $specialist->name }}" loading="lazy" class="w-full h-full object-cover">
-                                    @else
-                                        <span class="w-full h-full flex items-center justify-center j-display text-5xl text-m-gold">{{ mb_substr($specialist->name, 0, 1) }}</span>
-                                    @endif
-                                </div>
-                                <b class="block mt-3 j-display text-xl text-m-tx group-hover:text-m-gold">{{ $specialist->name }}</b>
+                        @foreach ($specialists as $specialist)
+                            <a href="{{ route('specialists.show', $specialist) }}" class="ed-person" data-ed-person>
+                                <x-palette-art class="ed-person__art" :src="$specialist->photoUrl()" :variant="$loop->index + 2" :alt="$specialist->name" />
+                                <div class="ed-person__name">{{ $specialist->name }}</div>
+                                @if (isset($edNext[$specialist->id]))
+                                    <small>نوبت خالی: {{ $edNext[$specialist->id]['text'] }}</small>
+                                @endif
                             </a>
                         @endforeach
                     </div>
                 </section>
             @endif
-
-            <section class="border-t j-strong py-10 mb-6 flex flex-wrap items-center justify-between gap-4">
-                <h2 class="j-display text-3xl text-m-tx">نوبت بعدی‌تان را همین‌جا بگیرید.</h2>
-                <a href="{{ route('bookings.create') }}" class="btn-gold px-8 py-3.5">رزرو نوبت</a>
-            </section>
         </div>
     </div>
-
-    @if ($appSalon = app(\App\Support\CurrentSalon::class)->get())
-        @include('partials.open-in-app', ['appSalon' => $appSalon])
-    @endif
 @endsection

@@ -471,22 +471,19 @@ class SalonTemplatesTest extends TestCase
         $this->assertStringNotContainsString('data-emblem-tinted', $html, 'طلایی ماهرو همان نشان طلایی');
         $this->assertStringContainsString('data-salon-app-promo', $html);
 
-        foreach (['signature' => 'sg-hdr', 'app' => 'ap-hdr'] as $layout => $class) {
+        foreach (['signature' => 'fixed top-0 inset-x-0 z-50 sg-hdr', 'app' => 'fixed top-0 inset-x-0 z-50 ap-hdr', 'showcase' => 'fixed top-0 inset-x-0 z-50 sc-hdr', 'editorial' => 'ed-hdr sticky md:static top-0 z-50'] as $layout => $class) {
             $this->choose($layout.':rose');
             $html = $this->get(route('home'))->assertOk()->getContent();
-            $this->assertStringContainsString('class="fixed top-0 inset-x-0 z-50 '.$class.'"', $html, $layout);
+            $this->assertStringContainsString('class="'.$class.'"', $html, $layout);
+            $this->assertStringNotContainsString('class="fixed top-0 inset-x-0 z-50"', $html, "$layout: نه سربرگ پیش‌فرض");
             $this->assertStringContainsString('data-palette-footer', $html, $layout);
-            $this->assertStringContainsString('data-emblem-tinted', $html, "$layout: نشان پیش‌فرض به رنگ پالت");
+            if ($layout !== 'editorial') { // سرصفحه‌ی روزنامه فقط نام سالن با نسخ درشت است
+                $this->assertStringContainsString('data-emblem-tinted', $html, "$layout: نشان پیش‌فرض به رنگ پالت");
+            }
             $this->assertStringContainsString('data-header-book', $html, "$layout: دکمه‌ی رزرو در سربرگ");
             $this->assertStringContainsString('id="mobile-menu"', $html, "$layout: کشوی موبایل");
             $this->assertStringContainsString('--m-foot-bg:', $html);
         }
-
-        // روزنامه‌ی سالن و نمایشگاه تا بسته‌ی ۵ب سربرگ پیش‌فرض ولی پانویس پالت
-        $this->choose('editorial:sage');
-        $html = $this->get(route('home'))->assertOk()->getContent();
-        $this->assertStringContainsString('<header id="main-navbar" class="fixed top-0 inset-x-0 z-50">', $html);
-        $this->assertStringContainsString('data-palette-footer', $html);
     }
 
     public function test_appearance_pages_show_the_new_template_names_and_sketches(): void

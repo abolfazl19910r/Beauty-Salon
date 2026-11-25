@@ -33,13 +33,22 @@ class AdminDiscountCodeService
         $data['code'] = Str::upper(trim($data['code']));
         $data['used_count'] = 0;
         $data['is_active'] = $data['is_active'] ?? true;
+        // کد شخصی هیچ‌وقت در سایت نشان داده نمی‌شود (بسته‌ی ۵ب)
+        $data['show_on_site'] = ! empty($data['show_on_site']) && empty($data['user_id']);
 
-        return $this->discountCodeRepository->create($data);
+        $code = $this->discountCodeRepository->create($data);
+        \App\Services\Salon\TemplateHomeData::forgetEditorial((int) $code->salon_id);
+
+        return $code;
     }
 
     public function update(DiscountCode $discountCode, array $data): DiscountCode
     {
+        if (array_key_exists('show_on_site', $data)) {
+            $data['show_on_site'] = (bool) $data['show_on_site'] && $discountCode->user_id === null;
+        }
         $discountCode = $this->discountCodeRepository->update($discountCode, $data);
+        \App\Services\Salon\TemplateHomeData::forgetEditorial((int) $discountCode->salon_id);
 
         return $discountCode->fresh();
     }
@@ -53,6 +62,7 @@ class AdminDiscountCodeService
         }
 
         $this->discountCodeRepository->delete($discountCode);
+        \App\Services\Salon\TemplateHomeData::forgetEditorial((int) $discountCode->salon_id);
     }
 
     /**

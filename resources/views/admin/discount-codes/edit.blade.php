@@ -113,6 +113,17 @@
                 فعال باشد
             </label>
 
+            @if ($discountCode->user_id === null)
+                {{-- بسته‌ی ۵ب: کارت «پیشنهاد ویژه» قالب «روزنامه‌ی سالن» --}}
+                <label class="flex items-start gap-2 text-sm" style="color:var(--admin-text);">
+                    <input type="hidden" name="show_on_site" value="0">
+                    <input type="checkbox" name="show_on_site" value="1" class="mt-1" {{ old('show_on_site', $discountCode->show_on_site) ? 'checked' : '' }}>
+                    <span>نمایش در سایت سالن
+                        <span class="block text-xs" style="color:var(--admin-text-dim);">در قالب «روزنامه‌ی سالن» با عنوان «پیشنهاد ویژه» به همه نشان داده می‌شود.</span>
+                    </span>
+                </label>
+            @endif
+
             <div class="flex justify-end gap-3 pt-2">
                 <a href="{{ route('admin.discount-codes.index') }}"
                    class="px-4 py-2 rounded-lg text-sm" style="border:1px solid var(--admin-border); color:var(--admin-text-dim);">انصراف</a>

@@ -190,4 +190,57 @@ class TemplateHomesTest extends TestCase
 
         $this->get(route('home'))->assertOk()->assertSee('نمونه‌کار ۱ از ۱، تازه');
     }
+
+    public function test_editorial_home_has_the_masthead_offer_quote_packages_and_club(): void
+    {
+        Review::factory()->create(['is_approved' => true, 'overall_rating' => 5, 'comment' => 'سر ساعت شروع شد و عالی بود.']);
+        \App\Models\DiscountCode::factory()->create(['code' => 'NEW15', 'type' => 'percentage', 'amount' => 15, 'user_id' => null,
+            'show_on_site' => true, 'is_active' => true, 'max_uses' => 10, 'used_count' => 0, 'expires_at' => Carbon::parse('2026-12-01 23:59')]);
+        \App\Models\DiscountCode::factory()->create(['code' => 'SECRET', 'user_id' => null, 'show_on_site' => false, 'is_active' => true, 'max_uses' => 10, 'used_count' => 0]);
+        \App\Models\CoursePackage::create(['service_id' => $this->service->id, 'name' => 'پکیج ۶ جلسه‌ای رنگ', 'sessions_count' => 6,
+            'price' => 3000000, 'interval_days' => 14, 'min_interval_days' => 10, 'is_active' => true, 'is_public' => true]);
+        \App\Models\Reward::factory()->count(2)->create(['is_active' => true]);
+        $this->choose('editorial:sage');
+        $html = $this->get(route('home'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-template-home="editorial"', $html);
+        $this->assertStringContainsString('class="ed-hdr sticky md:static top-0 z-50"', $html, 'سربرگ «روزنامه»');
+        $this->assertStringContainsString('سه‌شنبه ۳ آذر ۱۴۰۵', $html, 'سطر تاریخ');
+        $this->assertStringContainsString('امروز باز تا ۲۱، نزدیک‌ترین نوبت ۱۸:۳۰', $html);
+        $this->assertStringContainsString('مو، از سال ۱۳۹۴', $html, 'روتیتر: دسته‌ها و سال شروع (شمسی)');
+        $this->assertStringContainsString('۱۵٪ تخفیف', $html);
+        $this->assertStringContainsString('کد NEW15، تا ۱۰ آذر', $html);
+        $this->assertStringNotContainsString('SECRET', $html, 'کد بی «نمایش در سایت» منتشر نمی‌شود');
+        $this->assertStringContainsString('«سر ساعت شروع شد و عالی بود.»', $html);
+        $this->assertStringContainsString('۰۱</span>', $html, 'خدمات شماره‌دار');
+        $this->assertStringContainsString('پکیج ۶ جلسه‌ای رنگ', $html);
+        $this->assertStringContainsString('۶ جلسه، هر ۲ هفته یک بار', $html);
+        $this->assertStringContainsString('۳٬۵۴۰٬۰۰۰', $html, 'قیمت تکی جلسه‌ها خط‌خورده');
+        $this->assertStringContainsString('با ۲ جایزه عوض کنید', $html);
+        $this->assertStringContainsString('نوبت خالی: امروز ۱۸:۳۰', $html);
+    }
+
+    public function test_editorial_hides_blocks_without_data(): void
+    {
+        $this->specialist->schedules()->delete();
+        app(CurrentSalon::class)->get()->forceFill(['working_hours' => null, 'established_year' => null])->save();
+        $this->choose('editorial:rose');
+
+        $this->get(route('home'))->assertOk()
+            ->assertDontSee('data-ed-offer', false)->assertDontSee('data-ed-quote', false)
+            ->assertDontSee('data-ed-packages', false)->assertDontSee('data-ed-club', false)
+            ->assertDontSee('data-ed-status', false)->assertDontSee('از سال')
+            ->assertSee('رزرو در چند ثانیه')->assertSee('data-ed-cover', false);
+    }
+
+    public function test_interval_text(): void
+    {
+        $t = fn (int $d) => \App\Services\Salon\TemplateHomeData::intervalText($d);
+        $this->assertNull($t(0));
+        $this->assertSame('هر هفته یک بار', $t(7));
+        $this->assertSame('هر ۳ هفته یک بار', $t(21));
+        $this->assertSame('هر ماه یک بار', $t(30));
+        $this->assertSame('هر ۲ ماه یک بار', $t(60));
+        $this->assertSame('هر ۱۰ روز یک بار', $t(10));
+    }
 }

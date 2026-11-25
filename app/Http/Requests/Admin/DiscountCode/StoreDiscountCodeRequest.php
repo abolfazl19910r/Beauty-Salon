@@ -30,6 +30,7 @@ class StoreDiscountCodeRequest extends FormRequest
             'max_uses' => ['required', 'integer', 'min:1'],
             'expires_at' => ['nullable', 'date', 'after:today'],
             'user_id' => ['nullable', 'exists:users,id', new CustomerOfCurrentSalon],
+            'show_on_site' => ['nullable', 'boolean'],
         ];
     }
 

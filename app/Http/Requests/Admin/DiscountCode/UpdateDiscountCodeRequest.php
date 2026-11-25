@@ -18,6 +18,7 @@ class UpdateDiscountCodeRequest extends FormRequest
 
         return [
             'is_active' => ['boolean'],
+            'show_on_site' => ['sometimes', 'boolean'],
             'expires_at' => ['nullable', 'date', 'after:today'],
             'max_uses' => ['sometimes', 'integer', "min:{$minUses}"],
         ];

@@ -195,4 +195,42 @@ class AdminDiscountCodeTest extends TestCase
         $this->assertSame(10.0, (float) $fresh->amount);
         $this->assertSame(20, $fresh->max_uses);
     }
+
+    public function test_show_on_site_is_off_by_default_and_never_on_for_a_personal_code(): void
+    {
+        $base = ['type' => 'percentage', 'amount' => 10, 'max_uses' => 5];
+        $this->actingAs($this->admin)->post('/admin/discount-codes', $base + ['code' => 'quiet']);
+        $this->assertFalse(\App\Models\DiscountCode::where('code', 'QUIET')->first()->show_on_site);
+
+        $this->actingAs($this->admin)->post('/admin/discount-codes', $base + ['code' => 'site', 'show_on_site' => '1']);
+        $this->assertTrue(\App\Models\DiscountCode::where('code', 'SITE')->first()->show_on_site);
+
+        $customer = User::factory()->create();
+        $mine = app(\App\Services\Admin\DiscountCode\AdminDiscountCodeService::class)
+            ->store($base + ['code' => 'mine', 'show_on_site' => true, 'user_id' => $customer->id]);
+        $this->assertFalse($mine->fresh()->show_on_site, 'کد شخصی هیچ‌وقت در سایت نیست');
+    }
+
+    public function test_show_on_site_can_be_toggled_on_edit(): void
+    {
+        $code = \App\Models\DiscountCode::factory()->create(['user_id' => null, 'show_on_site' => false, 'is_active' => true]);
+
+        $this->actingAs($this->admin)->put(route('admin.discount-codes.update', $code), ['is_active' => '1', 'show_on_site' => '1']);
+        $this->assertTrue($code->fresh()->show_on_site);
+        $this->actingAs($this->admin)->get(route('admin.discount-codes.edit', $code))->assertOk()->assertSee('نمایش در سایت سالن');
+
+        $this->actingAs($this->admin)->put(route('admin.discount-codes.update', $code), ['is_active' => '1', 'show_on_site' => '0']);
+        $this->assertFalse($code->fresh()->show_on_site);
+    }
+
+    public function test_shown_on_site_scope_keeps_only_live_public_flagged_codes(): void
+    {
+        $live = \App\Models\DiscountCode::factory()->create(['code' => 'LIVE', 'user_id' => null, 'show_on_site' => true, 'is_active' => true, 'max_uses' => 5, 'used_count' => 0, 'expires_at' => now()->addDay()]);
+        \App\Models\DiscountCode::factory()->create(['code' => 'OFF', 'user_id' => null, 'show_on_site' => false, 'is_active' => true, 'max_uses' => 5, 'used_count' => 0]);
+        \App\Models\DiscountCode::factory()->create(['code' => 'USED', 'user_id' => null, 'show_on_site' => true, 'is_active' => true, 'max_uses' => 5, 'used_count' => 5]);
+        \App\Models\DiscountCode::factory()->create(['code' => 'OLD', 'user_id' => null, 'show_on_site' => true, 'is_active' => true, 'max_uses' => 5, 'used_count' => 0, 'expires_at' => now()->subDay()]);
+        \App\Models\DiscountCode::factory()->create(['code' => 'DEAD', 'user_id' => null, 'show_on_site' => true, 'is_active' => false, 'max_uses' => 5, 'used_count' => 0]);
+
+        $this->assertSame(['LIVE'], \App\Models\DiscountCode::query()->shownOnSite()->pluck('code')->all());
+    }
 }

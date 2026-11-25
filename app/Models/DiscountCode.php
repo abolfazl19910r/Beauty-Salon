@@ -18,6 +18,7 @@ class DiscountCode extends Model
         'used_count',
         'expires_at',
         'is_active',
+        'show_on_site',
         'user_id',
         'max_amount',
         'valid_for_courses',
@@ -26,6 +27,7 @@ class DiscountCode extends Model
     protected $casts = [
         'valid_for_courses' => 'boolean',
         'is_active' => 'boolean',
+        'show_on_site' => 'boolean',
         'amount' => 'decimal:2',
         'max_amount' => 'decimal:2',
         'used_count' => 'integer',
@@ -66,6 +68,17 @@ class DiscountCode extends Model
         }
 
         return true;
+    }
+
+    /**
+     * بسته‌ی ۵ب: کدی که مدیر برای همه در سایت منتشر کرده (کارت «پیشنهاد ویژه»ی «روزنامه‌ی سالن»): فعال، «نمایش در سایت»،
+     * بی مشتری مشخص، منقضی‌نشده و با ظرفیت باقی‌مانده.
+     */
+    public function scopeShownOnSite(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where('is_active', true)->where('show_on_site', true)->whereNull('user_id')
+            ->whereColumn('used_count', '<', 'max_uses')
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
     }
 
     public function incrementUsage(): void

@@ -21,17 +21,26 @@
 .m-art>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 </style>
 @if ($layout === 'editorial')
+{{-- بسته‌ی ۵ب — «روزنامه‌ی سالن» (روزنامه + پیشنهاد + پکیج‌ها): تیترها با نسخ پررنگ، گوشه‌های تیز، خط‌های چاپی، سرصفحه با خط دوتایی --}}
 <link rel="preload" href="{{ asset('fonts/mahru/NotoNaskhArabic-Bold.woff2') }}" as="font" type="font/woff2" crossorigin>
 <style data-theme-layout="editorial">
 @font-face{font-family:"MahruNaskh";src:url("{{ asset('fonts/mahru/NotoNaskhArabic-Medium.woff2') }}") format("woff2");font-weight:400 600;font-display:swap}
 @font-face{font-family:"MahruNaskh";src:url("{{ asset('fonts/mahru/NotoNaskhArabic-Bold.woff2') }}") format("woff2");font-weight:700 900;font-display:swap}
-html[data-layout=editorial]{--m-r-lg:4px;--m-r-md:3px;--m-r-sm:2px;--m-display:"MahruNaskh","Mahru",serif}
+html[data-layout=editorial]{--m-r-lg:0px;--m-r-md:0px;--m-r-sm:0px;--m-display:"MahruNaskh","Mahru",serif}
 html[data-layout=editorial] .font-serif-fa,html[data-layout=editorial] h1,html[data-layout=editorial] h2{font-family:var(--m-display);font-weight:700;letter-spacing:0}
-html[data-layout=editorial] .rounded-lg,html[data-layout=editorial] .rounded-xl,html[data-layout=editorial] .rounded-2xl,html[data-layout=editorial] .rounded-3xl{border-radius:4px}
-html[data-layout=editorial] .btn-gold,html[data-layout=editorial] .m-btn,html[data-layout=editorial] .btn-glass,html[data-layout=editorial] .m-btn-ghost{border-radius:3px!important}
-html[data-layout=editorial] .m-card,html[data-layout=editorial] .auth-card,html[data-layout=editorial] .specialist-card,html[data-layout=editorial] .admin-card{box-shadow:none;border-color:var(--m-line2);border-radius:4px}
-html[data-layout=editorial] #main-navbar,html[data-layout=editorial] #main-navbar.scrolled{background:rgb(var(--m-bg));border-bottom:1px solid rgb(var(--m-tx) / .85);box-shadow:none}
-html[data-layout=editorial] #main-navbar .nav-link{letter-spacing:.02em}
+html[data-layout=editorial] .rounded-lg,html[data-layout=editorial] .rounded-xl,html[data-layout=editorial] .rounded-2xl,html[data-layout=editorial] .rounded-3xl{border-radius:0}
+html[data-layout=editorial] .btn-gold,html[data-layout=editorial] .m-btn,html[data-layout=editorial] .btn-glass,html[data-layout=editorial] .m-btn-ghost{border-radius:0!important;box-shadow:none}
+html[data-layout=editorial] .m-card,html[data-layout=editorial] .auth-card,html[data-layout=editorial] .specialist-card,html[data-layout=editorial] .admin-card{box-shadow:none;border-color:rgb(var(--m-tx) / .16);border-radius:0}
+html[data-layout=editorial] #main-navbar,html[data-layout=editorial] #main-navbar.scrolled{background:rgb(var(--m-bg));box-shadow:none}
+.ed-hdr .nav-link{color:rgb(var(--m-tx))}
+.ed-mast{border-top:3px double rgb(var(--m-tx));border-bottom:1px solid rgb(var(--m-tx));padding:12px 0}
+@media (max-width:767px){.ed-mast{border-top:0;padding:10px 0}}
+@media (min-width:768px){.ed-mast{padding:16px 0}}
+.ed-name{font-family:var(--m-display);font-weight:700;font-size:28px;line-height:1.2;color:rgb(var(--m-tx))}
+@media (min-width:768px){.ed-name{font-size:44px}}
+.ed-hdr__book{background:rgb(var(--m-gold));color:var(--m-on-gold);font-weight:700;padding:10px 22px}
+.ed-hdr__book:hover{filter:brightness(1.06)}
+html[data-layout=editorial] .m-foot__btn,html[data-layout=editorial] .m-foot__ghost{border-radius:0}
 </style>
 @elseif ($layout === 'showcase')
 {{-- بسته‌ی ۵ب — «نمایشگاه» (استودیو + گالری + کاتالوگ): تیترها با کوفی پررنگ، متن وزیرمتن، گوشه‌های نرم، سربرگ ساده با خط زیرین --}}
