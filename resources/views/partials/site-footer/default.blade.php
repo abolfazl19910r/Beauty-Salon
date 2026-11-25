@@ -1,8 +1,9 @@
 {{-- پانویس طلایی ماهرو (پیش‌فرض رایگان)؛ قالب‌های پولی: partials/site-footer/palette (بسته‌ی ۵الف) --}}
 <footer class="bg-m-bg2 border-t border-m-gold/10 mt-auto">
     <div class="container mx-auto px-4 py-12">
+        {{-- بسته‌ی ۵ج: در حالت نصب‌شده فقط تماس، مسیریابی و قوانین (data-pwa-hide در partials/pwa-shell) --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div>
+            <div data-pwa-hide>
                 @if ($currentSalonLogoUrl)
                     <x-brand-emblem class="h-14 w-auto max-w-[160px] mb-3" loading="lazy" />
                 @endif
@@ -69,7 +70,7 @@
                 @endif
             </div>
 
-            <div>
+            <div data-pwa-hide>
                 <h3 class="font-bold mb-4 flex items-center text-m-tx">
                     <svg class="w-5 h-5 ml-1 text-m-gold2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -88,7 +89,7 @@
 
         {{-- ۲۰۲۶-۱۱-۰۶: بنر «باز کردن در اپ» فقط روی اندروید و قابل‌بستن است؛ این نشانی همیشه و روی هر دستگاه دیده می‌شود --}}
         @if ($footerAppSalon = app(\App\Support\CurrentSalon::class)->get())
-            <div class="mt-10 rounded-2xl border border-m-gold/20 bg-m-bg/60 px-5 py-4 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-center sm:text-right" data-salon-app-promo>
+            <div class="mt-10 rounded-2xl border border-m-gold/20 bg-m-bg/60 px-5 py-4 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-center sm:text-right" data-salon-app-promo data-pwa-hide>
                 <svg class="w-9 h-9 shrink-0 text-m-gold2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <rect x="6" y="2" width="12" height="20" rx="3" /><path stroke-linecap="round" d="M11 18h2" />
                 </svg>

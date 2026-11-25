@@ -5,6 +5,7 @@
     - ناحیه‌ی امن آیفون (نوار Home): با viewport-fit=cover، منوی پایین (.m-bottom-nav) و بدنه (body.m-has-bottom-nav) فاصله می‌گیرند؛
       --m-bottom-nav ارتفاع منوی پایین است تا بنرهای ثابت پایین (نصب آیفون، «باز کردن در اپ») رویش نیفتند. پنل کارشناس که خودش
       ناحیه‌ی اسکرول دارد body.m-nav-offset (فقط متغیر) و .m-pb-nav روی همان ناحیه می‌گیرد.
+    - [data-pwa-hide] در حالت نصب‌شده پنهان می‌شود (بخش‌های بلند پانویس، بنرهای نصب)؛ .m-pwa-back دکمه‌ی «برگشت» سربرگ فقط در همان حالت.
     - رنگ نوار وضعیت (meta theme-color) با رنگ زمینه‌ی واقعی صفحه در تم روشن/تیره‌ی انتخاب‌شده یکی می‌شود.
 --}}
 <style>
@@ -17,6 +18,9 @@
     }
     /* viewport-fit=cover: گوشی افقی، زیر بریدگی صفحه نرود */
     body,#main-navbar,.m-bottom-nav{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+    .m-pwa-back{display:none}
+    @media (max-width:767.98px){html.is-standalone .m-pwa-back{display:inline-flex}}
+    html.is-standalone [data-pwa-hide]{display:none!important}
 </style>
 <script @nonce>
 (function () {
@@ -34,6 +38,16 @@
     document.addEventListener('DOMContentLoaded', function () {
         syncThemeColor();
         if (window.MutationObserver) new MutationObserver(syncThemeColor).observe(d, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+    });
+
+    // «برگشت» سربرگ در حالت نصب‌شده (آیفون دکمه‌ی برگشت مرورگر ندارد): صفحه‌ی قبلی همین سایت، وگرنه خانه
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest && e.target.closest('[data-pwa-back]');
+        if (!btn) return;
+        e.preventDefault();
+        var sameSite = false;
+        try { sameSite = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (err) {}
+        if (sameSite && history.length > 1) history.back(); else location.href = btn.getAttribute('href');
     });
 })();
 </script>

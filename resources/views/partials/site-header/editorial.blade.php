@@ -25,7 +25,10 @@
             </div>
         </div>
         <div class="ed-mast flex items-center justify-between gap-4">
-            <a href="{{ route('home') }}" class="ed-name truncate">{{ $currentSalonName }}</a>
+            <div class="flex items-center gap-2 min-w-0">
+                @include('partials.site-header.pwa-back')
+                <a href="{{ route('home') }}" class="ed-name truncate">{{ $currentSalonName }}</a>
+            </div>
             <nav class="hidden md:flex items-center gap-6 text-[15px]">
                 @include('partials.site-header.nav')
                 <a href="{{ route('bookings.create') }}" class="ed-hdr__book" data-header-book>رزرو نوبت</a>

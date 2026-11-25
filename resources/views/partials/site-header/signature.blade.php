@@ -7,10 +7,13 @@
         <div class="hidden md:flex items-center gap-7 text-[14.5px]">
             @include('partials.site-header.nav')
         </div>
-        <a href="{{ route('home') }}" class="flex items-center gap-2.5 justify-self-start md:justify-self-center col-start-1 md:col-start-2 min-w-0">
-            <x-brand-emblem class="h-9 w-auto max-w-[120px]" />
-            <span class="sg-name truncate">{{ $currentSalonName }}</span>
-        </a>
+        <div class="flex items-center gap-2 justify-self-start md:justify-self-center col-start-1 md:col-start-2 min-w-0">
+            @include('partials.site-header.pwa-back')
+            <a href="{{ route('home') }}" class="flex items-center gap-2.5 min-w-0">
+                <x-brand-emblem class="h-9 w-auto max-w-[120px]" />
+                <span class="sg-name truncate">{{ $currentSalonName }}</span>
+            </a>
+        </div>
         <div class="hidden md:flex items-center gap-5 justify-self-end text-[14.5px]">
             @include('partials.mahru-theme-toggle')
             @include('partials.site-header.account')

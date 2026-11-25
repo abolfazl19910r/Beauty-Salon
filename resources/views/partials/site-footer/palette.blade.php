@@ -10,7 +10,8 @@
 @endphp
 <footer class="m-foot mt-auto" data-palette-footer>
     <div class="max-w-[1200px] mx-auto px-6 pt-11 pb-7 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] gap-8 text-sm leading-7">
-        <div>
+        {{-- بسته‌ی ۵ج: در حالت نصب‌شده فقط تماس، مسیریابی و قوانین (data-pwa-hide در partials/pwa-shell) --}}
+        <div data-pwa-hide>
             <div class="flex items-center gap-2.5">
                 <span class="m-foot__mark"><x-brand-emblem class="h-8 w-auto max-w-[120px]" loading="lazy" /></span>
                 <b class="m-foot__name">{{ $currentSalonName }}</b>
@@ -22,7 +23,7 @@
                 <a href="{{ route('salon.reviews') }}" class="inline-block mt-2 underline underline-offset-4 m-foot__dim hover:text-white" data-footer-reviews>نظر مشتری‌ها ({{ fa_num($__reviewsCount) }})</a>
             @endif
         </div>
-        <div>
+        <div data-pwa-hide>
             <b class="m-foot__h">ساعت کاری</b>
             <div class="m-foot__dim persian-number">
                 @forelse ($currentSalonHours as $line)
@@ -60,7 +61,7 @@
             @endif
         </div>
         @if ($__footSalon)
-            <div data-salon-app-promo>
+            <div data-salon-app-promo data-pwa-hide>
                 <b class="m-foot__h">اپ سالن</b>
                 <div class="m-foot__dim">رزرو سریع‌تر و یادآوری نوبت</div>
                 <a href="{{ \App\Support\CustomerAppLink::forSalon($__footSalon)['install_url'] }}" class="m-foot__btn mt-2 inline-block">دریافت اپ</a>

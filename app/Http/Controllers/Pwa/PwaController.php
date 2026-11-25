@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Pwa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Salon;
+use App\Repositories\Contracts\SalonRepositoryInterface;
 use App\Services\Pwa\SalonPwaIcon;
 use App\Support\CurrentSalon;
 use App\Support\SalonTitle;
 use App\Support\Themes\SalonAppearance;
 use App\Support\Themes\ThemeCatalog;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -91,9 +93,24 @@ class PwaController extends Controller
         ]);
     }
 
-    public function offline(): Response
+    /**
+     * بسته‌ی ۵ج: رنگ صفحه‌ی آفلاین از پالت سالن (روشن و تیره). service worker برای هر میزبان جداست، پس فقط روی زیردامنه‌ی سالن
+     * سالن معلوم است؛ دامنه‌ی اصلی (پنل کارشناس، /s/{slug} بی CENTRAL_DOMAIN) طلایی ماهرو.
+     */
+    public function offline(Request $request, SalonRepositoryInterface $salons): Response
     {
-        return response()->view('pwa.offline')->header('Cache-Control', 'no-cache');
+        $salon = null;
+        $central = (string) config('app.central_domain');
+        $host = strtolower($request->getHost());
+        if ($central !== '' && str_ends_with($host, '.'.strtolower($central))) {
+            $found = $salons->findBySlug(substr($host, 0, -strlen('.'.$central)));
+            $salon = $found && $found->isVerified() && ! $found->is_suspended ? $found : null;
+        }
+        $tokens = ThemeCatalog::sitePaletteTokens($salon ? SalonAppearance::for($salon)->palette : null);
+
+        return response()->view('pwa.offline', [
+            'colors' => ['dark' => ThemeCatalog::toHex($tokens['dark']), 'light' => ThemeCatalog::toHex($tokens['light'])],
+        ])->header('Cache-Control', 'no-cache');
     }
 
     /**
