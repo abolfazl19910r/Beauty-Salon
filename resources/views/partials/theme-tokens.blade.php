@@ -1,12 +1,12 @@
 {{--
     ⭐ بسته‌ی «و»: بازنویسی توکن‌های --m-* با پالت یک قالب (سایت یا پنل مدیر)، برای تیره و روشن. بعد از partials/mahru-theme.
-    $tokens = ['dark' => [...], 'light' => [...]] از App\Support\Themes\ThemeCatalog؛ گرادیان طلایی ماهرو جای خود را به دکمه‌ی تخت
+    $tokens = ['dark' => [...], 'light' => [...]] از App\Support\Themes\ThemeCatalog (بسته‌ی ۵الف: با accent2/on2)؛ گرادیان طلایی ماهرو جای خود را به دکمه‌ی تخت
     رنگ پالت می‌دهد (پیش‌نمایش تأییدشده).
 --}}
 @php
     $__vars = function (array $t): string {
         $out = '';
-        foreach (['bg', 'bg2', 'bg3', 'card', 'tx', 'mu', 'gold', 'gold2'] as $k) {
+        foreach (['bg', 'bg2', 'bg3', 'card', 'tx', 'mu', 'gold', 'gold2', 'accent2'] as $k) {
             if (isset($t[$k])) {
                 $out .= "--m-$k:{$t[$k]};";
             }
@@ -16,6 +16,11 @@
         $out .= '--m-tgrad:linear-gradient(135deg,rgb('.($t['gold2'] ?? '0 0 0').') 0%,rgb('.($t['gold'] ?? '0 0 0').') 100%);';
         $out .= '--m-hdr:rgb('.($t['bg'] ?? '0 0 0').' / .8);';
         $out .= '--m-on-gold:'.($t['on'] ?? '#FFFFFF').';';
+        // بسته‌ی ۵الف: رنگ دوم؛ پالتی که ندارد (قالب‌های پنل مدیر) همان gold2 را می‌گیرد
+        if (! isset($t['accent2'])) {
+            $out .= '--m-accent2:'.($t['gold2'] ?? '0 0 0').';';
+        }
+        $out .= '--m-on2:'.($t['on2'] ?? $t['on'] ?? '#FFFFFF').';';
 
         return $out;
     };

@@ -91,6 +91,55 @@ class SalonTemplatesTest extends TestCase
                 $this->assertGreaterThanOrEqual(4.5, $contrast($hexToChannels($t['on']), $t['gold']), "$name/$mode متن دکمه");
             }
         }
+
+        // بسته‌ی ۵الف: رنگ دوم هر پالت سایت (تیره و روشن)
+        foreach ((array) config('themes.palettes') as $name => $palette) {
+            foreach (['dark', 'light'] as $mode) {
+                $t = $palette[$mode];
+                $this->assertArrayHasKey('accent2', $t, "$name/$mode/accent2");
+                $this->assertArrayHasKey('on2', $t, "$name/$mode/on2");
+                $this->assertGreaterThanOrEqual(4.5, $contrast($t['accent2'], $t['bg']), "$name/$mode رنگ دوم روی زمینه");
+                $this->assertGreaterThanOrEqual(4.5, $contrast($t['accent2'], $t['bg2']), "$name/$mode رنگ دوم روی کارت");
+                $this->assertGreaterThanOrEqual(4.5, $contrast($t['gold'], $t['bg']), "$name/$mode رنگ اصلی روی زمینه");
+                $this->assertGreaterThanOrEqual(4.5, $contrast($t['mu'], $t['bg3']), "$name/$mode متن کم‌رنگ روی سطح رنگی");
+                $this->assertGreaterThanOrEqual(4.5, $contrast($hexToChannels($t['on2']), $t['accent2']), "$name/$mode متن روی رنگ دوم");
+            }
+            $this->assertSame('#FFFFFF', $palette['light']['on'], "$name: سفید روی رنگ اصلی روشن");
+            $this->assertSame('#FFFFFF', $palette['light']['on2'], "$name: سفید روی رنگ دوم روشن");
+        }
+    }
+
+    public function test_palettes_carry_the_approved_canvas_colours(): void
+    {
+        $hex = fn (string $palette, string $mode, string $key) => ThemeCatalog::rgbToHex(config("themes.palettes.$palette.$mode.$key"));
+
+        $approved = [
+            'rose' => ['#9C3F55', '#5C3A33', '#EBA5AC', '#D9B8A8'],
+            'sage' => ['#335E45', '#7E5F28', '#A9CFAB', '#D8BE85'],
+            'lilac' => ['#56419E', '#8A5A7A', '#C5B3F6', '#E2B4CF'],
+            'turquoise' => ['#0D6F69', '#A4532F', '#5CCFC4', '#E59A72'],
+        ];
+        foreach ($approved as $palette => [$light, $light2, $dark, $dark2]) {
+            $this->assertSame([$light, $light2, $dark, $dark2], [
+                $hex($palette, 'light', 'gold'), $hex($palette, 'light', 'accent2'),
+                $hex($palette, 'dark', 'gold'), $hex($palette, 'dark', 'accent2'),
+            ], $palette);
+        }
+        $this->assertSame('#56685C', $hex('sage', 'light', 'mu'));
+        $this->assertSame('#56625F', $hex('turquoise', 'light', 'mu'));
+    }
+
+    public function test_site_palette_tokens_write_accent2_and_the_default_keeps_gold2(): void
+    {
+        $this->choose('vitrin:turquoise');
+        $html = $this->get(route('home'))->assertOk()->getContent();
+        $this->assertStringContainsString('--m-accent2:164 83 47;', $html, 'رنگ دوم روشن فیروزه');
+        $this->assertStringContainsString('--m-accent2:229 154 114;', $html, 'رنگ دوم تیره فیروزه');
+
+        $this->choose(null);
+        $html = $this->get(route('home'))->assertOk()->getContent();
+        $this->assertStringContainsString('--m-accent2:227 201 133;', $html, 'طلایی ماهرو: رنگ دوم = gold2');
+        $this->assertStringNotContainsString('data-theme-palette', $html);
     }
 
     public function test_allowed_templates_follow_the_super_admin_order(): void
@@ -329,8 +378,11 @@ class SalonTemplatesTest extends TestCase
         $this->assertSame('aram', $card['theme']['layout']);
         $this->assertSame('lilac', $card['theme']['palette']);
         $this->assertSame('#C5B3F6', $card['theme']['colors']['dark']['accent']);
-        $this->assertSame('#5B43B5', $card['theme']['colors']['light']['accent']);
+        $this->assertSame('#56419E', $card['theme']['colors']['light']['accent']);
         $this->assertSame('#FFFFFF', $card['theme']['colors']['light']['onAccent']);
+        $this->assertSame('#8A5A7A', $card['theme']['colors']['light']['accent2']);
+        $this->assertSame('#E2B4CF', $card['theme']['colors']['dark']['accent2']);
+        $this->assertSame('#FFFFFF', $card['theme']['colors']['light']['onAccent2']);
 
         $this->choose(null);
         $default = CustomerPresenter::salonCard($this->salon->fresh())['theme'];

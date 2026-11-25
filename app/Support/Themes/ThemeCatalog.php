@@ -190,7 +190,7 @@ final class ThemeCatalog
      */
     public static function toHex(array $tokens): array
     {
-        $map = ['bg' => 'bg', 'bg2' => 'surface', 'bg3' => 'surfaceAlt', 'card' => 'card', 'tx' => 'text', 'mu' => 'muted', 'gold' => 'accent', 'gold2' => 'accentStrong'];
+        $map = ['bg' => 'bg', 'bg2' => 'surface', 'bg3' => 'surfaceAlt', 'card' => 'card', 'tx' => 'text', 'mu' => 'muted', 'gold' => 'accent', 'gold2' => 'accentStrong', 'accent2' => 'accent2'];
         $out = [];
         foreach ($map as $from => $to) {
             if (isset($tokens[$from])) {
@@ -198,6 +198,9 @@ final class ThemeCatalog
             }
         }
         $out['onAccent'] = strtoupper((string) ($tokens['on'] ?? '#FFFFFF'));
+        // بسته‌ی ۵الف: رنگ دوم (افزودنی؛ اپ قدیمی نادیده می‌گیرد)
+        $out['accent2'] ??= $out['accentStrong'] ?? $out['accent'] ?? '#000000';
+        $out['onAccent2'] = strtoupper((string) ($tokens['on2'] ?? $tokens['on'] ?? '#FFFFFF'));
         $out['line'] = (string) ($tokens['line'] ?? '');
         $out['lineStrong'] = (string) ($tokens['line2'] ?? '');
 

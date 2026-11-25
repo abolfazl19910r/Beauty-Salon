@@ -40,6 +40,9 @@ module.exports = {
                     mu: "rgb(var(--m-mu) / <alpha-value>)",
                     gold: "rgb(var(--m-gold) / <alpha-value>)",
                     gold2: "rgb(var(--m-gold2) / <alpha-value>)",
+                    // بسته‌ی ۵الف: رنگ دوم پالت (نشان‌ها، کاشی‌ها، بخش پایانی)؛ طلایی ماهرو = همان gold2
+                    accent2: "rgb(var(--m-accent2) / <alpha-value>)",
+                    on2: "var(--m-on2)",
                     ok: "rgb(var(--m-ok) / <alpha-value>)",
                     bad: "rgb(var(--m-bad) / <alpha-value>)",
                     info: "rgb(var(--m-info) / <alpha-value>)",

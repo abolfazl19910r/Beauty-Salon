@@ -43,7 +43,7 @@ if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-sch
     color-scheme:dark;
     --m-bg:21 17 14;--m-bg2:28 23 18;--m-bg3:37 30 23;--m-card:37 30 23;
     --m-tx:244 237 224;--m-mu:179 164 140;
-    --m-gold:216 185 106;--m-gold2:227 201 133;
+    --m-gold:216 185 106;--m-gold2:227 201 133;--m-accent2:227 201 133;--m-on2:#221A0C;
     --m-ok:156 197 143;--m-bad:216 138 120;--m-info:143 180 205;--m-warn:232 184 92;
     --m-line:rgba(235,214,155,.12);--m-line2:rgba(235,214,155,.28);
     --m-btn:linear-gradient(135deg,#F0DDA6 0%,#D8B96A 45%,#A67F2E 100%);
@@ -56,7 +56,7 @@ html[data-theme=light]{
     color-scheme:light;
     --m-bg:251 248 242;--m-bg2:255 255 255;--m-bg3:245 239 227;--m-card:255 255 255;
     --m-tx:33 25 15;--m-mu:107 93 72;
-    --m-gold:138 106 34;--m-gold2:107 78 24;
+    --m-gold:138 106 34;--m-gold2:107 78 24;--m-accent2:107 78 24;--m-on2:#FFFFFF;
     --m-ok:63 122 52;--m-bad:169 70 31;--m-info:42 98 138;--m-warn:150 96 12;
     --m-line:rgba(122,90,28,.13);--m-line2:rgba(122,90,28,.28);
     --m-btn:linear-gradient(135deg,#EBD69B 0%,#D2B060 45%,#B38A39 100%);
