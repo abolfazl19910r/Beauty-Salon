@@ -191,24 +191,10 @@
             @endauth
         </div>
     </div>
-    @if ($__showAccountTabs)
-        {{-- بسته‌ی ۴ ظاهری: ردیف دوم = تب‌های حساب، فقط در صفحه‌های حساب و فقط دسکتاپ (موبایل منوی پایین دارد) --}}
-        <nav class="hidden md:block border-t border-m-gold/10 bg-m-bg/90" aria-label="حساب من" data-account-tabs>
-            <div class="container mx-auto px-4 flex gap-1 overflow-x-auto">
-                @foreach ($__accountTabs as $__tab)
-                    <a href="{{ $__tab['url'] }}" data-account-tab="{{ $__tab['key'] }}" @if ($__tab['active']) aria-current="page" @endif
-                       class="shrink-0 inline-flex items-center gap-1.5 px-3 py-3 text-sm border-b-2 {{ $__tab['active'] ? 'border-m-gold text-m-tx font-bold' : 'border-transparent text-m-tx/70 hover:text-m-tx' }}">
-                        {{ $__tab['label'] }}
-                        @if ($__tab['badge'] > 0)<span class="text-[11px] font-bold rounded-full px-1.5 bg-m-gold/15 text-m-gold2" data-account-badge>{{ fa_num($__tab['badge']) }}</span>@endif
-                    </a>
-                @endforeach
-            </div>
-        </nav>
-    @endif
 </header>
 
 
-<div id="announcement-banner-mount" class="container mx-auto px-4 {{ $__showAccountTabs ? 'pt-24 md:pt-36' : 'pt-24' }} space-y-3" dir="rtl"
+<div id="announcement-banner-mount" class="container mx-auto px-4 pt-24 space-y-3" dir="rtl"
      data-announcements-url="{{ route('announcements.active') }}"></div>
 
 @include('partials.booking-paused-banner', ['panel' => 'site'])
@@ -322,6 +308,19 @@
 @endpush
 
 <main class="container mx-auto px-4 pb-8 flex-grow fade-in @unless(trim($__env->yieldContent('full-width'))) pt-4 @endunless">
+    @if ($__showAccountTabs)
+        {{-- تب‌های حساب داخل صفحه، نه ردیف دوم هدر (آزمون ویندوز بسته‌ی ۴، تصمیم ابوالفضل): هدر چسبان یک ردیف می‌ماند و
+             این نوار با صفحه بالا می‌رود. فقط دسکتاپ؛ موبایل منوی پایین و منوی نام را دارد. --}}
+        <nav class="hidden md:flex mx-auto mb-5 p-1 gap-1 w-fit max-w-full overflow-x-auto rounded-full border border-m-gold/15 bg-m-tx/[0.03]" aria-label="حساب من" data-account-tabs>
+            @foreach ($__accountTabs as $__tab)
+                <a href="{{ $__tab['url'] }}" data-account-tab="{{ $__tab['key'] }}" @if ($__tab['active']) aria-current="page" @endif
+                   class="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-colors {{ $__tab['active'] ? 'bg-m-gold/15 text-m-tx font-bold' : 'text-m-tx/70 hover:text-m-tx hover:bg-m-tx/5' }}">
+                    {{ $__tab['label'] }}
+                    @if ($__tab['badge'] > 0)<span class="text-[11px] font-bold rounded-full px-1.5 bg-m-gold/20 text-m-gold2" data-account-badge>{{ fa_num($__tab['badge']) }}</span>@endif
+                </a>
+            @endforeach
+        </nav>
+    @endif
     @if(session('success'))
         <div class="bg-m-ok/30 border-r-4 border-m-gold p-4 text-m-ok rounded mb-4 flex items-start">
             <svg class="h-5 w-5 ml-2 text-m-gold2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
