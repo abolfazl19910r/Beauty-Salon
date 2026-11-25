@@ -18,7 +18,7 @@
                     <p>شماره پیگیری: <span class="font-medium persian-number" dir="ltr">{{ fa_num($booking->payment_reference) }}</span></p>
                 </div>
                 <p class="text-gray-600 mb-8">
-                    پیامک تاییدیه برای شما ارسال خواهد شد.
+                    پیامک تأییدیه برای شما ارسال خواهد شد.
                 </p>
             @else
                 <div class="text-red-500 mb-6">

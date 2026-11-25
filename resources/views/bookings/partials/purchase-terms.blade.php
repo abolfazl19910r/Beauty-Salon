@@ -10,7 +10,7 @@
         <h3 class="font-bold text-m-gold2 mb-1">ارائه‌دهنده‌ی خدمت</h3>
         <p>{{ $provider['name'] }}@if ($provider['address']) — {{ $provider['address'] }}@endif</p>
         @if ($provider['phone'])
-            <p>تلفن: <a href="tel:{{ $provider['phone'] }}" dir="ltr" class="persian-number underline">{{ $provider['phone'] }}</a></p>
+            <p>تلفن: <a href="tel:{{ $provider['phone'] }}" dir="ltr" class="persian-number underline">{{ \App\Support\Fa::digits($provider['phone']) }}</a></p>
         @endif
         <p class="text-xs text-m-tx/55">نوبت‌دهی و پرداخت روی سکوی {{ $provider['platform'] }}؛ خدمت را خود سالن ارائه می‌کند.</p>
     </div>

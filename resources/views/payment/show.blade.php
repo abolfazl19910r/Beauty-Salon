@@ -225,7 +225,7 @@
                     class="w-full py-3.5 rounded-xl text-sm font-bold transition-all
                        bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] text-m-ongold
                        hover:shadow-lg hover:shadow-[#C9A24B]/30">
-                <span id="payment-button-text">پرداخت و تایید نوبت</span>
+                <span id="payment-button-text">پرداخت و تأیید نوبت</span>
             </button>
         </form>
 
@@ -359,7 +359,7 @@
                 document.getElementById('wallet_amount').value = '0';
                 document.getElementById('wallet-payment-summary').classList.add('hidden');
                 showGatewayTotal(bookingAmount);
-                document.getElementById('payment-button-text').textContent = 'پرداخت و تایید نوبت';
+                document.getElementById('payment-button-text').textContent = 'پرداخت و تأیید نوبت';
                 paymentForm.action = '{{ route("payment.process", $booking) }}';
             }
         }

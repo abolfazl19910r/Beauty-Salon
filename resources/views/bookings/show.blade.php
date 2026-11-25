@@ -43,48 +43,11 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">وضعیت:</span>
-                            @switch($booking->status)
-                                @case('pending')
-                                    <span class="px-2.5 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgba(251,191,36,0.12); color: #FBBF24;">
-                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        در انتظار تایید
-                                    </span>
-                                    @break
-                                @case('confirmed')
-                                    <span class="px-2.5 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-ok) / 0.12); color: rgb(var(--m-ok));">
-                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        تایید شده
-                                    </span>
-                                    @break
-                                @case('completed')
-                                    <span class="px-2.5 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-gold) / 0.15); color: var(--rasta-gold-light);">
-                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                        انجام شده
-                                    </span>
-                                    @break
-                                @case('cancelled')
-                                    <span class="px-2.5 py-1 rounded-full text-xs inline-flex items-center" style="background-color: rgb(var(--m-bad) / 0.12); color: rgb(var(--m-bad));">
-                                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        لغو شده
-                                    </span>
-                                    @break
-                                @default
-                                    <span class="px-2.5 py-1 rounded-full text-xs" style="background-color: rgb(var(--m-tx) / 0.08); color: var(--rasta-cream);">
-                                        {{ $booking->status }}
-                                    </span>
-                            @endswitch
+                            <x-booking-status :status="$booking->status" audience="customer" />
                         </div>
                         <div class="flex justify-between">
                             <span style="color: var(--rasta-cream); opacity: 0.6;">مدت زمان:</span>
-                            <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ $booking->durationMinutes() }} دقیقه</span>
+                            <span class="font-medium persian-number" style="color: var(--rasta-cream);">{{ fa_num($booking->durationMinutes()) }} دقیقه</span>
                         </div>
                     </div>
                 </div>
@@ -245,7 +208,7 @@
                             <a href="{{ route('payments.secure.checkout', $booking) }}"
                                class="text-xs transition-colors"
                                style="color: var(--rasta-cream); opacity: 0.55;">
-                                یا پرداخت امن با تایید دو مرحله‌ای
+                                یا پرداخت امن با تأیید دو مرحله‌ای
                             </a>
                         </div>
                     @endif

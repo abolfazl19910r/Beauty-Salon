@@ -50,6 +50,16 @@ final class Fa
      */
     public static function number(int|float|string|null $value, int $decimals = 0, bool $signed = false): string
     {
+        // متن غیرعددی (نام خدمت، «1405/09/09»، «13:00»، «120 دقیقه») را به صفر تبدیل نکن — فقط رقم‌هایش فارسی شود.
+        // باگ بسته‌ی ۰: fa_num($row['value']) در صفحه‌ی تأیید رزرو نام خدمت و کارشناس را «۰» و تاریخ را «۱٬۴۰۵» نشان می‌داد.
+        if (is_string($value)) {
+            $plain = str_replace([',', self::THOUSANDS], '', self::latin(trim($value)));
+            if (! is_numeric($plain)) {
+                return self::digits($value);
+            }
+            $value = $plain;
+        }
+
         $number = (float) ($value ?? 0);
         $formatted = number_format(abs($number), $decimals, '.', ',');
         if ($decimals > 0) {

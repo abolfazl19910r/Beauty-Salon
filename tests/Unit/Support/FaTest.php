@@ -32,6 +32,17 @@ class FaTest extends TestCase
         $this->assertSame('۱٬۲۰۰٬۰۰۰ تومان', Fa::money(1200000, unit: true));
     }
 
+    public function test_text_is_never_turned_into_a_number(): void
+    {
+        $this->assertSame('رنگ کامل مو', Fa::number('رنگ کامل مو'));
+        $this->assertSame('۱۴۰۵/۰۹/۰۹', Fa::number('1405/09/09'));
+        $this->assertSame('۱۳:۰۰', Fa::number('13:00'));
+        $this->assertSame('۱۲۰ دقیقه', Fa::number('120 دقیقه'));
+        $this->assertSame('۱٬۲۳۴', Fa::number('1,234'));
+        $this->assertSame('۱٬۲۳۴', Fa::number('۱۲۳۴'));
+        $this->assertSame('۲۰۰٬۰۰۰', Fa::number('200000.00'));
+    }
+
     public function test_signed_numbers_stay_glued_to_their_sign_in_rtl(): void
     {
         $this->assertSame("\u{2066}−۵۰٬۰۰۰\u{2069}", Fa::money(-50000));

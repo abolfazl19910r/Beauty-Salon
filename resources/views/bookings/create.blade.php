@@ -235,7 +235,7 @@
                             </svg>
                             در حال پردازش...
                         </span>
-                        <span id="submit-label">ادامه و تایید رزرو</span>
+                        <span id="submit-label">ادامه و تأیید رزرو</span>
                     </button>
                 </div>
 
@@ -295,17 +295,20 @@
 
             const jWeekdays = ['ی', 'د', 'س', 'چ', 'پ', 'ج', 'ش']; // According to JavaScript getDay() (0=Sunday)
 
+            // رقم فارسی در متن دیدنی (بسته‌ی ۴ ظاهری، آزمون ویندوز): مقدار فرم‌ها لاتین می‌ماند
+            const faDigits = v => String(v).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+
             function formatJalaliFull(isoDate) {
                 const d = new Date(isoDate + 'T00:00:00');
                 const [jy, jm, jd] = gregorianToJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
-                return jy + '/' + String(jm).padStart(2, '0') + '/' + String(jd).padStart(2, '0');
+                return faDigits(jy + '/' + String(jm).padStart(2, '0') + '/' + String(jd).padStart(2, '0'));
             }
 
             function formatJalaliDayLabel(isoDate) {
                 const d = new Date(isoDate + 'T00:00:00');
                 const [, , jd] = gregorianToJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
                 return '<span class="block text-[10px] opacity-60">' + jWeekdays[d.getDay()] + '</span>'
-                    + '<span class="block font-bold persian-number">' + jd + '</span>';
+                    + '<span class="block font-bold persian-number">' + faDigits(jd) + '</span>';
             }
 
             // ---------------------------------------------------------------
@@ -368,7 +371,7 @@
                     photoEl.hidden = true;
                 }
                 document.getElementById('summary-date').textContent = formatJalaliFull(selectedDate);
-                document.getElementById('summary-time').textContent = selectedTime;
+                document.getElementById('summary-time').textContent = faDigits(selectedTime);
                 // prepayment_amount comes from the server (ServiceController::list(), computed via
                 // WalletSetting::calculatePrepaymentAmount()) — was previously a hardcoded ۵۰٬۰۰۰
                 // placeholder here regardless of the actual service price/admin settings.
@@ -388,9 +391,9 @@
                     : 'پرداخت در سالن (بدون پیش‌پرداخت)';
 
                 if (service.duration) {
-                    document.getElementById('summary-duration').textContent = service.duration + ' دقیقه';
+                    document.getElementById('summary-duration').textContent = faDigits(service.duration) + ' دقیقه';
                     showEl('summary-duration-row');
-                    document.getElementById('summary-end-time').textContent = calculateEndTime(selectedTime, service.duration);
+                    document.getElementById('summary-end-time').textContent = faDigits(calculateEndTime(selectedTime, service.duration));
                     showEl('summary-end-row');
                 } else {
                     hideEl('summary-duration-row');
@@ -584,7 +587,7 @@
 
                 const service = currentServiceObj();
                 document.getElementById('duration-label').textContent = service && service.duration
-                    ? `(هر نوبت ${service.duration} دقیقه)` : '';
+                    ? `(هر نوبت ${faDigits(service.duration)} دقیقه)` : '';
 
                 if (!slots.length) {
                     document.getElementById('slots-empty-message').textContent = emptyMessage;
@@ -598,9 +601,9 @@
                     btn.type = 'button';
                     btn.className = 'slot-btn p-3 rounded-xl text-center text-sm';
 
-                    let inner = `<div class="font-bold">${time}</div>`;
+                    let inner = `<div class="font-bold">${faDigits(time)}</div>`;
                     if (service && service.duration) {
-                        inner += `<div class="text-xs mt-0.5 opacity-70">تا ${calculateEndTime(time, service.duration)}</div>`;
+                        inner += `<div class="text-xs mt-0.5 opacity-70">تا ${faDigits(calculateEndTime(time, service.duration))}</div>`;
                     }
                     btn.innerHTML = inner;
 

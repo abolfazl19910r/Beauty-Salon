@@ -99,6 +99,10 @@ class BookingControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertViewHas('booking');
+        // برچسب وضعیت یکسان با فهرست، مدت با رقم فارسی (آزمون ویندوز بسته‌ی ۴)
+        $response->assertSee(\App\Support\Bookings\BookingLabels::status('confirmed', 'customer'));
+        $response->assertSee(fa_num($booking->durationMinutes()).' دقیقه');
+        $response->assertDontSee('تایید');
     }
 
     public function test_show_redirects_to_payment_for_an_unpaid_pending_payment_booking(): void

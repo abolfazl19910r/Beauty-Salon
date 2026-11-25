@@ -73,6 +73,9 @@ class BookingReservationControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertViewHas('prepaymentAmount');
+        // باگ fa_num روی متن (بسته‌ی ۰، رفع در آزمون ویندوز بسته‌ی ۴): نام خدمت و کارشناس نباید «۰» شوند
+        $response->assertSee($this->service->name)->assertSee($this->specialist->name)
+            ->assertSee(\App\Support\Fa::digits(verta($this->bookingTime)->format('Y/m/d')));
         $this->assertSame([
             'service_id' => (string) $this->service->id,
             'specialist_id' => (string) $this->specialist->id,

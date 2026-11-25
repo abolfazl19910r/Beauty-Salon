@@ -14,7 +14,7 @@
 
             <h1 class="text-2xl font-bold mb-4" style="color: var(--rasta-gold-light);">پرداخت با موفقیت انجام شد</h1>
             <p class="mb-2" style="color: var(--rasta-cream); opacity: 0.85;">رزرو شما با موفقیت ثبت شد.</p>
-            <p class="mb-6" style="color: var(--rasta-cream); opacity: 0.6;">پیامک تاییدیه برای شما ارسال خواهد شد.</p>
+            <p class="mb-6" style="color: var(--rasta-cream); opacity: 0.6;">پیامک تأییدیه برای شما ارسال خواهد شد.</p>
 
             {{-- ⭐ Fix (test-writing session 9): $booking can legitimately be null here
                  (BookingController::success() falls back to session('booking_id')/?id=,
