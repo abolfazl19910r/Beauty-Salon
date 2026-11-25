@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title') | پنل کارشناسان</title>
+    <title>@yield('title') | پنل کارشناس</title>
 
     @include('partials.favicons')
 
@@ -64,6 +64,12 @@
         .spec-top--bento a{border-radius:999px;background:rgb(var(--m-tx) / .05)}
         .spec-top--bento a[aria-current=page]{background:rgb(var(--m-gold) / .14);color:rgb(var(--m-gold))}
         html[data-layout=aram] .spec-main-inner{max-width:960px;margin:0 auto}
+        /* بسته‌ی ۳ ظاهری: منوی کناری پنل کارشناس */
+        .spec-side__link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;color:var(--specialist-text);text-decoration:none;transition:background-color .15s}
+        .spec-side__link:hover{background:rgb(var(--m-tx) / .05)}
+        .spec-side__link.is-active{background:rgb(var(--m-gold) / .1);font-weight:700;box-shadow:inset -3px 0 0 rgb(var(--m-gold))}
+        .spec-side__link--quiet{font-size:13.5px;color:var(--specialist-text-dim);padding:8px 12px}
+        .spec-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;padding:0 7px;border-radius:999px;font-size:12px;font-weight:700;line-height:20px;background:rgb(var(--m-gold) / .18);color:rgb(var(--m-gold2))}
     </style>
     @stack('styles')
     @include('partials.ui-handlers')
@@ -74,66 +80,51 @@
 
     @php
         /*
-         * ⭐ بسته‌ی «و»: پنل متخصص هم قالب سایت سالن را می‌گیرد. فهرست منو یک‌جا (همین آرایه) و دو شکل نمایش:
-         * منوی کناری (طلایی ماهرو، ویترین) یا نوار بالایی (مجله: زبانه‌ی زیرخط‌دار، آرام: کلید قرصی، بنتو: کاشی). روی موبایل همیشه کشو + نوار پایین.
+         * ⭐ بسته‌ی «و»: پنل کارشناس هم قالب سایت سالن را می‌گیرد: منوی کناری (طلایی ماهرو، ویترین) یا نوار بالایی
+         * (مجله: زبانه‌ی زیرخط‌دار، آرام: کلید قرصی، بنتو: کاشی). روی موبایل همیشه کشو + منوی پایین.
+         * بسته‌ی ۳ ظاهری (۲۰۲۶-۱۱-۲۵): فهرست منو فقط از App\Support\Specialist\SpecialistMenu (با نشان شمار «نوبت‌ها»).
          */
         $__specLayout = app(\App\Support\Themes\CurrentAppearance::class)->get()->layout;
         $__specTop = in_array($__specLayout, ['majalle', 'aram', 'bento'], true);
-        $__specNav = [
-            ['specialist.my-dashboard', 'specialist.my-dashboard', 'داشبورد', 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'],
-            ['specialist.profile.show', 'specialist.profile*', 'پروفایل', 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
-            ['specialist.bookings.index', 'specialist.bookings*', 'نوبت‌ها', 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
-            ['specialist.reviews.index', 'specialist.reviews*', 'نظرات و ارزیابی‌ها', 'M11.48 3.5a.56.56 0 011.04 0l2.13 5.11a.56.56 0 00.47.35l5.52.44c.5.04.7.66.32.99l-4.2 3.6a.56.56 0 00-.18.56l1.28 5.38a.56.56 0 01-.84.61l-4.72-2.88a.56.56 0 00-.59 0l-4.72 2.88a.56.56 0 01-.84-.61l1.28-5.38a.56.56 0 00-.18-.56l-4.2-3.6a.56.56 0 01.32-.99l5.52-.44a.56.56 0 00.47-.35z'],
-            ['specialist.wallet.index', 'specialist.wallet*', 'کیف پول', 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
-            ['specialist.schedule', 'specialist.schedule*', 'ساعات کاری هفتگی', 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
-            ['specialist.leaves.index', 'specialist.leaves*', 'مرخصی‌ها', 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
-            ['specialist.reports.index', 'specialist.reports*', 'گزارش', 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
-            ['specialist.qr', 'specialist.qr*', 'QR من', 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h3v3'],
-        ];
+        $__specSalon = app(\App\Support\CurrentSalon::class)->get();
+        $__specialist = $__specSalon ? auth()->user()?->specialist : null;
+        $__specNav = \App\Support\Specialist\SpecialistMenu::items($__specialist);
     @endphp
-    <aside id="sidebar" data-nav-scroll class="w-64 min-h-screen overflow-y-auto hidden {{ $__specTop ? '' : 'md:block' }} transition-all duration-300 z-30 border-l" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);">
-        <div class="p-5 border-b flex items-center justify-between" style="border-color: var(--specialist-border);">
-            <a href="{{ route('home') }}" class="flex items-center gap-2">
-                {{-- ⭐ لوگوی سالن متخصص (۲۰۲۶-۰۹-۲۴)، وگرنه آیکون پیش‌فرض. --}}
+    <aside id="sidebar" data-nav-scroll class="spec-side w-64 min-h-screen overflow-y-auto hidden {{ $__specTop ? '' : 'md:block' }} transition-all duration-300 z-30 border-l" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);">
+        <div class="px-4 pt-5 pb-4 border-b" style="border-color: var(--specialist-border);">
+            <a href="{{ route('specialist.my-dashboard') }}" class="flex items-center gap-2.5">
+                {{-- ⭐ لوگوی سالن کارشناس (۲۰۲۶-۰۹-۲۴)، وگرنه آیکون پیش‌فرض. --}}
                 <x-brand-emblem class="w-9 h-9 rounded" pad="3px" />
-                <span class="text-lg font-bold font-serif-fa" style="color: var(--specialist-plum-light);">پنل کارشناس</span>
+                <span class="flex flex-col min-w-0">
+                    <b class="text-[15px] text-[var(--specialist-text)]">پنل کارشناس</b>
+                    @if ($__specSalon)
+                        <span class="text-xs truncate text-[var(--specialist-text-dim)]" data-spec-salon>{{ $__specSalon->name }}</span>
+                    @endif
+                </span>
             </a>
         </div>
 
-        <nav class="mt-6 px-3 space-y-2">
-            @foreach ($__specNav as [$__route, $__pattern, $__label, $__icon])
-                <a href="{{ route($__route) }}"
-                   class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs($__pattern) ? 'sidebar-active' : 'text-[var(--specialist-text-dim)] hover:bg-m-tx/5 hover:text-[var(--specialist-plum-light)]' }}">
-                    <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $__icon }}" />
+        <nav class="mt-3 px-3 space-y-0.5" aria-label="منوی پنل کارشناس" data-spec-nav>
+            @foreach ($__specNav as $__item)
+                <a href="{{ $__item['url'] }}" data-spec-nav-item="{{ $__item['key'] }}" @if ($__item['active']) aria-current="page" @endif
+                   class="spec-side__link {{ $__item['active'] ? 'is-active' : '' }}">
+                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $__item['icon'] }}" />
                     </svg>
-                    {{ $__label }}
+                    <span class="flex-1">{{ $__item['label'] }}</span>
+                    @if ($__item['badge'] > 0)
+                        <span class="spec-badge" data-spec-badge aria-label="{{ fa_num($__item['badge']) }} نوبت منتظر تأیید">{{ fa_num($__item['badge']) }}</span>
+                    @endif
                 </a>
             @endforeach
 
-            <div class="border-t my-4 pt-4" style="border-color: var(--specialist-border);">
-                {{-- ⭐ رزرو برای خودِ متخصص (۲۰۲۶-۱۰-۲۲) — همان رزرو سایت سالن؛ منوی سایت برای متخصص «پنل کاری» دارد تا برگردد --}}
-                <a href="{{ route('bookings.create') }}" data-book-for-myself class="flex items-center px-4 py-3 text-sm font-medium text-[var(--specialist-inactive)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] rounded-lg transition-colors">
-                    <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    رزرو نوبت برای خودم
-                </a>
-                <a href="{{ route('home') }}" class="flex items-center px-4 py-3 text-sm font-medium text-[var(--specialist-inactive)] hover:bg-m-tx/5 hover:text-[var(--specialist-text)] rounded-lg transition-colors">
-                    <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    بازگشت به سایت
-                </a>
-
+            <div class="border-t mt-3 pt-3 space-y-0.5" style="border-color: var(--specialist-border);">
+                {{-- ⭐ رزرو برای خودِ کارشناس (۲۰۲۶-۱۰-۲۲) — همان رزرو سایت سالن؛ منوی سایت برای کارشناس «پنل کاری» دارد تا برگردد --}}
+                <a href="{{ route('bookings.create') }}" data-book-for-myself class="spec-side__link spec-side__link--quiet">رزرو نوبت برای خودم</a>
+                <a href="{{ route('home') }}" class="spec-side__link spec-side__link--quiet">صفحه‌ی سالن</a>
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
-                    <button type="submit" class="w-full flex items-center px-4 py-3 text-sm font-medium text-m-bad hover:bg-m-bad/10 rounded-lg transition-colors">
-                        <svg class="w-5 h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        خروج
-                    </button>
+                    <button type="submit" class="spec-side__link spec-side__link--quiet w-full text-m-bad">خروج</button>
                 </form>
             </div>
         </nav>
@@ -259,11 +250,11 @@
         @if ($__specTop)
             {{-- بسته‌ی «و»: منوی بالایی پنل متخصص در چیدمان‌های مجله/آرام/بنتو (روی موبایل همان کشو و نوار پایین) --}}
             <nav class="spec-top spec-top--{{ $__specLayout }} hidden md:flex" aria-label="منوی پنل کارشناس">
-                @foreach ($__specNav as [$__route, $__pattern, $__label])
-                    <a href="{{ route($__route) }}" @if (request()->routeIs($__pattern)) aria-current="page" @endif>{{ $__label }}</a>
+                @foreach ($__specNav as $__item)
+                    <a href="{{ $__item['url'] }}" @if ($__item['active']) aria-current="page" @endif>{{ $__item['label'] }}@if ($__item['badge'] > 0) <span class="spec-badge" data-spec-badge>{{ fa_num($__item['badge']) }}</span>@endif</a>
                 @endforeach
                 <a href="{{ route('bookings.create') }}" class="spec-top__site" data-book-for-myself>رزرو برای خودم</a>
-                <a href="{{ route('home') }}" class="spec-top__site">بازگشت به سایت</a>
+                <a href="{{ route('home') }}">صفحه‌ی سالن</a>
             </nav>
         @endif
         @include('partials.platform-announcements', ['panel' => 'specialists'])
@@ -305,39 +296,28 @@
             <div class="spec-main-inner">
             @yield('content')
             </div>
+            {{-- بسته‌ی ۳ ظاهری: پانویس داخل ناحیه‌ی اسکرول تا در لپ‌تاپ ۱۳۶۶×۷۶۸ همیشه جا نگیرد --}}
+            <footer class="hidden md:block mt-8 pt-4 border-t text-center text-sm" style="border-color: var(--specialist-border); color: var(--specialist-text-dim);" data-spec-footer>
+                © {{ fa_jdate(now(), 'Y') }} ماهرو، پنل کارشناس.
+            </footer>
         </main>
 
-        <footer class="hidden md:block border-t p-4 text-center text-sm" style="background-color: var(--specialist-surface); border-color: var(--specialist-border); color: var(--specialist-text-dim);">
-            © {{ fa_jdate(now(), 'Y') }} پنل کارشناسان سالن زیبایی.
-        </footer>
     </div>
 </div>
 
-<nav class="md:hidden fixed bottom-0 inset-x-0 z-40 border-t grid grid-cols-4" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);">
-    <a href="{{ route('specialist.my-dashboard') }}" class="flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium {{ request()->routeIs('specialist.my-dashboard') ? 'text-[var(--specialist-plum-light)]' : 'text-[var(--specialist-inactive)]' }}">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7m-9-2v10m4-10v10m6-8v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8" />
-        </svg>
-        خانه
-    </a>
-    <a href="{{ route('specialist.bookings.index') }}" class="flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium {{ request()->routeIs('specialist.bookings*') ? 'text-[var(--specialist-plum-light)]' : 'text-[var(--specialist-inactive)]' }}">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        تقویم
-    </a>
-    <a href="{{ route('specialist.reports.index') }}" class="flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium {{ request()->routeIs('specialist.reports*') ? 'text-[var(--specialist-plum-light)]' : 'text-[var(--specialist-inactive)]' }}">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-        آمار
-    </a>
-    <a href="{{ route('specialist.profile.show') }}" class="flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium {{ request()->routeIs('specialist.profile*') ? 'text-[var(--specialist-plum-light)]' : 'text-[var(--specialist-inactive)]' }}">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-        پروفایل
-    </a>
+<nav class="md:hidden fixed bottom-0 inset-x-0 z-40 border-t grid grid-cols-4" style="background-color: var(--specialist-surface); border-color: var(--specialist-border);" aria-label="منوی پایین" data-spec-bottom>
+    @foreach (\App\Support\Specialist\SpecialistMenu::bottom($__specNav) as $__item)
+        <a href="{{ $__item['url'] }}" @if ($__item['active']) aria-current="page" @endif
+           class="relative flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium {{ $__item['active'] ? 'text-[var(--specialist-plum-light)] font-bold' : 'text-[var(--specialist-text-dim)]' }}">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $__item['icon'] }}" />
+            </svg>
+            {{ $__item['short'] }}
+            @if ($__item['badge'] > 0)
+                <span class="spec-badge absolute" style="top:2px; right:calc(50% - 30px); min-width:18px; line-height:18px; padding:0 5px; font-size:11px;" data-spec-badge>{{ fa_num($__item['badge']) }}</span>
+            @endif
+        </a>
+    @endforeach
 </nav>
 
 <script @nonce>
