@@ -25,7 +25,7 @@
     @stack('styles')
     @include('partials.ui-handlers')
 </head>
-<body class="font-vazir min-h-screen flex flex-col" dir="rtl">
+<body class="font-vazir min-h-screen flex flex-col {{ auth()->check() && \App\Support\Customer\CustomerMenu::isCustomer(auth()->user()) ? 'pb-20 md:pb-0' : '' }}" dir="rtl">
 @if (! empty($salonUnverifiedPreview))
     {{-- بسته‌ی مجوز 5د: کادر سالنِ هنوز تأییدنشده پیش‌نمایش می‌بیند --}}
     <div class="bg-m-warn/20 border-b border-m-warn/40 text-center text-sm py-2 px-4" data-unverified-preview role="status">
@@ -37,6 +37,12 @@
 {{-- =========================================================
      (Sticky Glass Navbar)
 ========================================================= --}}
+@php
+    // بسته‌ی ۴ ظاهری: منوی حساب مشتری از App\Support\Customer\CustomerMenu (یک منبع برای منوی حساب، تب‌ها و منوی پایین موبایل)
+    $__isCustomer = auth()->check() && \App\Support\Customer\CustomerMenu::isCustomer(auth()->user());
+    $__accountTabs = $__isCustomer ? \App\Support\Customer\CustomerMenu::tabs(auth()->user()) : [];
+    $__showAccountTabs = $__isCustomer && \App\Support\Customer\CustomerMenu::isAccountPage();
+@endphp
 <header id="main-navbar" class="fixed top-0 inset-x-0 z-50">
     <nav class="container mx-auto px-4 h-20 flex items-center justify-between">
         <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0">
@@ -76,7 +82,6 @@
                 </div>
             @endif
             <a href="{{ route('specialists.search') }}" class="nav-link">کارشناسان</a>
-            <a href="{{ route('blog.index') }}" class="nav-link">وبلاگ</a>
             {{-- دوره‌های درمانی (بسته‌ی ب): فقط با امکان پلن سالن --}}
             @php
                 $__navSalon = app(\App\Support\CurrentSalon::class)->get();
@@ -86,78 +91,37 @@
             @if ($__coursesOn)
                 <a href="{{ route('courses.index') }}" class="nav-link">دوره‌ها</a>
             @endif
-            {{-- بسته‌ی «و»: چیدمان‌های رزرومحور (ویترین، بنتو) دکمه‌ی رزرو را همیشه در هدر دارند --}}
-            @if (in_array(app(\App\Support\Themes\CurrentAppearance::class)->get()->layout, ['vitrin', 'bento'], true))
-                <a href="{{ route('bookings.create') }}" class="btn-gold rounded-full px-5 py-2 text-sm font-semibold" data-header-book>رزرو نوبت</a>
-            @endif
-
+            <a href="{{ route('blog.index') }}" class="nav-link">وبلاگ</a>
+            {{-- بسته‌ی ۴ ظاهری (۲۰۲۶-۱۱-۲۵): ردیف اول = منو + منوی حساب + یک دکمه‌ی طلایی «رزرو نوبت» (همیشه، نه فقط چیدمان‌های رزرومحور) --}}
             @auth
-                @if(auth()->user()->isSpecialistAccount())
-                    <a href="{{ route('specialist.profile.show') }}" class="nav-link flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        پروفایل من
-                    </a>
-                    <a href="{{ route('specialist.my-dashboard') }}" class="nav-link flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z" />
-                        </svg>
-                        پنل کاری
-                    </a>
-                @else
-                    <a href="{{ route('loyalty.index') }}" class="nav-link flex items-center gap-1 relative">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        امتیازات من
-                        @php
-                            try {
-                                // Performance fix: Previously, this SUM would hit the database directly on every single page that
-                                // the user viewed (according to Telescope, it was even
-                                // repeated in /services and /bookings/create).
-                                // Since loyalty points don't change instantaneously, they are cached for 5 minutes.
-                                // Whenever the user's points change (redeemReward, add points
-                                // new turn, etc.) Cache::forget("user:{id}:loyalty_points")
-                                // must be called to ensure that the cache is not invalidated.
-                                $userPoints = \Illuminate\Support\Facades\Cache::remember(
-                                    'user:' . auth()->id() . ':loyalty_points',
-                                    now()->addMinutes(5),
-                                    fn () => app(\App\Repositories\Contracts\LoyaltyPointRepositoryInterface::class)->sumForUser(auth()->id())
-                                );
-                            } catch (\Exception $e) {
-                                $userPoints = 0;
-                            }
-                        @endphp
-                        @if($userPoints > 0)
-                            <span class="absolute -top-2 -left-3 bg-m-gold text-m-ongold text-[10px] px-1.5 py-0.5 rounded-full persian-number min-w-[20px] text-center font-bold">
-                                {{ fa_num($userPoints) }}
-                            </span>
+                <details class="relative" data-account-menu>
+                    <summary class="nav-link inline-flex items-center gap-1 cursor-pointer list-none" aria-haspopup="menu">
+                        <span class="max-w-[9rem] truncate">{{ auth()->user()->name ?: 'حساب من' }}</span>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </summary>
+                    <div class="absolute top-full left-0 mt-3 w-56 rounded-2xl border border-m-gold/20 bg-m-card shadow-2xl p-2 flex flex-col text-sm" role="menu">
+                        @if ($__isCustomer)
+                            @foreach ($__accountTabs as $__tab)
+                                <a href="{{ $__tab['url'] }}" role="menuitem" class="flex items-center justify-between rounded-xl px-3 py-2 hover:bg-m-gold/10 {{ $__tab['active'] ? 'text-m-gold2 font-bold' : 'text-m-tx/85' }}">
+                                    {{ $__tab['label'] }}
+                                    @if ($__tab['badge'] > 0)<span class="text-xs text-m-tx/55">{{ fa_num($__tab['badge']) }} پیش رو</span>@endif
+                                </a>
+                            @endforeach
+                        @elseif (auth()->user()->isSpecialistAccount())
+                            <a href="{{ route('specialist.my-dashboard') }}" role="menuitem" class="rounded-xl px-3 py-2 hover:bg-m-gold/10 text-m-tx/85">پنل کاری</a>
+                            <a href="{{ route('specialist.profile.show') }}" role="menuitem" class="rounded-xl px-3 py-2 hover:bg-m-gold/10 text-m-tx/85">پروفایل من</a>
                         @endif
-                    </a>
-                    <a href="{{ route('wallet.index') }}" class="nav-link flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
-                        کیف پول
-                    </a>
-                    <a href="{{ route('bookings.index') }}" class="nav-link">نوبت‌های من</a>
-                    @if ($__coursesOn || $__hasCourses)
-                        <a href="{{ route('my-courses.index') }}" class="nav-link">دوره‌های من</a>
-                    @endif
-                    <a href="{{ route('profile.show') }}" class="nav-link">پروفایل</a>
-                @endif
-
-                <form action="{{ route('logout') }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="nav-link">خروج</button>
-                </form>
+                        <form action="{{ route('logout') }}" method="POST" class="border-t border-m-gold/15 mt-1 pt-1">
+                            @csrf
+                            <button type="submit" role="menuitem" class="w-full text-right rounded-xl px-3 py-2 hover:bg-m-bad/10 text-m-bad">خروج</button>
+                        </form>
+                    </div>
+                </details>
             @else
                 <a href="{{ route('salon.login') }}" class="nav-link">ورود</a>
-                <a href="{{ route('salon.register') }}" class="btn-gold rounded-full px-5 py-2 text-sm font-semibold">
-                    ثبت نام
-                </a>
+                <a href="{{ route('salon.register') }}" class="nav-link">ثبت نام</a>
             @endauth
+            <a href="{{ route('bookings.create') }}" class="btn-gold rounded-full px-5 py-2 text-sm font-semibold" data-header-book>رزرو نوبت</a>
         </div>
 
         <div class="flex md:hidden items-center gap-2">
@@ -189,27 +153,18 @@
                 </details>
             @endif
             <a href="{{ route('specialists.search') }}" class="block py-2 nav-link">کارشناسان</a>
-            <a href="{{ route('blog.index') }}" class="block py-2 nav-link">وبلاگ</a>
             @if ($__coursesOn)
                 <a href="{{ route('courses.index') }}" class="block py-2 nav-link">دوره‌ها</a>
             @endif
+            <a href="{{ route('blog.index') }}" class="block py-2 nav-link">وبلاگ</a>
             @auth
-                @if(auth()->user()->isSpecialistAccount())
+                @if ($__isCustomer)
+                    @foreach ($__accountTabs as $__tab)
+                        <a href="{{ $__tab['url'] }}" class="block py-2 nav-link {{ $__tab['active'] ? 'text-m-gold2 font-bold' : '' }}">{{ $__tab['label'] }}</a>
+                    @endforeach
+                @elseif (auth()->user()->isSpecialistAccount())
                     <a href="{{ route('specialist.profile.show') }}" class="block py-2 nav-link">پروفایل من</a>
                     <a href="{{ route('specialist.my-dashboard') }}" class="block py-2 nav-link">پنل کاری</a>
-                @else
-                    <a href="{{ route('loyalty.index') }}" class="block py-2 nav-link flex items-center">
-                        امتیازات من
-                        @if(isset($userPoints) && $userPoints > 0)
-                            <span class="mr-2 text-m-gold2 text-sm persian-number">({{ fa_num($userPoints) }})</span>
-                        @endif
-                    </a>
-                    <a href="{{ route('wallet.index') }}" class="block py-2 nav-link">کیف پول</a>
-                    <a href="{{ route('bookings.index') }}" class="block py-2 nav-link">نوبت‌های من</a>
-                    @if ($__coursesOn || $__hasCourses)
-                        <a href="{{ route('my-courses.index') }}" class="block py-2 nav-link">دوره‌های من</a>
-                    @endif
-                    <a href="{{ route('profile.show') }}" class="block py-2 nav-link">پروفایل</a>
                 @endif
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
@@ -221,10 +176,24 @@
             @endauth
         </div>
     </div>
+    @if ($__showAccountTabs)
+        {{-- بسته‌ی ۴ ظاهری: ردیف دوم = تب‌های حساب، فقط در صفحه‌های حساب و فقط دسکتاپ (موبایل منوی پایین دارد) --}}
+        <nav class="hidden md:block border-t border-m-gold/10 bg-m-bg/90" aria-label="حساب من" data-account-tabs>
+            <div class="container mx-auto px-4 flex gap-1 overflow-x-auto">
+                @foreach ($__accountTabs as $__tab)
+                    <a href="{{ $__tab['url'] }}" data-account-tab="{{ $__tab['key'] }}" @if ($__tab['active']) aria-current="page" @endif
+                       class="shrink-0 inline-flex items-center gap-1.5 px-3 py-3 text-sm border-b-2 {{ $__tab['active'] ? 'border-m-gold text-m-tx font-bold' : 'border-transparent text-m-tx/70 hover:text-m-tx' }}">
+                        {{ $__tab['label'] }}
+                        @if ($__tab['badge'] > 0)<span class="text-[11px] font-bold rounded-full px-1.5 bg-m-gold/15 text-m-gold2" data-account-badge>{{ fa_num($__tab['badge']) }}</span>@endif
+                    </a>
+                @endforeach
+            </div>
+        </nav>
+    @endif
 </header>
 
 
-<div id="announcement-banner-mount" class="container mx-auto px-4 pt-24 space-y-3" dir="rtl"
+<div id="announcement-banner-mount" class="container mx-auto px-4 {{ $__showAccountTabs ? 'pt-24 md:pt-36' : 'pt-24' }} space-y-3" dir="rtl"
      data-announcements-url="{{ route('announcements.active') }}"></div>
 
 @include('partials.booking-paused-banner', ['panel' => 'site'])
@@ -371,6 +340,30 @@
 {{-- =========================================================
      National footer
 ========================================================= --}}
+@if ($__isCustomer)
+    {{-- بسته‌ی ۴ ظاهری: منوی پایین ثابت موبایل «خانه / نوبت‌ها / [+ رزرو] / کیف پول / پروفایل» در همه‌ی صفحه‌ها برای مشتری واردشده --}}
+    <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-m-gold/15 bg-m-bg2/95 backdrop-blur grid grid-cols-5" aria-label="منوی پایین" data-customer-bottom>
+        @foreach (\App\Support\Customer\CustomerMenu::bottom($__accountTabs) as $__item)
+            @if ($__item['key'] === 'book')
+                <a href="{{ $__item['url'] }}" class="flex flex-col items-center justify-center gap-0.5 py-1.5 text-[11px] font-bold text-m-gold2" @if ($__item['active']) aria-current="page" @endif>
+                    <span class="w-11 h-11 -mt-5 rounded-full btn-gold flex items-center justify-center shadow-lg" aria-hidden="true">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path stroke-linecap="round" d="{{ $__item['icon'] }}" /></svg>
+                    </span>
+                    {{ $__item['label'] }}
+                </a>
+            @else
+                <a href="{{ $__item['url'] }}" @if ($__item['active']) aria-current="page" @endif
+                   class="relative flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] {{ $__item['active'] ? 'text-m-gold2 font-bold' : 'text-m-tx/70' }}">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $__item['icon'] }}" /></svg>
+                    {{ $__item['label'] }}
+                    @if ($__item['badge'] > 0)
+                        <span class="absolute text-[10px] font-bold rounded-full px-1.5 bg-m-gold text-m-ongold" style="top:4px; right:calc(50% - 24px);" data-account-badge>{{ fa_num($__item['badge']) }}</span>
+                    @endif
+                </a>
+            @endif
+        @endforeach
+    </nav>
+@endif
 <footer class="bg-m-bg2 border-t border-m-gold/10 mt-auto">
     <div class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -464,6 +457,13 @@
     });
 
     // منوی دسته‌بندی خدمات هدر (بسته‌ی «ح»، ۱۱): کلیک یا نگه داشتن نشانگر؛ کلیک بیرون و Esc می‌بندد
+    (function () {
+        // بسته‌ی ۴ ظاهری: منوی حساب سربرگ (<details>) با کلیک بیرون و Escape بسته می‌شود
+        var menu = document.querySelector('[data-account-menu]');
+        if (!menu) return;
+        document.addEventListener('click', function (e) { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary').focus(); } });
+    })();
     (function () {
         var box = document.querySelector('[data-nav-categories]');
         if (!box) return;
