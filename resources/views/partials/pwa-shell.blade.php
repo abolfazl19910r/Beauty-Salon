@@ -35,9 +35,12 @@
         if (!bg || bg === 'transparent' || /rgba\(0, 0, 0, 0\)/.test(bg)) bg = getComputedStyle(d).backgroundColor;
         if (bg && bg !== 'transparent' && !/rgba\(0, 0, 0, 0\)/.test(bg)) meta.setAttribute('content', bg);
     }
+    // زمینه با transition عوض می‌شود: رنگ وسط انتقال خوانده نشود (آزمون Chrome ویندوز ۵ج) — پایان transition و یک بار دیرتر هم
+    function syncSoon() { syncThemeColor(); setTimeout(syncThemeColor, 450); }
     document.addEventListener('DOMContentLoaded', function () {
         syncThemeColor();
-        if (window.MutationObserver) new MutationObserver(syncThemeColor).observe(d, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+        document.body.addEventListener('transitionend', function (e) { if (e.target === document.body) syncThemeColor(); });
+        if (window.MutationObserver) new MutationObserver(syncSoon).observe(d, { attributes: true, attributeFilter: ['data-theme', 'class'] });
     });
 
     // «برگشت» سربرگ در حالت نصب‌شده (آیفون دکمه‌ی برگشت مرورگر ندارد): صفحه‌ی قبلی همین سایت، وگرنه خانه
