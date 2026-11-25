@@ -36,6 +36,25 @@ class UserWalletControllerTest extends TestCase
         $response->assertViewHas('currentMonthRefunds', '20000.00');
     }
 
+    public function test_this_month_is_the_jalali_month_and_amounts_keep_their_sign(): void
+    {
+        // بسته‌ی ۴ ظاهری: ۴ آذر ۱۴۰۵؛ پرداخت ۲۹ آبان (همان نوامبر میلادی) دیگر «پرداختی آذر» نیست
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-25 14:00:00'));
+        $user = User::factory()->create();
+        $wallet = $user->getOrCreateWallet();
+        UserWalletTransaction::factory()->create(['wallet_id' => $wallet->id, 'type' => 'payment', 'amount' => -30000, 'created_at' => '2026-11-23 10:00:00']);
+        UserWalletTransaction::factory()->create(['wallet_id' => $wallet->id, 'type' => 'payment', 'amount' => -70000, 'created_at' => '2026-11-20 10:00:00']);
+        UserWalletTransaction::factory()->create(['wallet_id' => $wallet->id, 'type' => 'refund', 'amount' => 20000, 'created_at' => '2026-11-24 10:00:00']);
+
+        $response = $this->actingAs($user)->get(route('wallet.index'))->assertOk();
+        $this->assertEquals(-30000, $response->viewData('currentMonthSpent'));
+        $this->assertEquals(20000, $response->viewData('currentMonthRefunds'));
+        $response->assertSee('پرداختی آذر')->assertSee('بازگشت وجه آذر')->assertDontSee('اطلاعات کیف پول')
+            ->assertSee("\u{2066}+۲۰٬۰۰۰\u{2069}", false)
+            ->assertSee("\u{2066}−۳۰٬۰۰۰\u{2069}", false)
+            ->assertDontSee('20,000-')->assertDontSee('۳۰٬۰۰۰-');
+    }
+
     public function test_transactions_filters_by_type(): void
     {
         $user = User::factory()->create();

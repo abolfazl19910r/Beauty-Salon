@@ -46,7 +46,7 @@
 
             <div class="rounded-xl p-6" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.25);">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold" style="color: var(--rasta-cream); opacity: 0.85;">بازگشت وجه این ماه</h3>
+                    <h3 class="text-lg font-semibold" style="color: var(--rasta-cream); opacity: 0.85;">بازگشت وجه {{ $monthLabel }}</h3>
                     <svg class="w-8 h-8" style="color: var(--rasta-gold-light);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                     </svg>
@@ -57,7 +57,7 @@
 
             <div class="rounded-xl p-6" style="background-color: var(--rasta-brown); border: 1px solid rgb(var(--m-gold) / 0.25);">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold" style="color: var(--rasta-cream); opacity: 0.85;">پرداختی این ماه</h3>
+                    <h3 class="text-lg font-semibold" style="color: var(--rasta-cream); opacity: 0.85;">پرداختی {{ $monthLabel }}</h3>
                     <svg class="w-8 h-8" style="color: var(--rasta-gold);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
@@ -138,7 +138,7 @@
 
                                 <div class="text-left mr-4">
                                     <p class="text-lg font-bold persian-number" style="color: {{ $transaction->amount >= 0 ? 'var(--rasta-gold-light)' : 'rgb(var(--m-bad))' }};">
-                                        {{ $transaction->amount >= 0 ? '+' : '' }}{{ fa_num($transaction->amount) }}
+                                        <span data-tx-amount>{{ fa_money($transaction->amount, signed: true) }}</span>
                                     </p>
                                     <p class="text-xs" style="color: var(--rasta-cream); opacity: 0.5;">تومان</p>
                                 </div>
@@ -162,15 +162,10 @@
                         <svg class="w-5 h-5 ml-2" style="color: var(--rasta-gold);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        اطلاعات کیف پول
+                        خلاصه‌ی کیف پول
                     </h3>
 
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
-                            <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.7;">موجودی کل</span>
-                            <span class="text-lg font-bold persian-number" style="color: var(--rasta-cream);">{{ fa_num($wallet->balance) }} تومان</span>
-                        </div>
-
                         <div class="flex justify-between items-center pb-3 border-b" style="border-color: rgb(var(--m-gold) / 0.15);">
                             <span class="text-sm" style="color: var(--rasta-cream); opacity: 0.7;">کل واریزی‌ها</span>
                             <span class="text-sm font-semibold persian-number" style="color: var(--rasta-gold-light);">{{ fa_num($wallet->total_deposited) }} تومان</span>

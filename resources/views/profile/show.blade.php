@@ -3,14 +3,6 @@
 @section('title', 'پروفایل کاربری')
 
 @section('content')
-    <style>
-        .status-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:600; }
-        .badge-pending    { background:rgba(251,191,36,0.15); color:#FCD34D; }
-        .badge-confirmed  { background:rgba(52,211,153,0.15); color:#6EE7B7; }
-        .badge-cancelled  { background:rgba(248,113,113,0.15); color:#FCA5A5; }
-        .badge-pending_payment { background:rgba(96,165,250,0.15); color:#93C5FD; }
-    </style>
-
     <div class="max-w-6xl mx-auto fade-in">
 
         {{-- Header --}}
@@ -57,7 +49,7 @@
                     <div class="divide-y divide-m-gold/8">
                         <div class="px-5 py-3.5">
                             <p class="text-xs text-m-tx/50 mb-1">شماره موبایل</p>
-                            <p class="font-medium text-m-tx persian-number text-sm" dir="ltr">{{ auth()->user()->phone }}</p>
+                            <p class="font-medium text-m-tx persian-number text-sm" dir="ltr">{{ \App\Support\Fa::digits(auth()->user()->phone) }}</p>
                         </div>
                         <div class="px-5 py-3.5">
                             <p class="text-xs text-m-tx/50 mb-1">ایمیل</p>

@@ -27,7 +27,7 @@
             <div class="p-6 border-b text-center" style="border-color: rgb(var(--m-gold) / 0.15); background-color: rgb(var(--m-gold) / 0.05);">
                 <span class="px-3 py-1 rounded-full text-xs font-medium" style="{{ $typeInfo['class'] }}">{{ $typeInfo['label'] }}</span>
                 <p class="text-3xl font-bold persian-number mt-4" style="color: {{ $transaction->amount >= 0 ? 'rgb(var(--m-ok))' : 'rgb(var(--m-bad))' }};">
-                    {{ $transaction->amount >= 0 ? '+' : '' }}{{ fa_num($transaction->amount) }}
+                    <span data-tx-amount>{{ fa_money($transaction->amount, signed: true) }}</span>
                     <span class="text-base font-normal" style="color: var(--rasta-cream); opacity: 0.6;">تومان</span>
                 </p>
             </div>

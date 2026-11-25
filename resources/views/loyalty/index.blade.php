@@ -57,7 +57,7 @@
             @if($nextReward)
                 <div class="bg-m-card rounded-2xl border border-m-gold/20 p-6">
                     <p class="text-sm text-m-gold font-semibold mb-2">هدف بعدی</p>
-                    <p class="font-medium text-m-tx mb-3 text-sm">{{ $nextReward->title }}</p>
+                    <p class="font-medium text-m-tx mb-3 text-sm">{{ \App\Support\Fa::digits($nextReward->title) }}</p>
                     <div class="w-full bg-m-bg rounded-full h-2 mb-2">
                         <div class="bg-gradient-to-l from-[#C9A24B] to-[#E6CD8A] h-2 rounded-full transition-all"
                              style="width:{{ min(($userPoints/$nextReward->required_points)*100,100) }}%"></div>
@@ -119,8 +119,8 @@
                         <div class="p-5">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1">
-                                    <h3 class="font-bold text-m-tx mb-1">{{ $reward->title }}</h3>
-                                    <p class="text-xs text-m-tx/55 mb-3">{{ $reward->description }}</p>
+                                    <h3 class="font-bold text-m-tx mb-1">{{ \App\Support\Fa::digits($reward->title) }}</h3>
+                                    <p class="text-xs text-m-tx/55 mb-3">{{ \App\Support\Fa::digits($reward->description) }}</p>
                                     <div class="flex flex-wrap gap-3 text-xs">
                                         <span class="text-m-gold persian-number">{{ fa_num($reward->required_points) }} امتیاز</span>
                                         <span class="text-m-ok">
@@ -179,7 +179,7 @@
                                     <p class="text-sm font-bold {{ $point->type==='earned' ? 'text-m-ok' : 'text-m-bad' }} persian-number">
                                         {{ $point->type==='earned' ? '+' : '-' }}{{ fa_num(abs($point->points)) }} امتیاز
                                     </p>
-                                    <p class="text-xs text-m-tx/55 mt-0.5 truncate">{{ $point->description }}</p>
+                                    <p class="text-xs text-m-tx/55 mt-0.5 truncate">{{ \App\Support\Fa::digits($point->description) }}</p>
                                     @if($point->expires_at && $point->type==='earned')
                                         <p class="text-xs text-m-warn/70 mt-0.5 persian-number">انقضا: {{ fa_date($point->expires_at) }}</p>
                                     @endif

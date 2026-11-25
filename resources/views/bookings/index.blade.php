@@ -87,7 +87,7 @@
                     @endforeach
                 </ul>
                 @if ($bookings->hasPages())
-                    <div class="p-4 border-t border-m-gold/10">{{ $bookings->links() }}</div>
+                    <div class="p-4 border-t border-m-gold/10">{{ $bookings->links('pagination::simple-tailwind') }}</div>
                 @endif
             @endif
         </div>

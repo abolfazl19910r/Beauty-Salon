@@ -226,7 +226,7 @@
 
                         <div class="text-left">
                             <p class="text-xl font-bold persian-number" style="color: {{ $transaction->amount >= 0 ? 'rgb(var(--m-ok))' : 'rgb(var(--m-bad))' }};">
-                                {{ $transaction->amount >= 0 ? '+' : '' }}{{ fa_num($transaction->amount) }}
+                                <span data-tx-amount>{{ fa_money($transaction->amount, signed: true) }}</span>
                             </p>
                             <p class="text-xs mt-0.5 persian-number" style="color: var(--rasta-cream); opacity: 0.5;">
                                 موجودی: {{ fa_num($transaction->balance_after) }}

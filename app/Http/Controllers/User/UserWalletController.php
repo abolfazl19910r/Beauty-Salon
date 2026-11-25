@@ -29,20 +29,20 @@ class UserWalletController extends Controller
 
         $recentTransactions = $this->userWalletTransactionRepository->getRecentForWallet($wallet->id, 10);
 
-        $currentMonthRefunds = $this->userWalletTransactionRepository->sumForWalletByTypeAndMonth(
-            $wallet->id, 'refund', now()->month, now()->year
-        );
+        // بسته‌ی ۴ ظاهری (تصمیم «الف»): «این ماه» = ماه شمسی (پیش‌تر ماه میلادی؛ پرداخت ۲۳ آبان در آذر هم شمرده می‌شد)
+        [$monthStart, $monthEnd, $monthLabel] = \App\Services\Specialist\SpecialistWalletService::jalaliMonth();
 
-        $currentMonthSpent = $this->userWalletTransactionRepository->sumForWalletByTypeAndMonth(
-            $wallet->id, 'payment', now()->month, now()->year
-        );
+        $currentMonthRefunds = $this->userWalletTransactionRepository->sumForWalletByTypeBetween($wallet->id, 'refund', $monthStart, $monthEnd);
+
+        $currentMonthSpent = $this->userWalletTransactionRepository->sumForWalletByTypeBetween($wallet->id, 'payment', $monthStart, $monthEnd);
 
         return view('user.wallet.index', compact(
             'user',
             'wallet',
             'recentTransactions',
             'currentMonthRefunds',
-            'currentMonthSpent'
+            'currentMonthSpent',
+            'monthLabel'
         ));
     }
 

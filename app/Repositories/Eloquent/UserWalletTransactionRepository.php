@@ -38,12 +38,13 @@ class UserWalletTransactionRepository extends BaseRepository implements UserWall
         return $this->model->where('wallet_id', $walletId)->with('booking')->latest()->limit($limit)->get();
     }
 
-    public function sumForWalletByTypeAndMonth(int $walletId, string $type, int $month, int $year): float
+    /** جمع یک نوع تراکنش در بازه‌ی [from, to) — «این ماه» شمسی کیف پول مشتری (بسته‌ی ۴ ظاهری) */
+    public function sumForWalletByTypeBetween(int $walletId, string $type, \DateTimeInterface $from, \DateTimeInterface $to): float
     {
         return (float) $this->model->where('wallet_id', $walletId)
             ->where('type', $type)
-            ->whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
+            ->where('created_at', '>=', $from)
+            ->where('created_at', '<', $to)
             ->sum('amount');
     }
 }
