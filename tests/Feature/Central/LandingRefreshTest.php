@@ -50,4 +50,37 @@ class LandingRefreshTest extends TestCase
 
         $this->assertStringContainsString('@media(max-width:767px){.aur,.grain{display:none}}', $html);
     }
+
+    public function test_header_has_one_login_menu_and_one_main_invitation(): void
+    {
+        config(['billing.trial_days' => 14]);
+        $html = $this->get(route('central.home'))->assertOk()->getContent();
+        $header = substr($html, strpos($html, '<header id="hd">'), strpos($html, '</header>') - strpos($html, '<header id="hd">'));
+
+        $this->assertStringContainsString('data-login-menu', $header);
+        $this->assertStringContainsString('href="'.route('login').'">ورود کادر سالن', $header);
+        $this->assertStringContainsString('href="'.route('my-salons.show').'">سالن‌های من', $header);
+        $this->assertSame(1, substr_count($header, 'btn-gold'));
+        $this->assertStringContainsString('href="'.route('salon-signup.create').'">شروع رایگان</a>', $header);
+        $this->assertStringNotContainsString('درخواست دمو', $header);
+        preg_match_all('/<nav class="links".*?<\/nav>/su', $header, $nav);
+        $this->assertSame(5, substr_count($nav[0][0], '<a '));
+        // فرم دمو در بخش پایانی می‌ماند و منوی موبایل یک لینک متنی به آن دارد
+        $this->assertStringContainsString('id="demoForm"', $html);
+        $this->assertStringContainsString('class="mnav-demo" href="#start">درخواست دمو', $html);
+    }
+
+    public function test_hero_has_a_two_line_title_and_the_no_card_note(): void
+    {
+        config(['billing.trial_days' => 14]);
+        $html = $this->get(route('central.home'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('<span class="h1a">سالن شما، همیشه پر از نوبت</span><span class="h1b">بدون یک تماس بی‌پاسخ</span>', $html);
+        $this->assertStringContainsString('بدون کارت بانکی.', $html);
+        $this->assertStringContainsString('<ul class="proof">', $html);
+        $this->assertStringContainsString('شروع رایگان ۱۴ روزه · راه‌اندازی در یک روز', $html);
+
+        config(['billing.trial_days' => 0]);
+        $this->get(route('central.home'))->assertDontSee('بدون کارت بانکی.')->assertSee('ساخت سالن · راه‌اندازی در یک روز');
+    }
 }

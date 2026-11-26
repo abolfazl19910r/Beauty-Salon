@@ -122,9 +122,7 @@ main,footer,header{position:relative;z-index:1}
 .btn-line:hover{border-color:var(--gl);transform:translateY(-2px)}
 .btn-s{padding:11px 20px;font-size:14px}
 .btn-block{width:100%}
-.eyebrow{display:inline-flex;gap:9px;align-items:center;font-size:13px;font-weight:600;color:var(--gl);border:1px solid var(--ln2);border-radius:999px;padding:6px 15px;margin-bottom:22px;background:var(--sf)}
-.eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 0 currentColor;animation:pu 2s infinite}
-@keyframes pu{0%{box-shadow:0 0 0 0 rgba(201,164,85,.6)}70%,100%{box-shadow:0 0 0 8px rgba(201,164,85,0)}}
+.eyebrow{font-size:14px;font-weight:600;color:var(--gl);margin-bottom:18px}
 /* =========================================================
    HEADER
    ========================================================= */
@@ -148,13 +146,26 @@ html[data-theme="light"] #themeBtn .sun{display:block}
 html[data-theme="light"] #themeBtn .moon{display:none}
 .burger{display:none;border-radius:13px}
 @media(max-width:960px){.links{display:none}.burger{display:grid}}
-@media(max-width:520px){.nav-cta .btn{display:none}}
+/* بسته‌ی ۶: منوی «ورود» */
+.login-menu{position:relative}
+.login-menu summary{list-style:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.login-menu summary::-webkit-details-marker{display:none}
+.login-menu summary svg{width:14px;height:14px;transition:transform .25s}
+.login-menu[open] summary svg{transform:rotate(180deg)}
+.lm-list{position:absolute;top:calc(100% + 8px);inset-inline-end:0;min-width:220px;background:var(--bg2);border:1px solid var(--ln2);border-radius:18px;box-shadow:var(--sh);padding:6px;display:grid;z-index:65}
+.lm-list a{display:block;padding:11px 14px;border-radius:12px;font-weight:700;font-size:14.5px}
+.lm-list a:hover,.lm-list a:focus-visible{background:var(--sf2)}
+.lm-list small{display:block;font-weight:400;font-size:12.5px;color:var(--mu)}
+@media(max-width:560px){.login-menu{display:none}}
+@media(max-width:400px){.nav-start{padding:10px 14px}}
 .mnav{position:fixed;inset-inline:0;top:0;z-index:80;background:var(--bg2);border-bottom:1px solid var(--ln2);padding:18px 22px 26px;transform:translateY(-105%);transition:transform .45s var(--ease);box-shadow:var(--sh)}
 .mnav.open{transform:none}
 .mnav .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .mnav a.m{display:flex;justify-content:space-between;padding:14px 4px;font-size:17px;font-weight:600;border-bottom:1px solid var(--ln)}
 .mnav a.m:after{content:"←";color:var(--mu2)}
 .mnav .btn{margin-top:18px}
+.mnav-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mnav-2 .btn{margin-top:10px;padding-inline:10px}
+.mnav-demo{display:block;text-align:center;margin-top:16px;font-weight:700;color:var(--gl)}
 .scrim{position:fixed;inset:0;z-index:70;background:rgba(10,8,6,.5);opacity:0;pointer-events:none;transition:opacity .3s}
 .scrim.on{opacity:1;pointer-events:auto}
 /* =========================================================
@@ -163,15 +174,30 @@ html[data-theme="light"] #themeBtn .moon{display:none}
 .hero{padding:72px 0 96px;overflow-x:clip}
 .hero .wrap{display:grid;grid-template-columns:1.08fr .92fr;gap:48px;align-items:center}
 @media(max-width:1000px){.hero .wrap{grid-template-columns:1fr;gap:72px}.hero{padding-top:44px}}
-.hero h1{font-size:clamp(34px,5.2vw,62px);font-weight:900;line-height:1.3;margin-bottom:22px;letter-spacing:-.015em}
+.hero h1{font-size:clamp(40px,3.9vw,56px);font-weight:900;line-height:1.3;margin-bottom:22px;letter-spacing:-.01em}
+.hero h1 .h1a,.hero h1 .h1b{display:block}
+.hero h1 .h1b{font-size:.72em;font-weight:800;margin-top:6px}
+@media(min-width:1001px){.hero h1 .h1a{white-space:nowrap}}
 .w{display:inline-block;opacity:0;transform:translateY(30px);filter:blur(6px);animation:wi .9s var(--ease) forwards}
 @keyframes wi{to{opacity:1;transform:none;filter:none}}
-.lead{color:var(--mu);font-size:18px;max-width:560px;margin-bottom:34px}
-.lead b{color:var(--tx);font-weight:600}
-.cta{display:flex;gap:12px;flex-wrap:wrap}
-.proof{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
-.proof span{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--mu);padding:7px 14px;border:1px solid var(--ln);border-radius:999px;background:var(--sf)}
-.proof svg{width:16px;height:16px;color:var(--gl)}
+.lead{color:var(--mu);font-size:18px;line-height:1.95;max-width:32em;margin-bottom:30px}
+.cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.cta-note{margin-top:14px;font-size:14px;color:var(--mu)}
+.cta-note .cn-m{display:none;font-weight:700;color:var(--gl)}
+.proof{list-style:none;padding:20px 0 0;margin:26px 0 0;display:flex;gap:30px;flex-wrap:wrap;border-top:1px solid var(--ln)}
+.proof li{display:flex;flex-direction:column;gap:2px}
+.proof b{font-size:18px;font-weight:800}
+.proof span{color:var(--mu);font-size:13.5px}
+.proof i{font-style:normal}
+@media(max-width:600px){
+.hero{padding:28px 0 64px}.hero .wrap{gap:44px}
+.hero h1{font-size:clamp(26px,7.6vw,34px);line-height:1.35;margin-bottom:14px}.hero h1 .h1a{white-space:nowrap}.hero h1 .h1b{font-size:.74em;margin-top:4px}
+.lead{font-size:15.5px;margin-bottom:20px}
+.cta>.btn-gold{width:100%;justify-content:center}.cta .cta-2{display:none}
+.cta-note{text-align:center;font-size:13px;margin-top:10px}.cta-note .cn-d{display:none}.cta-note .cn-m{display:inline}
+.proof{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center;padding-top:14px;margin-top:18px}
+.proof b{font-size:15px}.proof span{font-size:12px}.proof .pd{display:none}
+}
 /* phone */
 .viz{position:relative;max-width:372px;width:100%;margin-inline:auto;perspective:1400px}
 .viz:before{content:"";position:absolute;inset:8% -12% 4%;border-radius:50%;background:radial-gradient(closest-side,var(--tint2),transparent);filter:blur(20px);z-index:-1}
@@ -220,7 +246,7 @@ html[data-theme="light"] .notch{background:#2A2119}
 .f1{top:-4%;inset-inline-start:-58px;animation:bob 5s ease-in-out infinite}
 .f2{bottom:18%;inset-inline-end:-78px;animation:bob 6s ease-in-out -2s infinite}
 @keyframes bob{50%{translate:0 -10px}}
-@media(max-width:560px){.f1{inset-inline-start:-10px;top:-6%}.f2{inset-inline-end:-10px;bottom:6%}}
+@media(max-width:560px){.f1{inset-inline-start:-10px;top:3%}.f2{inset-inline-end:-10px;bottom:6%}}
 /* =========================================================
    MARQUEE
    ========================================================= */
@@ -585,26 +611,27 @@ footer .enamad{margin-top:12px}
 <!-- ============ HEADER ============ -->
 <header id="hd"><div class="wrap nav">
 <a class="brand" href="#top" aria-label="ماهرو — صفحه اصلی"><svg aria-hidden="true"><use href="#mark"/></svg><span>ماهرو<small>MAHRU</small></span></a>
-<nav class="links" aria-label="ناوبری اصلی"><a href="#why">چرا ماهرو</a><a href="#features">امکانات</a><a href="#product">پنل مدیریت</a><a href="#how">نحوه کار</a><a href="#plans">تعرفه‌ها</a><a href="#apps">اپ</a><a href="#faq">سؤالات</a></nav>
+<nav class="links" aria-label="ناوبری اصلی"><a href="#features">امکانات</a><a href="#product">پنل مدیریت</a><a href="#plans">تعرفه‌ها</a><a href="#apps">اپ موبایل</a><a href="#faq">سؤالات</a></nav>
 <div class="nav-cta">
 <button class="icon-btn" id="themeBtn" type="button" aria-label="تغییر به حالت روشن">
 <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
 <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
 </button>
-<a class="btn btn-line btn-s nav-login" href="{{ route('my-salons.show') }}">سالن‌های من</a>
-<a class="btn btn-line btn-s nav-login" href="{{ route('login') }}">ورود</a>
-<a class="btn btn-gold btn-s" href="#start">درخواست دمو</a>
+{{-- بسته‌ی ۶: «سالن‌های من» و «ورود» یک دکمه با منو؛ فقط یک دعوت اصلی (فرم دمو در بخش پایانی می‌ماند) --}}
+<details class="login-menu" data-login-menu><summary class="btn btn-line btn-s">ورود <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+<div class="lm-list"><a href="{{ route('login') }}">ورود کادر سالن<small>مدیر سالن و کارشناس‌ها</small></a><a href="{{ route('my-salons.show') }}">سالن‌های من<small>برای مشتری‌ها</small></a></div>
+</details>
+<a class="btn btn-gold btn-s nav-start" href="{{ route('salon-signup.create') }}">شروع رایگان</a>
 <button class="icon-btn burger" id="burger" type="button" aria-label="باز کردن منو" aria-expanded="false" aria-controls="mnav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
 </div>
 </div></header>
 
 <div class="mnav" id="mnav" role="dialog" aria-modal="true" aria-label="منوی موبایل" aria-hidden="true">
 <div class="top"><span class="brand"><svg width="36" height="36" aria-hidden="true"><use href="#mark"/></svg>ماهرو</span><button class="icon-btn" id="mnavX" type="button" aria-label="بستن منو">✕</button></div>
-<a class="m" href="#why">چرا ماهرو</a><a class="m" href="#features">امکانات</a><a class="m" href="#product">پنل مدیریت</a><a class="m" href="#how">نحوه کار</a><a class="m" href="#plans">تعرفه‌ها</a><a class="m" href="#apps">اپ</a><a class="m" href="#faq">سؤالات</a>
-<a class="btn btn-gold btn-block" href="#start">درخواست دمو رایگان</a>
-<a class="btn btn-line btn-block" href="{{ route('salon-signup.create') }}">ساخت سالن</a>
-<a class="btn btn-line btn-block" href="{{ route('my-salons.show') }}">سالن‌های من (مشتری)</a>
-<a class="btn btn-line btn-block" href="{{ route('login') }}">ورود به پنل</a>
+<a class="m" href="#features">امکانات</a><a class="m" href="#product">پنل مدیریت</a><a class="m" href="#plans">تعرفه‌ها</a><a class="m" href="#apps">اپ موبایل</a><a class="m" href="#faq">سؤالات</a>
+<a class="btn btn-gold btn-block" href="{{ route('salon-signup.create') }}">@if ($trialDays > 0)شروع رایگان {{ to_persian_num((string) $trialDays) }} روزه@else ساخت سالن@endif</a>
+<div class="mnav-2"><a class="btn btn-line" href="{{ route('login') }}">ورود کادر سالن</a><a class="btn btn-line" href="{{ route('my-salons.show') }}">سالن‌های من</a></div>
+<a class="mnav-demo" href="#start">درخواست دمو</a>
 </div>
 <div class="scrim" id="scrim"></div>
 
@@ -613,15 +640,16 @@ footer .enamad{margin-top:12px}
 <!-- ============ HERO ============ -->
 <section class="hero"><div class="wrap">
 <div>
-<span class="eyebrow">نرم‌افزار رزرو و مدیریت سالن‌های زیبایی</span>
-<h1 id="h1" aria-label="سالن شما، همیشه پر از نوبت؛ بدون یک تماس بی‌پاسخ">سالن شما، همیشه پر از نوبت؛ بدون یک تماس بی‌پاسخ</h1>
-<p class="lead">ماهرو <b>نوبت‌دهی آنلاین، تقویم پرسنل، یادآوری پیامکی، بیعانه و باشگاه مشتریان</b> را در یک پنل ساده و شیک جمع می‌کند. مشتری شما در هر ساعت شبانه‌روز نوبت می‌گیرد و شما روی کار اصلی‌تان، یعنی زیبایی، تمرکز می‌کنید.</p>
-<div class="cta"><a class="btn btn-gold" href="{{ route('salon-signup.create') }}">@if ($trialDays > 0)شروع رایگان {{ to_persian_num((string) $trialDays) }} روزه@else ساخت سالن@endif <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a><a class="btn btn-line" href="#product">دیدن پنل مدیریت</a></div>
-<div class="proof">
-<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>راه‌اندازی در یک روز</span>
-<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>روی هر دستگاه، با اپ اندروید</span>
-<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg>پشتیبانی فارسی</span>
-</div>
+<p class="eyebrow">نرم‌افزار رزرو و مدیریت سالن‌های زیبایی</p>
+<h1 id="h1" aria-label="سالن شما، همیشه پر از نوبت؛ بدون یک تماس بی‌پاسخ"><span class="h1a">سالن شما، همیشه پر از نوبت</span><span class="h1b">بدون یک تماس بی‌پاسخ</span></h1>
+<p class="lead">رزرو آنلاین، تقویم آرایشگرها، یادآوری پیامکی، بیعانه و باشگاه مشتریان در یک پنل. مشتری هر ساعت از شبانه‌روز نوبت می‌گیرد و شما به کار سالن می‌رسید.</p>
+<div class="cta"><a class="btn btn-gold" href="{{ route('salon-signup.create') }}">@if ($trialDays > 0)شروع رایگان {{ to_persian_num((string) $trialDays) }} روزه@else ساخت سالن@endif <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a><a class="btn btn-line cta-2" href="#product">دیدن پنل مدیریت</a></div>
+<p class="cta-note">@if ($trialDays > 0)بدون کارت بانکی. <span class="cn-d">هر وقت راضی بودید، پلن را از داخل پنل می‌خرید.</span>@endif <a class="cn-m" href="#product">دیدن پنل مدیریت</a></p>
+<ul class="proof">
+<li><b>یک روز</b><span>تا اولین نوبت<i class="pd"> آنلاین</i></span></li>
+<li><b>۲۴ ساعته</b><span>لینک رزرو<i class="pd"> همیشه</i> باز<i class="pd"> است</i></span></li>
+<li><b>وب و اندروید</b><span><i class="pd">با </i>پشتیبانی فارسی</span></li>
+</ul>
 </div>
 
 <div class="viz" id="viz">
@@ -969,7 +997,7 @@ footer .enamad{margin-top:12px}
 </div><div class="copy"><span>© <span id="yr">{{ to_persian_num((string) \Morilog\Jalali\Jalalian::now()->getYear()) }}</span> ماهرو · همه‌ی حقوق محفوظ است</span><span>ساخته‌شده برای سالن‌های ایران</span></div></div></footer>
 
 <button class="icon-btn" id="ttop" type="button" aria-label="بازگشت به بالا"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
-<div class="mcta" id="mcta"><a class="btn btn-gold btn-block" href="#start">درخواست دمو رایگان · راه‌اندازی در یک روز</a></div>
+<div class="mcta" id="mcta"><a class="btn btn-gold btn-block" href="{{ route('salon-signup.create') }}">@if ($trialDays > 0)شروع رایگان {{ to_persian_num((string) $trialDays) }} روزه@else ساخت سالن@endif · راه‌اندازی در یک روز</a></div>
 
 <script @nonce>
 (()=>{
@@ -985,8 +1013,9 @@ themeBtn.addEventListener('click',()=>{root.dataset.theme=root.dataset.theme==='
 syncTheme();
 
 /* ---------- hero words ---------- */
-const h1=$1('#h1'),words=h1.textContent.trim().split(/\s+/);
-h1.innerHTML=words.map((w,i)=>`<span class="w${i>=words.length-3?' gold':''}" aria-hidden="true" style="animation-delay:${.08+i*.08}s">${w}</span>`).join(' ');
+let wi=0;$('#h1 > span').forEach(part=>{const gold=part.classList.contains('h1b');part.setAttribute('aria-hidden','true');part.innerHTML=part.textContent.trim().split(/\s+/).map(w=>`<span class="w${gold?' gold':''}" style="animation-delay:${.08+(wi++)*.08}s">${w}</span>`).join(' ')});
+/* ---------- login menu (details): close on outside click / Escape ---------- */
+const lm=$1('[data-login-menu]');if(lm){document.addEventListener('click',e=>{if(lm.open&&!lm.contains(e.target))lm.open=false});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&lm.open){lm.open=false;lm.querySelector('summary').focus()}})}
 
 /* ---------- marquee ---------- */
 const mq=$1('#mq');mq.innerHTML+=mq.innerHTML;
