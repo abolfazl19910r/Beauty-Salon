@@ -126,7 +126,7 @@ class Specialist extends Model
             6 => 'شنبه',
         ];
 
-        $workDays = $activeSchedules->map(function ($schedule) use ($persianDays) {
+        $workDays = $activeSchedules->sortBy(fn ($schedule) => array_search((int) $schedule->day_of_week, \App\Support\SalonWorkingHours::WEEK_ORDER, true))->map(function ($schedule) use ($persianDays) {
             return $persianDays[$schedule->day_of_week] ?? '';
         })->filter()->values();
 

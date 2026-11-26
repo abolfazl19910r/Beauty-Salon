@@ -156,12 +156,13 @@
                     </div>
                     <div class="p-4">
                         <div class="grid grid-cols-7 gap-2">
-                            @php $days = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنج‌شنبه','جمعه','شنبه']; @endphp
+                            @php
+                                // هفته‌ی ایرانی از شنبه (بسته‌ی ۷)؛ کلید = day_of_week کربن. یک کوئری برای همه‌ی روزها
+                                $days = [6 => 'شنبه', 0 => 'یکشنبه', 1 => 'دوشنبه', 2 => 'سه‌شنبه', 3 => 'چهارشنبه', 4 => 'پنج‌شنبه', 5 => 'جمعه'];
+                                $activeByDay = $specialist->schedules()->where('is_active', true)->get()->keyBy('day_of_week');
+                            @endphp
                             @foreach($days as $index => $day)
-                                @php
-                                    $schedule = $specialist->schedules()
-                                        ->where('day_of_week', $index)->where('is_active', true)->first();
-                                @endphp
+                                @php $schedule = $activeByDay->get($index); @endphp
                                 <div class="rounded-lg p-2 text-center text-xs"
                                      style="{{ $schedule ? 'background:rgb(var(--m-ok) / .1); border:1px solid rgb(var(--m-ok) / .35);' : 'background:rgb(var(--m-bad) / .1); border:1px solid rgb(var(--m-bad) / .35);' }}">
                                     <div class="font-bold mb-1" style="color:var(--admin-text);">{{ $day }}</div>
@@ -171,6 +172,9 @@
                                             <br>تا<br>
                                             {{ fa_time($schedule->end_time) }}
                                         </div>
+                                        @if($schedule->break_start && $schedule->break_end)
+                                            <div class="persian-number mt-1" style="color:var(--admin-text-light);" data-schedule-break>استراحت {{ fa_time($schedule->break_start) }} تا {{ fa_time($schedule->break_end) }}</div>
+                                        @endif
                                     @else
                                         <div style="color:rgb(var(--m-bad));">تعطیل</div>
                                     @endif

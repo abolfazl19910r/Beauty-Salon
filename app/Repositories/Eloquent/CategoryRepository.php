@@ -73,8 +73,25 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
         return $this->model->where('id', '!=', $excludeId)->get(['id', 'name']);
     }
 
+    /**
+     * دسته‌ها با خدمت‌هایشان برای فرم کارشناس. بسته‌ی ۷ (آزمون production، ۲۰۲۶-۱۱-۲۶): فرم خدمت پیش‌فرض «بدون دسته‌بندی» است و
+     * خدمت بی‌دسته در هیچ دسته‌ای نبود، پس به کارشناس داده نمی‌شد و مدیر تازه در قدم «کارشناس» گیر می‌کرد. خدمت‌های بی‌دسته
+     * (یا با دسته‌ی حذف‌شده) آخر فهرست، زیر یک گروه بی‌شناسه‌ی «بدون دسته‌بندی» می‌آیند.
+     */
     public function getWithServices(): Collection
     {
-        return $this->model->with('services')->get();
+        $categories = $this->model->with('services')->get();
+        $loose = \App\Models\BeautyService::query()
+            ->where(fn ($q) => $q->whereNull('category_id')->orWhereNotIn('category_id', $categories->modelKeys() ?: [0]))
+            ->orderBy('name')
+            ->get();
+
+        if ($loose->isNotEmpty()) {
+            $group = new Category(['name' => 'بدون دسته‌بندی']);
+            $group->setRelation('services', $loose);
+            $categories->push($group);
+        }
+
+        return $categories;
     }
 }
