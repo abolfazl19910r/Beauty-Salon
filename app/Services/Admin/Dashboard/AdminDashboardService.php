@@ -2,7 +2,6 @@
 
 namespace App\Services\Admin\Dashboard;
 
-use App\Models\WalletSetting;
 use App\Repositories\Contracts\BeautyServiceRepositoryInterface;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
@@ -33,8 +32,6 @@ class AdminDashboardService
         $canViewFinancials = auth()->user()?->hasPermission('manage-wallet') ?? false;
         $salon = app(\App\Support\CurrentSalon::class)->get();
 
-        [$commissionRate, $commissionFactor] = $this->getCommissionRateAndFactor();
-
         // بسته‌ی ۲ ظاهری (۲۰۲۶-۱۱-۲۴، تصمیم‌های «الف»): امروز با جمله‌ی خلاصه، ۴ کارت، نوبت‌های امروز با کار مستقیم،
         // «ماه» = ماه شمسی؛ نمودار، کارت نقش‌ها و «نوبت‌های اخیر» حذف شدند.
         $month = verta();
@@ -48,12 +45,9 @@ class AdminDashboardService
             ->get();
         $todayWaiting = $todayBookings->whereIn('status', ['pending', 'pending_payment'])->count();
 
-        $monthRevenue = null;
-        if ($canViewFinancials) {
-            $raw = $this->bookingRepository->query()->where('payment_status', 'paid')
-                ->where('paid_at', '>=', $monthStart)->sum('prepayment_amount');
-            $monthRevenue = (int) ($raw * $commissionFactor);
-        }
+        // سهم سالن = همان کمیسیونی که هنگام پرداخت در دفتر کیف پول سالن ثبت شد، با نرخ همان کارشناس در همان زمان
+        // (قرارداد جدای مدیر با کارشناس)، منهای برگشت‌ها به‌خاطر لغو؛ نه «کل پیش‌پرداخت × نرخ کلی» (آزمون پروداکشن ۲۰۲۶-۱۱-۲۶)
+        $monthRevenue = $canViewFinancials ? $this->monthSalonShare($monthStart) : null;
         $monthBookings = $this->bookingRepository->query()->where('booking_time', '>=', $monthStart)
             ->whereNotIn('status', ['cancelled'])->count();
 
@@ -85,7 +79,6 @@ class AdminDashboardService
             'isOwner' => (bool) $isOwner,
             'setup' => $setup,
             'canViewFinancials' => $canViewFinancials,
-            'commissionRate' => $commissionRate,
             'monthName' => $month->format('F'),
             'todayBookings' => $todayBookings,
             'todayBookingsCount' => $todayBookings->count(),
@@ -218,10 +211,22 @@ class AdminDashboardService
         return round(array_sum($scoreFactors) / 4, 1);
     }
 
-    private function getCommissionRateAndFactor(): array
+    /**
+     * جمع سهم سالن از نوبت‌ها در این ماه از دفتر کیف پول سالن: «commission» (پیش‌پرداخت نوبت و جلسه‌ی دوره) و
+     * «adjustment» منفی (برگشت کمیسیون نوبت لغوشده)؛ برداشت سالن جزو آن نیست. کیف پولی ساخته نمی‌شود.
+     */
+    private function monthSalonShare(\Illuminate\Support\Carbon $monthStart): int
     {
-        $commissionRate = WalletSetting::get()->admin_commission_percentage ?? 10;
+        $walletId = \App\Models\AdminWallet::query()->value('id');
+        if ($walletId === null) {
+            return 0;
+        }
 
-        return [$commissionRate, $commissionRate / 100];
+        return (int) round((float) \App\Models\AdminWalletTransaction::query()
+            ->where('admin_wallet_id', $walletId)
+            ->whereNotNull('booking_id')
+            ->whereIn('type', ['commission', 'adjustment'])
+            ->where('created_at', '>=', $monthStart)
+            ->sum('amount'));
     }
 }

@@ -87,8 +87,50 @@ class AdminDashboardRefreshTest extends TestCase
         $this->assertSame(0, $response->viewData('monthRevenue'));
         $response->assertSee('رزرو بدون پیش‌پرداخت است');
 
-        Booking::factory()->create(['specialist_id' => $specialist->id, 'status' => 'completed', 'payment_status' => 'paid',
-            'prepayment_amount' => 300000, 'paid_at' => Carbon::parse('2026-11-23'), 'booking_time' => Carbon::parse('2026-11-23 11:00')]); // ۲ آذر
+        // درآمد از دفتر کیف پول سالن خوانده می‌شود؛ پس پرداخت باید از مسیر واقعی (گذار به paid) ثبت شود
+        Booking::factory()->create(['specialist_id' => $specialist->id, 'status' => 'pending', 'payment_status' => 'unpaid',
+            'prepayment_amount' => 300000, 'booking_time' => Carbon::parse('2026-11-25 11:00')])
+            ->update(['payment_status' => 'paid', 'paid_at' => now()]); // ۳ آذر
         $this->assertGreaterThan(0, $this->actingAs($this->owner)->get(route('admin.dashboard'))->viewData('monthRevenue'));
+    }
+
+    public function test_revenue_uses_each_experts_own_commission_and_subtracts_reversals(): void
+    {
+        \App\Models\WalletSetting::get()->update(['admin_commission_percentage' => 10]);
+        $contract = Specialist::factory()->create(['salon_id' => $this->salon->id, 'commission_rate' => 20]); // قرارداد جدا
+        $standard = Specialist::factory()->create(['salon_id' => $this->salon->id, 'commission_rate' => null]); // نرخ کلی سالن
+        $slot = 0;
+        $pay = function (Specialist $specialist, int $prepayment, array $extra = []) use (&$slot): Booking {
+            $booking = Booking::factory()->create($extra + ['specialist_id' => $specialist->id, 'status' => 'pending',
+                'payment_status' => 'unpaid', 'prepayment_amount' => $prepayment,
+                'booking_time' => now()->addDays(2)->setTime(9, 0)->addHours($slot++)]);
+            $booking->update(['payment_status' => 'paid', 'paid_at' => now()]);
+
+            return $booking;
+        };
+
+        $this->travelTo(Carbon::parse('2026-11-15 10:00:00')); // آبان: در «درآمد آذر» نمی‌آید
+        $pay($standard, 500000);
+        $this->travelTo(Carbon::parse('2026-11-24 09:00:00'));
+
+        $pay($contract, 200000); // ۲۰٪ ← ۴۰٬۰۰۰
+        $cancelled = $pay($standard, 300000); // ۱۰٪ ← ۳۰٬۰۰۰
+        $pay($standard, 100000); // ۱۰٪ ← ۱۰٬۰۰۰
+        \App\Models\AdminWallet::getWallet()->deductCommission(30000, $cancelled->id); // برگشت کمیسیون نوبت لغوشده
+
+        $response = $this->actingAs($this->owner)->get(route('admin.dashboard'))->assertOk();
+        $this->assertSame(50000, $response->viewData('monthRevenue'));
+        $response->assertSee('سهم سالن از پرداخت‌های آنلاین، با نرخ کمیسیون هر کارشناس');
+        $response->assertDontSee('٪ کمیسیون)');
+
+        // متن تراکنش‌ها: شماره‌ی نوبت فارسی، نام کارشناس و خدمت همان‌طور که نوشته شده
+        $contract->update(['name' => 'tester2']);
+        $service = \App\Models\BeautyService::factory()->create(['name' => 'Gel 3D']);
+        $paid = $pay($contract->fresh(), 100000, ['service_id' => $service->id]);
+        $id = \App\Support\Fa::digits((string) $paid->id);
+        $this->assertSame("درآمد از نوبت #{$id} - Gel 3D",
+            $contract->fresh()->wallet->transactions()->where('booking_id', $paid->id)->value('description'));
+        $this->assertSame("کمیسیون از نوبت #{$id} - کارشناس: tester2",
+            \App\Models\AdminWalletTransaction::where('booking_id', $paid->id)->value('description'));
     }
 }
