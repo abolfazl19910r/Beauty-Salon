@@ -292,7 +292,12 @@ class DockerSetupTest extends TestCase
     {
         // wkhtmltopdf از Alpine 3.15 حذف شد و «apk add» build را می‌شکست؛ PDF با mPDF است (۲۰۲۶-۱۰-۲۳)
         $this->assertDoesNotMatchRegularExpression('/^\s+wkhtmltopdf\s*\\\\$/m', self::file('Dockerfile'));
-        $this->assertStringContainsString('FROM php:8.5-fpm-alpine AS production', self::file('Dockerfile'));
+        // بسته‌های سیستم در «runtime» (بی کد) نصب و کش می‌شوند؛ production و single روی آن ساخته می‌شوند (0522)
+        $dockerfile = self::file('Dockerfile');
+        $this->assertStringContainsString('FROM php:8.5-fpm-alpine AS runtime', $dockerfile);
+        $this->assertStringContainsString('FROM runtime AS production', $dockerfile);
+        $this->assertStringContainsString('FROM runtime AS single-runtime', $dockerfile);
+        $this->assertStringContainsString('FROM single-runtime AS single', $dockerfile);
     }
 
     public function test_php_85_image_and_mysql_84_compose_stay_startable(): void
