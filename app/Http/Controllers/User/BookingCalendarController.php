@@ -15,6 +15,23 @@ class BookingCalendarController extends Controller
     public function __invoke(Booking $booking): Response
     {
         $this->authorize('view', $booking);
+
+        return self::ics($booking);
+    }
+
+    /**
+     * بسته‌ی ۵د: همان فایل برای «افزودن به تقویم» اپ مشتری — اپ نشانی امضاشده‌ی موقت (CustomerPresenter::calendarUrl) را در مرورگر
+     * گوشی باز می‌کند و مرورگر نشست وب ندارد؛ امضا جای ورود است و شناسه‌ی نوبت را نمی‌شود عوض کرد. نوبت باید مال همین سالن باشد.
+     */
+    public function signed(Booking $booking): Response
+    {
+        abort_unless((int) $booking->salon_id === (int) app(\App\Support\CurrentSalon::class)->get()?->id, 404);
+
+        return self::ics($booking);
+    }
+
+    public static function ics(Booking $booking): Response
+    {
         $booking->loadMissing(['service', 'specialist']);
 
         $start = $booking->booking_time->copy()->utc();

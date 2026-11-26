@@ -17,6 +17,10 @@ Route::get('/manifest.webmanifest', [\App\Http\Controllers\Pwa\PwaController::cl
 Route::get('/pwa/icon-{variant}.png', [\App\Http\Controllers\Pwa\PwaController::class, 'salonIcon'])
     ->whereIn('variant', array_keys(\App\Services\Pwa\SalonPwaIcon::VARIANTS))->name('salon.pwa.icon');
 
+// بسته‌ی ۵د: «افزودن به تقویم» اپ مشتری — نشانی امضاشده‌ی موقت (بی ورود؛ CustomerPresenter::calendarUrl)
+Route::get('/calendar/{booking}.ics', [\App\Http\Controllers\User\BookingCalendarController::class, 'signed'])
+    ->middleware(['signed', 'throttle:30,1'])->whereNumber('booking')->name('bookings.calendar-signed');
+
 // صفحه‌ی «اپ» سالن (بسته‌ی ۵ و ۶): دانلود اپ اندروید + کد سالن، راهنمای PWA آیفون
 Route::get('/app', \App\Http\Controllers\User\SalonAppController::class)->name('salon.app');
 

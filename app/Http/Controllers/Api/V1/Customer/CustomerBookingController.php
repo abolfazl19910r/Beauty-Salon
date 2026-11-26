@@ -31,9 +31,24 @@ class CustomerBookingController extends CustomerController
         protected readonly PaymentService $paymentService,
     ) {}
 
-    /** GET bookings?scope=upcoming|past (پیش‌فرض upcoming) */
+    /** GET bookings?scope=upcoming|past (پیش‌فرض upcoming)؛ بسته‌ی ۵د: یا tab=upcoming|past|cancelled با شمار هر تب در meta.counts */
     public function index(Request $request): JsonResponse
     {
+        if ($request->filled('tab')) {
+            $filter = \App\Services\Customer\CustomerBookingListFilter::class;
+            $input = $request->validate([
+                'tab' => ['required', 'in:'.implode(',', array_keys($filter::TABS))],
+                'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
+            ]);
+            $userId = $this->customer($request)->id;
+            $page = $filter::paginate($userId, $input['tab'], (int) ($input['per_page'] ?? 20));
+
+            return ApiResponse::success(
+                collect($page->items())->map(fn (Booking $b) => CustomerPresenter::booking($b))->values(),
+                $this->pageMeta($page) + ['tab' => $input['tab'], 'counts' => $filter::tabCounts($userId)],
+            );
+        }
+
         $input = $request->validate([
             'scope' => ['nullable', 'in:upcoming,past'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],

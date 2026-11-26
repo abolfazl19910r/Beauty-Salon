@@ -58,7 +58,41 @@ class CustomerCatalogController extends CustomerController
             'unread_notifications' => UserNotification::limitToCurrentSalon(UserNotification::query()
                 ->where('notifiable_type', $user->getMorphClass())->where('notifiable_id', $user->id))
                 ->whereNull('read_at')->count(),
-        ]);
+        ] + $this->dashboard($user));
+    }
+
+    /**
+     * بسته‌ی ۵د: خانه‌ی اپ مشتری مثل داشبورد وب (CustomerDashboardService::overview) — نوبت امروز/بعدی، تماس و مسیریابی سالن،
+     * مهلت تغییر، «نوبت‌های بعدی»، «نظرتان چه بود؟»، «دوباره رزرو کنید»، و باشگاه فقط با امکان سالن. همه افزودنی‌اند.
+     */
+    private function dashboard(\App\Models\User $user): array
+    {
+        $o = app(\App\Services\Customer\CustomerDashboardService::class)->overview($user);
+        $salon = $this->salon();
+        $card = fn (?Booking $b) => $b ? CustomerPresenter::booking($b) : null;
+        $serviceRef = fn ($service) => $service ? ['id' => $service->id, 'name' => $service->name] : null;
+
+        return [
+            'date_label' => $o['todayPersian'],
+            'next_booking' => $card($o['nextBooking']),
+            'next_is_today' => (bool) $o['nextIsToday'],
+            'can_change' => (bool) $o['canChange'],
+            'change_hours' => (int) $o['changeHours'],
+            'salon_contact' => [
+                'address' => $salon->address,
+                'phone' => $salon->phone,
+                'directions_url' => $o['mapUrl'],
+            ],
+            'loyalty_enabled' => (bool) $o['loyaltyOn'],
+            'next_bookings' => collect($o['upcoming'])->map(fn (Booking $b) => CustomerPresenter::booking($b))->values(),
+            'to_rate' => $card($o['toRate']),
+            'rebook' => $o['rebook'] ? [
+                'service' => $serviceRef($o['rebook']->service),
+                'specialist' => $o['rebook']->specialist ? ['id' => $o['rebook']->specialist->id, 'name' => $o['rebook']->specialist->name] : null,
+                'date_label' => \App\Support\Fa::date($o['rebook']->booking_time),
+            ] : null,
+            'suggestion' => $serviceRef($o['suggestion']),
+        ];
     }
 
     public function services(): JsonResponse

@@ -103,6 +103,10 @@ class CustomerPresenter
             'booking_time' => $time?->toIso8601String(),
             'booking_time_jalali' => $time ? Jalalian::fromCarbon($time)->format('Y/m/d H:i') : null,
             'booking_time_label' => $time ? Jalalian::fromCarbon($time)->format('l j F، H:i') : null,
+            // بسته‌ی ۵د: برچسب‌های آماده با رقم فارسی
+            'date_label' => $time ? \App\Support\Fa::date($time) : null,
+            'day_label' => $time ? StaffBookingPresenter::dayLabel($time) : null,
+            'time_label' => $time ? \App\Support\Fa::time($time) : null,
             'duration_minutes' => $booking->duration_minutes ? (int) $booking->duration_minutes : ($booking->service?->duration !== null ? (int) $booking->service->duration : null),
             'service' => $booking->service ? [
                 'id' => $booking->service->id,
@@ -136,7 +140,34 @@ class CustomerPresenter
                 'reschedule' => $booking->canBeRescheduled(),
                 'rate' => $booking->status === 'completed' && $booking->rating === null,
             ],
+            // بسته‌ی ۵د: کار اصلی ردیف «نوبت‌های من» مثل وب (CustomerBookingActions): pay · directions · reschedule · review · rebook · details
+            'primary' => $time ? array_map(
+                fn (string $kind) => ['kind' => $kind, 'label' => \App\Services\Customer\CustomerBookingActions::LABELS[$kind]],
+                \App\Services\Customer\CustomerBookingActions::kinds($booking, self::directionsUrl() !== null),
+            ) : [],
+            'cancel_note' => $booking->status !== 'cancelled' && $booking->status !== 'completed' && $time ? \App\Services\Customer\CustomerBookingActions::cancelNote($booking) : null,
+            'calendar_url' => $time && in_array($booking->status, \App\Services\Customer\CustomerBookingListFilter::OPEN_STATUSES, true) ? self::calendarUrl($booking) : null,
         ];
+    }
+
+    /** نشانی مسیریابی سالن جاری (SalonMapLocation)، یک بار در هر درخواست */
+    public static function directionsUrl(): ?string
+    {
+        static $cache = [];
+        $salon = app(\App\Support\CurrentSalon::class)->get();
+        if (! $salon) {
+            return null;
+        }
+
+        return $cache[$salon->id] ??= (\App\Support\SalonMapLocation::directionsUrl($salon) ?? '') ?: null;
+    }
+
+    /** بسته‌ی ۵د: فایل ‎.ics نوبت با امضای ۷ روزه (مرورگر گوشی نشست وب ندارد؛ BookingCalendarController::signed) */
+    public static function calendarUrl(Booking $booking): ?string
+    {
+        $salon = app(\App\Support\CurrentSalon::class)->get();
+
+        return $salon ? \Illuminate\Support\Facades\URL::temporarySignedRoute('bookings.calendar-signed', now()->addDays(7), ['salon_slug' => $salon->slug, 'booking' => $booking->id]) : null;
     }
 
     /** وضعیت ساده‌ی یک تراکنش برای اپ: pending · paid · failed · refunded */

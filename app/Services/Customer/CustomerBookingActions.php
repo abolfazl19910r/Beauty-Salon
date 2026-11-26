@@ -14,32 +14,39 @@ use Illuminate\Support\Carbon;
  */
 final class CustomerBookingActions
 {
-    /** @return list<array{kind: string, label: string, url: string, external?: bool}> یک یا دو کار، اولی اصلی */
-    public static function primary(Booking $booking, ?string $mapUrl, ?Carbon $now = null): array
+    public const LABELS = ['pay' => 'پرداخت', 'directions' => 'مسیریابی', 'reschedule' => 'تغییر زمان', 'review' => 'ثبت نظر', 'rebook' => 'رزرو دوباره', 'details' => 'جزئیات'];
+
+    /**
+     * نوع کار(ها)ی یک نوبت، بی نشانی — همان قاعده برای وب (primary) و API اپ مشتری (بسته‌ی ۵د).
+     *
+     * @return list<string> یک یا دو کار، اولی اصلی
+     */
+    public static function kinds(Booking $booking, bool $hasMap, ?Carbon $now = null): array
     {
         $now ??= Carbon::now();
         $open = in_array($booking->status, CustomerBookingListFilter::OPEN_STATUSES, true);
-        $rebook = ['kind' => 'rebook', 'label' => 'رزرو دوباره', 'url' => route('bookings.create', array_filter(['service' => $booking->service_id, 'specialist' => $booking->specialist_id]))];
 
-        if ($open && $booking->isPayable()) {
-            return [['kind' => 'pay', 'label' => 'پرداخت', 'url' => route('payment.show', $booking)]];
-        }
-        if ($open && $booking->booking_time->isSameDay($now) && $mapUrl) {
-            return [['kind' => 'directions', 'label' => 'مسیریابی', 'url' => $mapUrl, 'external' => true]];
-        }
-        if ($open && $booking->canBeRescheduled()) {
-            return [['kind' => 'reschedule', 'label' => 'تغییر زمان', 'url' => route('bookings.reschedule', $booking)]];
-        }
-        if ($booking->status === 'completed') {
-            return $booking->rating === null
-                ? [['kind' => 'review', 'label' => 'ثبت نظر', 'url' => route('reviews.create', $booking)], $rebook]
-                : [$rebook];
-        }
-        if (! $open) {
-            return [$rebook];
-        }
+        return match (true) {
+            $open && $booking->isPayable() => ['pay'],
+            $open && $booking->booking_time->isSameDay($now) && $hasMap => ['directions'],
+            $open && $booking->canBeRescheduled() => ['reschedule'],
+            $booking->status === 'completed' => $booking->rating === null ? ['review', 'rebook'] : ['rebook'],
+            ! $open => ['rebook'],
+            default => ['details'],
+        };
+    }
 
-        return [['kind' => 'details', 'label' => 'جزئیات', 'url' => route('bookings.show', $booking)]];
+    /** @return list<array{kind: string, label: string, url: string, external?: bool}> یک یا دو کار، اولی اصلی */
+    public static function primary(Booking $booking, ?string $mapUrl, ?Carbon $now = null): array
+    {
+        return array_map(fn (string $kind) => match ($kind) {
+            'pay' => ['kind' => 'pay', 'label' => self::LABELS['pay'], 'url' => route('payment.show', $booking)],
+            'directions' => ['kind' => 'directions', 'label' => self::LABELS['directions'], 'url' => (string) $mapUrl, 'external' => true],
+            'reschedule' => ['kind' => 'reschedule', 'label' => self::LABELS['reschedule'], 'url' => route('bookings.reschedule', $booking)],
+            'review' => ['kind' => 'review', 'label' => self::LABELS['review'], 'url' => route('reviews.create', $booking)],
+            'rebook' => ['kind' => 'rebook', 'label' => self::LABELS['rebook'], 'url' => route('bookings.create', array_filter(['service' => $booking->service_id, 'specialist' => $booking->specialist_id]))],
+            default => ['kind' => 'details', 'label' => self::LABELS['details'], 'url' => route('bookings.show', $booking)],
+        }, self::kinds($booking, (bool) $mapUrl, $now));
     }
 
     /** لغو از سمت مشتری هنوز مجاز است؟ (همان قاعده‌ی BookingPolicy::cancel) */
