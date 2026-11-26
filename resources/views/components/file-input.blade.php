@@ -13,3 +13,7 @@
     </span>
     <span data-ui-file-name data-empty="{{ $empty }}" style="opacity:.75">{{ $empty }}</span>
 </label>
+{{-- بسته‌ی ۷ (آزمون production): مرورگر بعد از خطای فرم فایل انتخاب‌شده را نگه نمی‌دارد و لوگوی سالن آزمایشی بی‌صدا جا ماند --}}
+@if (($errors ?? null)?->any() && session()->hasOldInput())
+    <span class="block text-xs mt-1" style="color: rgb(var(--m-warn, 202 138 4));" data-file-reselect>فرم خطا داشت؛ اگر فایلی انتخاب کرده بودید، دوباره انتخابش کنید.</span>
+@endif

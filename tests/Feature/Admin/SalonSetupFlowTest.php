@@ -79,4 +79,15 @@ class SalonSetupFlowTest extends TestCase
         $this->assertStringNotContainsString('name="label"', $html);
         $this->assertStringNotContainsString('کارمزدی که اینجا وارد می‌کنید', $html);
     }
+
+    public function test_file_inputs_ask_to_pick_the_file_again_after_a_failed_submit(): void
+    {
+        $super = User::factory()->create(['is_admin' => true]);
+        $super->assignRole(\App\Models\Role::firstOrCreate(['name' => 'super-admin'], ['label' => 'سوپر ادمین']));
+
+        $this->actingAs($super)->get(route('superadmin.salons.create'))->assertOk()->assertDontSee('data-file-reselect', false);
+        $this->actingAs($super)->from(route('superadmin.salons.create'))->post(route('superadmin.salons.store'), ['name' => ''])
+            ->assertRedirect(route('superadmin.salons.create'));
+        $this->actingAs($super)->get(route('superadmin.salons.create'))->assertSee('data-file-reselect', false);
+    }
 }
