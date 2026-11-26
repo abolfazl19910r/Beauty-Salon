@@ -8,15 +8,16 @@ Route::prefix('payment-gateways')->name('payment-gateways.')->group(function () 
     Route::get('/', [AdminPaymentGatewayController::class, 'index'])->name('index');
     // ⭐ «اتصال حساب زرین‌پال» (بسته‌ی 5ز، OAuth + PKCE) — پشت services.zarinpal.connect.client_id؛ redirect_uri ثبت‌شده نزد زرین‌پال = callback
     Route::controller(\App\Http\Controllers\Admin\PaymentGateway\AdminZarinpalConnectController::class)->prefix('zarinpal')->name('zarinpal.')->group(function () {
-        Route::get('/connect', 'connect')->middleware('throttle:10,1')->name('connect');
+        Route::get('/connect', 'connect')->middleware(['salon.verified', 'throttle:10,1'])->name('connect');
         Route::get('/callback', 'callback')->middleware('throttle:10,1')->name('callback');
         Route::post('/sync', 'sync')->middleware('throttle:10,1')->name('sync');
-        Route::post('/terminal', 'requestTerminal')->middleware('throttle:5,1')->name('terminal');
+        Route::post('/terminal', 'requestTerminal')->middleware(['salon.verified', 'throttle:5,1'])->name('terminal');
         Route::delete('/connection', 'disconnect')->name('disconnect');
     });
-    Route::post('/', [AdminPaymentGatewayController::class, 'store'])->name('store');
+    // بسته‌ی ۷: وصل کردن درگاه (خود سالن یا ماهرو) فقط برای سالن احرازشده
+    Route::post('/', [AdminPaymentGatewayController::class, 'store'])->middleware('salon.verified')->name('store');
     // درگاه پرداخت پلتفرم (۲۰۲۶-۱۱-۲۲): درخواست مالک؛ بررسی در پنل ابرمدیر
-    Route::post('/platform', [\App\Http\Controllers\Admin\PaymentGateway\AdminPlatformGatewayController::class, 'store'])->middleware('throttle:5,60')->name('platform.store');
+    Route::post('/platform', [\App\Http\Controllers\Admin\PaymentGateway\AdminPlatformGatewayController::class, 'store'])->middleware(['salon.verified', 'throttle:5,60'])->name('platform.store');
     Route::put('/{gatewayId}', [AdminPaymentGatewayController::class, 'update'])->whereNumber('gatewayId')->name('update');
     Route::delete('/{gatewayId}', [AdminPaymentGatewayController::class, 'destroy'])->whereNumber('gatewayId')->name('destroy');
     Route::post('/{gatewayId}/move', [AdminPaymentGatewayController::class, 'move'])->whereNumber('gatewayId')->name('move');

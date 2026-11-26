@@ -56,9 +56,7 @@ class AdminPaymentGatewayController extends Controller
     {
         $service = app(\App\Services\Payment\PlatformGateway\PlatformGatewayService::class);
         $latest = $service->latestFor($salon);
-        if (! \App\Payments\PlatformGateway::enabled() && ! $latest) {
-            return null;
-        }
+        // بسته‌ی ۷: کارت «درگاه ماهرو» همیشه دیده می‌شود (خاموش ← «به‌زودی»)، تا مدیر بداند بی‌مرچنت هم راهی هست
 
         return [
             'enabled' => \App\Payments\PlatformGateway::enabled(),

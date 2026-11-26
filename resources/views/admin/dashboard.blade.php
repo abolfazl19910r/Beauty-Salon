@@ -94,10 +94,11 @@
                                     <span class="mt-0.5 inline-flex w-5 h-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
                                           style="{{ $step['done'] ? 'background: rgb(var(--m-ok)); color: rgb(var(--m-on-solid));' : 'border: 1.5px solid var(--admin-border); color: var(--admin-text-light);' }}">{{ $step['done'] ? '✓' : '' }}</span>
                                     <span class="flex-1 min-w-0">
-                                        <b style="color: var(--admin-text);">{{ $step['label'] }}</b>
+                                        <b style="color: var(--admin-text);">{{ fa_num($loop->iteration) }}. {{ $step['label'] }}</b>
                                         @if ($step['optional'])<span class="text-xs" style="color: var(--admin-text-light);">(اختیاری)</span>@endif
                                         @unless ($step['done'])
                                             <span class="block text-xs leading-6" style="color: var(--admin-text-dim);">{{ $step['hint'] }}</span>
+                                            @if (filled($step['how'] ?? null))<span class="block text-xs leading-6 mt-0.5" style="color: var(--admin-text-light);" data-setup-how>{{ $step['how'] }}</span>@endif
                                             <a href="{{ $step['url'] }}" class="text-xs font-bold" style="color: var(--admin-accent);">{{ $step['cta'] }}</a>
                                         @endunless
                                     </span>

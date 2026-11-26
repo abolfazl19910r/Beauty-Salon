@@ -48,14 +48,6 @@
 </head>
 {{-- بسته‌ی ۵ج: مشتری واردشده و مهمان در گوشی منوی پایین دارند (فاصله‌ی بدنه و ناحیه‌ی امن در partials/pwa-shell) --}}
 <body class="font-vazir min-h-screen flex flex-col overflow-x-clip {{ ! auth()->check() || \App\Support\Customer\CustomerMenu::isCustomer(auth()->user()) ? 'm-has-bottom-nav' : '' }}" dir="rtl">
-@if (! empty($salonUnverifiedPreview))
-    {{-- بسته‌ی مجوز 5د: کادر سالنِ هنوز تأییدنشده پیش‌نمایش می‌بیند --}}
-    <div class="bg-m-warn/20 border-b border-m-warn/40 text-center text-sm py-2 px-4" data-unverified-preview role="status">
-        پیش‌نمایش برای کادر سالن: تا تأیید احراز سالن، این صفحه برای مشتری‌ها باز نیست و رزرو ممکن نیست.
-        <a href="{{ \App\Support\CentralUrl::route('admin.verification.show') }}" class="underline">احراز سالن</a>
-    </div>
-@endif
-
 {{-- =========================================================
      (Sticky Glass Navbar)
 ========================================================= --}}

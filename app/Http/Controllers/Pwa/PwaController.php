@@ -104,7 +104,7 @@ class PwaController extends Controller
         $host = strtolower($request->getHost());
         if ($central !== '' && str_ends_with($host, '.'.strtolower($central))) {
             $found = $salons->findBySlug(substr($host, 0, -strlen('.'.$central)));
-            $salon = $found && $found->isVerified() && ! $found->is_suspended ? $found : null;
+            $salon = $found && ! $found->is_suspended ? $found : null;
         }
         $tokens = ThemeCatalog::sitePaletteTokens($salon ? SalonAppearance::for($salon)->palette : null);
 

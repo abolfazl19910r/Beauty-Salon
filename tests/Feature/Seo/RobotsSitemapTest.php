@@ -112,8 +112,9 @@ class RobotsSitemapTest extends TestCase
     {
         Salon::factory()->unverified()->create(['slug' => 'new-salon']);
 
+        // بسته‌ی ۷: صفحه‌ی سالن احرازنشده باز است ولی ایندکس نمی‌شود
         $this->get('/s/new-salon/sitemap.xml')->assertNotFound();
-        $this->get('/s/new-salon/robots.txt')->assertNotFound();
+        $this->get('/s/new-salon/robots.txt')->assertOk()->assertSee("Disallow: /\n", false);
     }
 
     public function test_salon_robots_txt_points_to_its_own_sitemap(): void

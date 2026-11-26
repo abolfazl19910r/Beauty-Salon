@@ -70,21 +70,45 @@ class SalonVerificationTest extends TestCase
         $this->assertFalse(IranianNationalCode::isValid('123'));
     }
 
-    public function test_an_unverified_salon_is_closed_to_the_public_and_the_app_but_its_panel_stays_open(): void
+    public function test_an_unverified_salon_is_open_for_booking_without_prepayment_but_not_indexed(): void
     {
-        $this->get('/s/tazeh')->assertNotFound();
-        $this->get('/s/tazeh/services')->assertNotFound();
-        $this->getJson('/api/v1/customer/salons/tazeh')->assertNotFound();
-        $this->post('/s/tazeh/login', ['phone' => '09120000000', 'password' => 'x'])->assertNotFound();
+        // بسته‌ی ۷ (تصمیم ابوالفضل ۲۰۲۶-۱۱-۲۶): دوره‌ی آزمایشی و سالن بی درگاه منتظر احراز نمی‌مانند
+        $this->get('/s/tazeh')->assertOk()->assertDontSee('data-unverified-preview', false)->assertSee('noindex', false);
+        $this->get('/s/tazeh/services')->assertOk();
+        $this->getJson('/api/v1/customer/salons/tazeh')->assertOk();
+        $this->get('/s/tazeh/robots.txt')->assertOk()->assertSee("Disallow: /\n", false);
 
         $this->asOwner()->get(route('admin.verification.show'))->assertOk()->assertSee('احراز سالن')->assertSee('name="owner_national_code"', false);
     }
 
-    public function test_the_salons_own_staff_get_a_read_only_preview(): void
+    public function test_verification_is_needed_only_to_connect_a_payment_gateway(): void
     {
-        $this->actingAs($this->owner)->get('/s/tazeh')->assertOk()->assertSee('data-unverified-preview', false);
-        $this->actingAs($this->owner)->post('/s/tazeh/bookings', [])->assertNotFound();
-        $this->actingAs(User::factory()->create())->get('/s/tazeh')->assertNotFound();
+        $this->asOwner()->get(route('admin.dashboard'))->assertOk()->assertDontSee('data-verification-banner', false);
+        $this->asOwner()->get(route('admin.payment-gateways.index'))->assertOk()
+            ->assertSee('data-gateway-needs-verification', false)->assertSee('data-verification-banner', false)
+            ->assertDontSee('id="add-gateway"', false);
+        $before = \App\Models\SalonPaymentGateway::withoutGlobalScopes()->where('salon_id', $this->salon->id)->count();
+        $this->asOwner()->post(route('admin.payment-gateways.store'), ['driver' => 'zarinpal', 'credentials' => ['merchant_id' => str_repeat('a', 36)]])
+            ->assertRedirect(route('admin.verification.show'));
+        $this->assertSame($before, \App\Models\SalonPaymentGateway::withoutGlobalScopes()->where('salon_id', $this->salon->id)->count());
+
+        $setup = \App\Services\Admin\Dashboard\SalonSetupChecklist::for($this->salon->fresh());
+        $this->assertNull(collect($setup['steps'])->firstWhere('key', 'verification'));
+        $this->assertSame(route('admin.verification.show'), collect($setup['steps'])->firstWhere('key', 'gateway')['url']);
+    }
+
+    public function test_the_super_admin_can_verify_without_documents_with_a_reason(): void
+    {
+        $super = $this->superAdmin();
+        $this->actingAs($super)->get(route('superadmin.salons.edit', $this->salon))->assertOk()->assertSee('data-verify-manually', false);
+        $this->actingAs($super)->post(route('superadmin.salons.verify-manually', $this->salon), ['note' => ''])->assertSessionHasErrors('note');
+
+        $this->mock(SMSService::class)->shouldReceive('send')->once()->withArgs(fn ($phone, $text) => $phone === '09121110000' && str_contains($text, 'درگاه پرداخت'))->andReturnTrue();
+        $this->actingAs($super)->post(route('superadmin.salons.verify-manually', $this->salon), ['note' => 'سالن آزمایشی ماهرو'])->assertRedirect(route('superadmin.salons.edit', $this->salon));
+
+        $this->assertTrue($this->salon->fresh()->isVerified());
+        $this->assertDatabaseHas('superadmin_audit_logs', ['action' => 'salon.verification']);
+        $this->actingAs($this->owner)->post(route('superadmin.salons.verify-manually', $this->salon), ['note' => 'xxxxx'])->assertForbidden();
     }
 
     public function test_the_owner_submits_documents_to_a_private_disk_and_the_salon_becomes_pending(): void
@@ -106,7 +130,7 @@ class SalonVerificationTest extends TestCase
         $this->assertSame(1, SalonVerification::count(), 'در انتظار بررسی، ارسال دوباره نه');
     }
 
-    public function test_the_super_admin_approves_and_the_site_opens_with_an_sms_to_the_owner(): void
+    public function test_the_super_admin_approves_with_an_sms_to_the_owner(): void
     {
         $this->submit();
         $v = SalonVerification::sole();
@@ -117,7 +141,7 @@ class SalonVerificationTest extends TestCase
         $this->actingAs($super)->get(route('superadmin.verifications.file', $v))->assertOk()->assertHeader('Cache-Control', 'no-store, private');
         $this->actingAs($this->owner)->get(route('superadmin.verifications.file', $v))->assertForbidden();
 
-        $this->mock(SMSService::class)->shouldReceive('send')->once()->withArgs(fn ($phone, $text) => $phone === '09121110000' && str_contains($text, 'تأیید شد'))->andReturnTrue();
+        $this->mock(SMSService::class)->shouldReceive('send')->once()->withArgs(fn ($phone, $text) => $phone === '09121110000' && str_contains($text, 'تأیید شد') && str_contains($text, 'درگاه پرداخت'))->andReturnTrue();
         $this->actingAs($super)->post(route('superadmin.verifications.approve', $v))->assertRedirect();
 
         $this->assertTrue($this->salon->fresh()->isVerified());
@@ -139,8 +163,6 @@ class SalonVerificationTest extends TestCase
         $this->asOwner()->get(route('admin.verification.show'))->assertSee('شناسه‌ی یکتا با نام مالک نمی‌خواند');
         $this->submit()->assertRedirect();
         $this->assertSame(2, SalonVerification::count());
-        auth()->logout();
-        $this->get('/s/tazeh')->assertNotFound();
     }
 
     public function test_the_demo_salon_and_factory_salons_are_already_verified(): void

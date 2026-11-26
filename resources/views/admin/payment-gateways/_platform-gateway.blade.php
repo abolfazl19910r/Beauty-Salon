@@ -7,7 +7,7 @@
     $toman = fn (int $rial) => fa_num(intdiv($rial, 10)).' تومان';
     $pct = fn ($v) => to_persian_num(rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.')).'٪';
     $latest = $pg['latest'];
-    $canRequest = $pg['enabled'] && (! $latest || in_array($latest->status, ['rejected', 'revoked'], true));
+    $canRequest = $pg['enabled'] && ($salonVerified ?? true) && (! $latest || in_array($latest->status, ['rejected', 'revoked'], true));
 @endphp
 <div class="{{ $card }} space-y-4" style="{{ $cardStyle }}" id="platform-gateway" data-platform-gateway>
     <div>
@@ -17,6 +17,13 @@
             {{ config('brand.name') }} هنگام تأیید تعیین می‌کند کم می‌شود و بقیه با تسویه به حساب سالن واریز می‌شود.
         </p>
     </div>
+
+    @if (! $pg['enabled'] && ! $latest)
+        <div class="rounded-lg p-3 text-sm leading-7" style="background:var(--admin-accent-light); color:var(--admin-text);" data-platform-gateway-soon>
+            <b>به‌زودی.</b> این راه هنوز برای سالن‌ها باز نشده است؛ وقتی باز شد، همین‌جا درخواست می‌دهید و بعد از تأیید، درگاه فعال و کارمزد {{ config('brand.name') }} به شما نشان داده می‌شود.
+            تا آن زمان می‌توانید درگاه خود سالن را وصل کنید یا بدون پیش‌پرداخت نوبت بگیرید.
+        </div>
+    @endif
 
     @if ($latest)
         <div class="rounded-lg p-3 text-sm leading-7" style="background:var(--admin-accent-light); color:var(--admin-text);" data-platform-gateway-status="{{ $latest->status }}">

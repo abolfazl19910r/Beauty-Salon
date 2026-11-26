@@ -59,26 +59,29 @@ class AdminPaymentGatewayTest extends TestCase
         $this->assertSame(0, $this->salon->paymentGateways()->count());
     }
 
-    public function test_owner_adds_gateways_with_fees_in_order_and_secrets_are_encrypted_and_never_shown(): void
+    public function test_owner_adds_gateways_in_order_and_secrets_are_encrypted_and_never_shown(): void
     {
-        $this->add('zibal', ['merchant' => 'zibal'], ['fee_percent' => '۱٫۵', 'fee_fixed_toman' => '۵۰۰']);
+        // بسته‌ی ۷: نام نمایشی و کارمزد روی مبلغ مشتری از فرم برداشته شد؛ مقدار فرستاده‌شده هم نادیده گرفته می‌شود
+        $this->add('zibal', ['merchant' => 'zibal'], ['fee_percent' => '۱٫۵', 'fee_fixed_toman' => '۵۰۰', 'label' => 'دلخواه']);
         $this->add('vandar', ['api_key' => 'vandar-secret-key-123']);
         $this->add('asanpardakht', ['merchant_config_id' => '1234', 'username' => 'asan-user', 'password' => 'asan-pass-999']);
 
         $gateways = $this->salon->paymentGateways()->orderBy('priority')->get();
         $this->assertSame(['zibal', 'vandar', 'asanpardakht'], $gateways->pluck('driver')->all());
         $this->assertSame([1, 2, 3], $gateways->pluck('priority')->all());
-        $this->assertSame(1.5, (float) $gateways[0]->fee_percent);
-        $this->assertSame(500, $gateways[0]->fee_fixed_toman);
+        $this->assertSame(0.0, (float) $gateways[0]->fee_percent);
+        $this->assertSame(0, $gateways[0]->fee_fixed_toman);
+        $this->assertNull($gateways[0]->label);
         $this->assertSame('vandar-secret-key-123', $gateways[1]->credentials['api_key']);
         $this->assertStringNotContainsString('vandar-secret', DB::table('salon_payment_gateways')->where('id', $gateways[1]->id)->value('credentials'));
 
         $this->actingAs($this->owner)->get(route('admin.payment-gateways.index'))
             ->assertDontSee('vandar-secret-key-123')->assertDontSee('asan-pass-999')
-            ->assertSee('asan-user')->assertSee('۱٫۵٪ + ۵۰۰ تومان');
+            ->assertSee('asan-user')->assertDontSee('name="fee_percent"', false)->assertDontSee('name="label"', false)
+            ->assertDontSee('کارمزد روی مبلغ مشتری');
     }
 
-    public function test_validation_rejects_duplicates_bad_credentials_and_excessive_fees(): void
+    public function test_validation_rejects_duplicates_and_bad_credentials(): void
     {
         $this->add('zibal', ['merchant' => 'zibal']);
 
@@ -88,7 +91,6 @@ class AdminPaymentGatewayTest extends TestCase
         $post(['driver' => 'idpay', 'credentials' => []])->assertSessionHasErrors('driver');
         $post(['driver' => 'zarinpal', 'credentials' => ['merchant_id' => 'not-a-uuid']])->assertSessionHasErrors('credentials.merchant_id');
         $post(['driver' => 'asanpardakht', 'credentials' => ['merchant_config_id' => '12', 'username' => 'u']])->assertSessionHasErrors('credentials.password');
-        $post(['driver' => 'vandar', 'credentials' => ['api_key' => 'k'], 'fee_percent' => '25'])->assertSessionHasErrors('fee_percent');
         $this->assertSame(1, $this->salon->paymentGateways()->count());
     }
 
@@ -104,7 +106,8 @@ class AdminPaymentGatewayTest extends TestCase
         $gateway->refresh();
         $this->assertSame('original-key', $gateway->credentials['api_key']);
         $this->assertFalse($gateway->is_active);
-        $this->assertSame('پرداخت سریع', $gateway->displayName());
+        $this->assertSame('وندار', $gateway->displayName(), 'نام نمایشی دلخواه دیگر پذیرفته نمی‌شود');
+        $this->assertSame(0, $gateway->fee_fixed_toman);
         $this->assertFalse($this->salon->fresh()->acceptsOnlinePayments());
 
         $this->actingAs($this->owner)->put(route('admin.payment-gateways.update', $gateway->id), [

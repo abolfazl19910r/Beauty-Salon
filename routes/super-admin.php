@@ -32,6 +32,8 @@ Route::post('/salons/{salon}/renew', [SuperAdminController::class, 'renewSubscri
 Route::post('/salons/{salon}/sms-credit', [SuperAdminController::class, 'grantSmsCredit'])->name('salons.sms-credit');
 Route::get('/salons/{salon}/invoices', [SuperAdminController::class, 'invoices'])->name('salons.invoices');
 Route::post('/salons/{salon}/toggle-suspend', [SuperAdminController::class, 'toggleSuspend'])->name('salons.toggle-suspend');
+// بسته‌ی ۷: احراز دستی ابرمدیر بدون مدارک (با دلیل)
+Route::post('/salons/{salon}/verify-manually', [\App\Http\Controllers\SuperAdmin\SalonVerificationController::class, 'approveManually'])->name('salons.verify-manually');
 
 // ⭐ کیف پول / درآمد اشتراک (۲۰۲۶-۰۹-۲۴) — همه‌ی واریزهای خرید/تمدید اشتراک سالن‌ها.
 Route::get('/payments', [SuperAdminPaymentController::class, 'index'])->name('payments.index');

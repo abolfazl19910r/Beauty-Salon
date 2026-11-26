@@ -74,7 +74,9 @@ class PlatformGatewayTest extends TestCase
     {
         config(['payments.platform_gateway.enabled' => false]);
 
-        $this->actingAs($this->owner)->get(route('admin.payment-gateways.index'))->assertOk()->assertDontSee('data-platform-gateway', false);
+        // بسته‌ی ۷: کارت دیده می‌شود ولی فقط «به‌زودی»، بی فرم درخواست
+        $this->actingAs($this->owner)->get(route('admin.payment-gateways.index'))->assertOk()
+            ->assertSee('data-platform-gateway-soon', false)->assertDontSee('data-platform-gateway-form', false);
         $this->submit()->assertNotFound();
         $this->assertSame(0, PlatformGatewayRequest::count());
     }

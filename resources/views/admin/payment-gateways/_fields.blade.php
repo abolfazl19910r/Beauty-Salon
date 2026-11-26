@@ -34,23 +34,7 @@
         @endif
     </div>
 @endforeach
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-    <div>
-        <label class="block text-sm mb-1" for="{{ $prefix.$driver }}-label">نام نمایشی برای مشتری (اختیاری)</label>
-        <input id="{{ $prefix.$driver }}-label" name="label" maxlength="60" class="{{ $input }}" style="{{ $inputStyle }}"
-               value="{{ $useOld ? old('label') : ($gateway?->label ?? '') }}" placeholder="{{ $item['label'] }}">
-    </div>
-    <div>
-        <label class="block text-sm mb-1" for="{{ $prefix.$driver }}-fee-percent">کارمزد درصدی (٪)</label>
-        <input id="{{ $prefix.$driver }}-fee-percent" name="fee_percent" type="text" inputmode="decimal" dir="ltr" class="{{ $input }}" style="{{ $inputStyle }}"
-               value="{{ $useOld ? old('fee_percent') : ($gateway ? (rtrim(rtrim((string) $gateway->fee_percent, '0'), '.') ?: '0') : '0') }}">
-    </div>
-    <div>
-        <label class="block text-sm mb-1" for="{{ $prefix.$driver }}-fee-fixed">کارمزد ثابت (تومان)</label>
-        <input id="{{ $prefix.$driver }}-fee-fixed" name="fee_fixed_toman" type="text" inputmode="numeric" dir="ltr" class="{{ $input }}" style="{{ $inputStyle }}"
-               value="{{ $useOld ? old('fee_fixed_toman') : ($gateway?->fee_fixed_toman ?? 0) }}">
-    </div>
-</div>
+{{-- بسته‌ی ۷ (تصمیم ابوالفضل ۱۱-۲۶): نام نمایشی و کارمزد روی مبلغ مشتری از فرم برداشته شد — کارمزد درگاه از سهم سالن کم می‌شود --}}
 <label class="flex items-center gap-2 text-sm">
     <input type="checkbox" name="is_active" value="1" @checked($useOld ? old('is_active') : ($gateway?->is_active ?? true))> فعال (در صفحه‌ی پرداخت مشتری نمایش داده شود)
 </label>

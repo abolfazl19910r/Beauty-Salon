@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
 
 /**
  * احراز سالن، مرحله‌ی الف (بسته‌ی مجوز 5د): مالک از پنل مدارک را می‌فرستد ← «در انتظار تأیید» ← ابرمدیر تأیید یا رد (با دلیل).
- * تا تأیید، صفحه‌ی عمومی و رزرو سالن بسته است (ResolveSalonFromRoute)؛ پنل مدیر باز می‌ماند تا سالن آماده شود.
+ * بسته‌ی ۷ (تصمیم ابوالفضل ۲۰۲۶-۱۱-۲۶): احراز فقط پیش‌نیاز درگاه پرداخت است (salon.verified)؛ صفحه‌ی سالن و رزرو از اول باز است.
  * فایل پروانه روی دیسک خصوصی local (storage/app/private)، هرگز روی public.
  */
 class SalonVerificationService
@@ -82,7 +82,23 @@ class SalonVerificationService
         });
 
         app(SuperAdminAudit::class)->record('salon.verification', $reviewer ? 'تأیید احراز سالن' : 'تأیید خودکار احراز سالن ('.$verification->provider.')', $verification->salon_id);
-        $this->tellOwner($verification->salon, sprintf('احراز سالن «%s» تأیید شد؛ صفحه‌ی سالن و رزرو آنلاین باز است. %s', $verification->salon->name, config('brand.name')));
+        $this->tellOwner($verification->salon, sprintf('احراز سالن «%s» تأیید شد؛ حالا می‌توانید درگاه پرداخت را وصل کنید. %s', $verification->salon->name, config('brand.name')));
+    }
+
+    /**
+     * بسته‌ی ۷ (تصمیم ابوالفضل ۱۱-۲۶): ابرمدیر بی مدارک تأیید می‌کند (سالن آزمایشی، احراز حضوری…). اگر مدارکی در انتظار است همان تأیید
+     * می‌شود؛ وگرنه فقط وضعیت سالن. دلیل در گزارش کارهای ابرمدیر می‌ماند.
+     */
+    public function approveWithoutDocuments(Salon $salon, User $reviewer, string $note): void
+    {
+        DB::transaction(function () use ($salon, $reviewer) {
+            SalonVerification::query()->where('salon_id', $salon->id)->where('status', 'pending')
+                ->update(['status' => 'approved', 'reviewed_by' => $reviewer->id, 'reviewed_at' => now(), 'rejection_reason' => null]);
+            $salon->forceFill(['verification_status' => 'approved', 'verified_at' => now()])->save();
+        });
+
+        app(SuperAdminAudit::class)->record('salon.verification', 'تأیید احراز سالن بدون مدارک: '.$note, $salon->id);
+        $this->tellOwner($salon, sprintf('احراز سالن «%s» تأیید شد؛ حالا می‌توانید درگاه پرداخت را وصل کنید. %s', $salon->name, config('brand.name')));
     }
 
     public function reject(SalonVerification $verification, ?User $reviewer, string $reason): void

@@ -46,12 +46,29 @@
             </div>
         @endif
 
-        @if ($zarinpalConnect)
+        @if ($zarinpalConnect && $salon->isVerified())
             @include('admin.payment-gateways._zarinpal-connect', ['connect' => $zarinpalConnect, 'returnDomain' => $returnDomain, 'salon' => $salon])
         @endif
 
+        {{-- بسته‌ی ۷: احراز سالن فقط پیش‌نیاز درگاه است (salon.verified) --}}
+        @php $salonVerified = $salon->isVerified(); @endphp
+        @unless ($salonVerified)
+            <div class="{{ $card }} text-sm leading-7" style="{{ $cardStyle }}" data-gateway-needs-verification>
+                <b style="color: var(--admin-text);">اول احراز سالن</b>
+                <p style="color: var(--admin-text-dim);">
+                    @if ($salon->verification_status === 'pending')
+                        مدارک احراز در انتظار بررسی است؛ بعد از تأیید (با پیامک خبر می‌دهیم) می‌توانید درگاه را وصل کنید. تا آن موقع رزرو بدون پیش‌پرداخت انجام می‌شود.
+                    @else
+                        برای وصل کردن هر درگاه (درگاه خود سالن یا درگاه {{ config('brand.name') }})، {{ config('brand.name') }} باید هویت مالک و پروانه‌ی کسب سالن را بررسی کند. تا آن موقع رزرو بدون پیش‌پرداخت انجام می‌شود.
+                        <a href="{{ route('admin.verification.show') }}" class="font-bold" style="color: var(--admin-accent);">احراز سالن</a>
+                    @endif
+                </p>
+            </div>
+        @endunless
+
+        {{-- بسته‌ی ۷: دو راه، روشن — اول «درگاه ماهرو» (مرچنت نمی‌خواهد)، بعد درگاه خود سالن --}}
         @if ($platformGateway)
-            @include('admin.payment-gateways._platform-gateway', ['pg' => $platformGateway, 'input' => $input, 'inputStyle' => $inputStyle, 'card' => $card, 'cardStyle' => $cardStyle])
+            @include('admin.payment-gateways._platform-gateway', ['pg' => $platformGateway, 'input' => $input, 'inputStyle' => $inputStyle, 'card' => $card, 'cardStyle' => $cardStyle, 'salonVerified' => $salonVerified])
         @endif
 
         @unless ($gateways->where('is_active', true)->count() || ($platformGateway['active'] ?? false))
@@ -72,7 +89,10 @@
                                 <div class="font-bold" style="color: var(--admin-text);">{{ $gateway->displayName() }}
                                     <span class="text-xs font-normal" style="color: var(--admin-text-light);">({{ \App\Payments\GatewayCatalog::label($gateway->driver) }})</span>
                                 </div>
-                                <div class="text-xs mt-1" style="color: var(--admin-text-dim);">کارمزد روی مبلغ مشتری: {{ $feeText($gateway) }}</div>
+                                @if ((float) $gateway->fee_percent > 0 || (int) $gateway->fee_fixed_toman > 0)
+                                    {{-- درگاه‌های پیش از بسته‌ی ۷؛ با «ذخیره» صفر می‌شود --}}
+                                    <div class="text-xs mt-1" style="color: var(--admin-text-dim);">کارمزد روی مبلغ مشتری (قدیمی): {{ $feeText($gateway) }} — با ذخیره‌ی دوباره برداشته می‌شود</div>
+                                @endif
                                 @if (\App\Payments\GatewayCatalog::supportsPayout($gateway->driver))
                                     <div class="text-xs mt-1" style="color: var(--admin-text-dim);">
                                         تسویه‌ی خودکار کارشناسان:
@@ -123,9 +143,10 @@
 
         {{-- افزودن درگاه --}}
         @php $available = collect($catalog)->reject(fn ($d, $k) => $gateways->contains('driver', $k)); @endphp
-        @if ($available->isNotEmpty())
+        @if ($available->isNotEmpty() && $salonVerified)
             <section class="{{ $card }}" style="{{ $cardStyle }}" id="add-gateway">
-                <h2 class="font-bold mb-3" style="color: var(--admin-accent);">افزودن درگاه</h2>
+                <h2 class="font-bold" style="color: var(--admin-accent);">درگاه خود سالن</h2>
+                <p class="text-sm mt-1 mb-3 leading-7" style="color: var(--admin-text-dim);">اگر از زرین‌پال یا درگاه دیگری کد پذیرنده (مرچنت) به نام سالن دارید، اینجا وصلش کنید؛ پول مستقیم به حساب خود سالن می‌رود.</p>
                 <form method="POST" action="{{ route('admin.payment-gateways.store') }}" class="space-y-3" novalidate>
                     @csrf
                     <div>
@@ -149,8 +170,8 @@
         <section class="rounded-lg p-4 text-xs leading-6" style="background:rgb(var(--m-warn) / .14); color:#713F12;">
             <b>نکته‌ها:</b>
             دامنه‌ی سایت سالن (یا ساب‌دامین آن) باید در پنل هر درگاه برای همان درگاه ثبت شده باشد؛ درگاه‌ها آدرس بازگشت را با آن مقایسه می‌کنند.
-            کارمزدی که اینجا وارد می‌کنید به مبلغ پرداختی مشتری اضافه می‌شود و در صفحه‌ی پرداخت به او نمایش داده می‌شود —
-            اگر گزینه‌ی «کارمزد بر عهده‌ی خریدار» را در پنل خود درگاه هم فعال کرده‌اید، اینجا کارمزد وارد نکنید تا دوبار گرفته نشود.
+            مشتری همان مبلغ نوبت را می‌پردازد و کارمزد درگاه از واریزی به حساب سالن کم می‌شود؛ گزینه‌ی «کارمزد بر عهده‌ی خریدار» را در پنل
+            درگاه روشن نکنید، وگرنه درگاه کارمزد را جدا از مشتری می‌گیرد.
             «تست اتصال» فقط یک درخواست پرداخت آزمایشی می‌سازد؛ مشتری‌ای به درگاه نمی‌رود و پولی جابه‌جا نمی‌شود.
             @if (\App\Payments\GatewayCatalog::payoutLabels() === '')
                 <br><b>تسویه‌ی کارشناسان:</b> {{ \App\Payments\GatewayCatalog::NO_PAYOUT_NOTE }}

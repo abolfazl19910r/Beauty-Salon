@@ -61,6 +61,18 @@ class SalonVerificationController extends Controller
         return redirect()->route('superadmin.verifications.index')->with('success', "احراز «{$verification->salon->name}» تأیید شد.");
     }
 
+    /** بسته‌ی ۷: تأیید احراز بدون مدارک، با دلیل (سالن آزمایشی، احراز حضوری…) */
+    public function approveManually(Request $request, \App\Models\Salon $salon, SalonVerificationService $service): RedirectResponse
+    {
+        $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:300']], [
+            'note.required' => 'دلیل تأیید بدون مدارک را بنویسید.',
+            'note.min' => 'دلیل دست‌کم ۵ نویسه باشد.',
+        ]);
+        $service->approveWithoutDocuments($salon, $request->user(), trim($data['note']));
+
+        return redirect()->route('superadmin.salons.edit', $salon)->with('success', "احراز سالن «{$salon->name}» بدون مدارک تأیید شد.");
+    }
+
     public function reject(Request $request, SalonVerification $verification, SalonVerificationService $service): RedirectResponse
     {
         abort_unless($verification->status === 'pending', 409);

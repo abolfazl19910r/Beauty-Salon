@@ -35,7 +35,7 @@ class AdminDashboardRefreshTest extends TestCase
     {
         $this->salon->forceFill(['address' => null])->save();
         $setup = SalonSetupChecklist::for($this->salon->fresh());
-        $this->assertSame(5, $setup['total']);
+        $this->assertSame(4, $setup['total']); // بسته‌ی ۷: احراز داخل قدم درگاه
         $this->assertFalse($setup['required_done']);
         $this->assertFalse(collect($setup['steps'])->firstWhere('key', 'info')['done']);
         $this->assertTrue(collect($setup['steps'])->firstWhere('key', 'gateway')['optional']);

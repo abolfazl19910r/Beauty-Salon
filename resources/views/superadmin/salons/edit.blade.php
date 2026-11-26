@@ -202,6 +202,22 @@
             </div>
         </div>
 
+        {{-- بسته‌ی ۷ (تصمیم ابوالفضل ۱۱-۲۶): احراز برای همه‌ی سالن‌ها لازم است، ولی ابرمدیر می‌تواند بی مدارک (مثلاً سالن آزمایشی یا احراز
+             حضوری) با ثبت دلیل تأیید کند — در گزارش کارهای ابرمدیر می‌ماند --}}
+        <div class="sa-card sa-card-pad text-sm space-y-3" data-salon-verification style="color: var(--sa-text);">
+            <div class="sa-card-title">احراز سالن</div>
+            <p>وضعیت: <b>{{ $salon->verificationLabel() }}</b>@if ($salon->verified_at) — {{ fa_date($salon->verified_at, true) }}@endif</p>
+            @unless ($salon->isVerified())
+                <form method="POST" action="{{ route('superadmin.salons.verify-manually', $salon) }}" class="grid gap-2">
+                    @csrf
+                    <label class="sa-label" for="verify-note">دلیل تأیید بدون مدارک (در گزارش کارهای ابرمدیر ثبت می‌شود)</label>
+                    <input id="verify-note" name="note" required minlength="5" maxlength="300" class="sa-input" value="{{ old('note') }}" placeholder="مثلاً: سالن آزمایشی / مدارک حضوری دیده شد">
+                    @error('note')<p class="text-xs" style="color: var(--sa-danger, #dc2626);">{{ $message }}</p>@enderror
+                    <button type="submit" class="sa-btn sa-btn-primary" data-verify-manually>تأیید احراز بدون مدارک</button>
+                </form>
+            @endunless
+        </div>
+
         <div class="sa-card sa-card-pad text-sm space-y-3" data-salon-pause style="color: var(--sa-text);">
             <div class="sa-card-head">
                 <div class="sa-card-title">توقف موقت رزرو</div>
