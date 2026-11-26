@@ -181,4 +181,23 @@ class BookingPaymentModeTest extends TestCase
 
         $this->assertStringContainsString('دقیقه پرداخت نشود', implode("\n", PurchaseTerms::cancellation(null, true)));
     }
+
+    public function test_confirm_page_keeps_digits_inside_names_and_persianises_numbers(): void
+    {
+        $user = User::factory()->create();
+        $specialist = $this->specialist();
+        $specialist->update(['name' => 'tester2']);
+        $service = BeautyService::factory()->create(['name' => 'Gel 3D', 'price' => 600000, 'duration' => 60]);
+
+        $html = $this->actingAs($user)->post(route('bookings.confirm'), [
+            'service_id' => $service->id, 'specialist_id' => $specialist->id,
+            'booking_time' => now()->addDays(2)->setTime(11, 0)->format('Y-m-d H:i:s'),
+        ])->assertOk()->getContent();
+
+        $this->assertStringContainsString('tester2', $html);
+        $this->assertStringNotContainsString('tester۲', $html);
+        $this->assertStringContainsString('Gel 3D', $html);
+        $this->assertStringContainsString('۶۰ دقیقه', $html);
+        $this->assertStringContainsString('۱۱:۰۰', $html);
+    }
 }

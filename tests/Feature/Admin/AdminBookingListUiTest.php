@@ -54,4 +54,21 @@ class AdminBookingListUiTest extends TestCase
         $this->actingAs($admin)->get(route('admin.bookings.index'))->assertOk()
             ->assertSee('در این بازه نوبتی نیست.')->assertSee('دیدن همه‌ی نوبت‌ها');
     }
+
+    public function test_status_change_returns_to_the_same_tab(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $pending = Booking::factory()->create(['status' => 'pending', 'booking_time' => now()->addDays(3)->setTime(11, 0)]);
+        $list = route('admin.bookings.index', ['tab' => 'all', 'status' => 'pending']);
+
+        $this->actingAs($admin)->from($list)
+            ->put(route('admin.bookings.update', $pending), ['status' => 'confirmed'])
+            ->assertRedirect($list)->assertSessionHas('success');
+
+        // از صفحه‌ی دیگری (مثلاً داشبورد) همان فهرست پیش‌فرض
+        $other = Booking::factory()->create(['status' => 'pending', 'booking_time' => now()->addDays(3)->setTime(13, 0)]);
+        $this->actingAs($admin)->from(route('admin.dashboard'))
+            ->put(route('admin.bookings.update', $other), ['status' => 'confirmed'])
+            ->assertRedirect(route('admin.bookings.index'));
+    }
 }

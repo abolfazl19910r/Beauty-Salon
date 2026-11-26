@@ -152,6 +152,10 @@ class BookingControllerTest extends TestCase
         $response->assertViewHas('booking', function ($viewBooking) use ($booking) {
             return $viewBooking && $viewBooking->id === $booking->id;
         });
+        // مدت خدمت با عدد فارسی، مثل بقیه‌ی رسید (آزمون پروداکشن: «60 دقیقه» دیده شد)
+        $minutes = $booking->durationMinutes();
+        $response->assertSee(fa_num($minutes).' دقیقه');
+        $response->assertDontSee('>'.$minutes.' دقیقه', false);
     }
 
     public function test_success_cannot_show_another_users_booking(): void

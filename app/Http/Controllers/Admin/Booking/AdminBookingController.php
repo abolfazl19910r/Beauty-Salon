@@ -145,6 +145,12 @@ class AdminBookingController extends Controller
                 ? $this->bookingService->updateStatus($booking, $request->validated()['status'])
                 : $this->bookingService->updateFull($booking, $request->validated());
 
+            // تأیید/لغو از فهرست: به همان زبانه و فیلتری برمی‌گردد که مدیر در آن بود (نه «امروز»)
+            $back = url()->previous();
+            if ($request->isStatusOnly() && str_starts_with($back, route('admin.bookings.index'))) {
+                return redirect()->to($back)->with('success', $result['message']);
+            }
+
             return redirect()->route($redirectRoute, $redirectParams)
                 ->with('success', $result['message']);
 

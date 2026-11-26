@@ -22,8 +22,8 @@
                 </h2>
                 <div class="bg-m-bg/60 rounded-xl border border-m-gold/8 divide-y divide-m-gold/8">
                     @foreach([
-                        ['label' => 'خدمت', 'value' => $service->name],
-                        ['label' => 'کارشناس', 'value' => $specialist->name],
+                        ['label' => 'خدمت', 'value' => $service->name, 'text' => true],
+                        ['label' => 'کارشناس', 'value' => $specialist->name, 'text' => true],
                         ['label' => 'تاریخ', 'value' => verta($bookingTime)->format('Y/m/d'), 'persian' => true],
                         ['label' => 'ساعت', 'value' => verta($bookingTime)->format('H:i')],
                         ['label' => 'مدت زمان', 'value' => $service->duration . ' دقیقه', 'persian' => true],
@@ -32,7 +32,8 @@
                         <div class="flex items-center justify-between px-5 py-3.5 text-sm">
                             <span class="text-m-tx/55">{{ $row['label'] }}</span>
                             <span class="font-medium text-m-tx {{ isset($row['persian']) ? 'persian-number' : '' }}">
-                            {{ \App\Support\Fa::digits($row['value']) }}
+                            {{-- نام‌ها دست‌نخورده (tester2 نه tester۲)؛ فقط عددها فارسی می‌شوند --}}
+                            {{ isset($row['text']) ? $row['value'] : \App\Support\Fa::digits($row['value']) }}
                         </span>
                         </div>
                     @endforeach
