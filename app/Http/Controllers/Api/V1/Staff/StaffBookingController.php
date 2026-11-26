@@ -47,8 +47,40 @@ class StaffBookingController extends StaffController
         ]);
     }
 
+    /**
+     * GET staff/home — بسته‌ی ۵د: خانه‌ی اپ همکار مثل داشبورد وب کارشناس (SpecialistDashboardService::getOverviewData):
+     * «نوبت بعدی» با کار اصلی، درآمد ماه شمسی (خالص کیف پول)، قابل برداشت، امتیاز، «۷ روز آینده» و شمار منتظر تأیید.
+     */
+    public function home(Request $request): JsonResponse
+    {
+        $specialist = $this->specialist($request);
+        $data = $this->dashboard->getOverviewData($specialist);
+        $next = $data['nextBooking'];
+        $rest = collect($data['todayOthers'])->filter(fn (Booking $b) => in_array($b->status, ['pending', 'confirmed'], true) && $b->booking_time->gte(now()))
+            ->concat($data['upcomingDays'])->take(6)->values();
+        $labels = $this->noShowLabels($rest->concat([$next])->filter());
+
+        return ApiResponse::success([
+            'date_label' => $data['todayPersian'],
+            'next' => $next ? StaffBookingPresenter::present($next, $labels) : null,
+            'month_label' => $data['monthLabel'],
+            'month_income' => (float) $data['monthIncome'],
+            'withdrawable' => (float) $data['withdrawable'],
+            'rating' => $data['averageRating'],
+            'waiting_count' => \App\Services\Specialist\SpecialistBookingListFilter::waitingCount($specialist),
+            'today_count' => (int) $data['todayBookingsCount'],
+            'upcoming' => $rest->filter(fn (Booking $b) => ! $next || $b->id !== $next->id)->take(5)
+                ->map(fn (Booking $b) => StaffBookingPresenter::present($b, $labels))->values(),
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
+        // بسته‌ی ۵د: tab (پیش رو / منتظر تأیید / گذشته / لغوشده) + q (نام یا موبایل) مثل پنل وب، با شمار هر تب در meta.counts
+        if ($request->filled('tab')) {
+            return $this->indexByTab($request);
+        }
+
         $input = $request->validate([
             'from' => ['nullable', 'date_format:Y-m-d'],
             'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
@@ -80,6 +112,24 @@ class StaffBookingController extends StaffController
         return ApiResponse::success(
             collect($page->items())->map(fn (Booking $b) => StaffBookingPresenter::present($b, $labels))->values(),
             $this->pageMeta($page) + ['from' => $from->toDateString(), 'to' => $to->toDateString()],
+        );
+    }
+
+    private function indexByTab(Request $request): JsonResponse
+    {
+        $filter = \App\Services\Specialist\SpecialistBookingListFilter::class;
+        $input = $request->validate([
+            'tab' => ['required', 'in:'.implode(',', array_keys($filter::TABS))],
+            'q' => ['nullable', 'string', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
+        ]);
+        $specialist = $this->specialist($request);
+        $page = $filter::paginate($specialist, $input['tab'], $input['q'] ?? null, (int) ($input['per_page'] ?? 20));
+        $labels = $this->noShowLabels(collect($page->items()));
+
+        return ApiResponse::success(
+            collect($page->items())->map(fn (Booking $b) => StaffBookingPresenter::present($b, $labels))->values(),
+            $this->pageMeta($page) + ['tab' => $input['tab'], 'counts' => $filter::tabCounts($specialist, $input['q'] ?? null)],
         );
     }
 

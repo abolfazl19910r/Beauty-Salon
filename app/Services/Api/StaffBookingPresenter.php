@@ -25,6 +25,12 @@ class StaffBookingPresenter
             'payment_status' => $booking->payment_status,
             'booking_time' => $time?->toIso8601String(),
             'booking_time_jalali' => $time ? Jalalian::fromCarbon($time)->format('Y/m/d H:i') : null,
+            // بسته‌ی ۵د: برچسب‌های آماده با رقم فارسی («یکشنبه ۱۵ آذر»، «فردا جمعه ۶ آذر»، «۱۷:۳۰»)
+            'date_label' => $time ? \App\Support\Fa::date($time) : null,
+            'day_label' => $time ? self::dayLabel($time) : null,
+            'time_label' => $time ? \App\Support\Fa::time($time) : null,
+            // بسته‌ی ۵د: کار اصلی همان پنل وب (SpecialistDashboardService::primaryAction): confirm · complete · details
+            'primary_action' => $time ? self::primaryKind($booking) : 'details',
             'duration_minutes' => $booking->duration_minutes ? (int) $booking->duration_minutes : ($booking->service?->duration !== null ? (int) $booking->service->duration : null),
             'service' => $booking->service ? [
                 'id' => $booking->service->id,
@@ -53,12 +59,35 @@ class StaffBookingPresenter
             'cancelled_by' => $booking->cancelled_by,
             // جلسه‌ی دوره‌ی درمانی (بسته‌ی ب) — null برای نوبت عادی
             'course' => CoursePresenter::bookingCourse($booking),
+            // بسته‌ی ۵د (قاعده‌ی بسته‌ی ۳ وب): «تأیید» فقط برای منتظر تأییدِ آینده، «انجام شد» فقط وقتی ساعت نوبت رسیده —
+            // اپ‌های قدیمی هم دیگر «انجام شد» را روی نوبت روزهای آینده نشان نمی‌دهند
             'actions' => [
-                'confirm' => $booking->status === 'pending',
-                'cancel' => ! in_array($booking->status, ['cancelled', 'completed'], true),
-                'complete' => $booking->status === 'confirmed',
+                'confirm' => $booking->status === 'pending' && $time !== null && $time->gt(now()),
+                'cancel' => ! in_array($booking->status, ['cancelled', 'completed', 'no_show'], true),
+                'complete' => $booking->status === 'confirmed' && $time !== null && $time->lte(now()),
                 'no_show' => $booking->canBeMarkedNoShow(),
             ],
         ];
+    }
+
+    /** «امروز»، «فردا جمعه ۶ آذر» یا «یکشنبه ۱۵ آذر» */
+    public static function dayLabel(\DateTimeInterface $time): string
+    {
+        $day = \Illuminate\Support\Carbon::instance($time);
+
+        return match (true) {
+            $day->isToday() => 'امروز',
+            $day->isTomorrow() => 'فردا '.\App\Support\Fa::date($day),
+            default => \App\Support\Fa::date($day),
+        };
+    }
+
+    private static function primaryKind(Booking $booking): string
+    {
+        return match (true) {
+            $booking->status === 'pending' && $booking->booking_time->gt(now()) => 'confirm',
+            $booking->status === 'confirmed' && $booking->booking_time->lte(now()) => 'complete',
+            default => 'details',
+        };
     }
 }

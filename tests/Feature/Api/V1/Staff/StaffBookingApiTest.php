@@ -65,7 +65,9 @@ class StaffBookingApiTest extends TestCase
             ->assertJsonPath('data.summary.count', 2)
             ->assertJsonPath('data.summary.pending_count', 1)
             ->assertJsonPath('data.bookings.0.id', $manual->id)
-            ->assertJsonPath('data.bookings.0.actions', ['confirm' => false, 'cancel' => true, 'complete' => true, 'no_show' => false])
+            // بسته‌ی ۵د: «انجام شد» فقط وقتی ساعت نوبت رسیده (۰۸:۰۰ و اکنون ۰۷:۰۰)
+            ->assertJsonPath('data.bookings.0.actions', ['confirm' => false, 'cancel' => true, 'complete' => false, 'no_show' => false])
+            ->assertJsonPath('data.bookings.0.primary_action', 'details')
             ->assertJsonPath('data.bookings.1.id', $pending->id)
             ->assertJsonPath('data.bookings.1.status_label', 'منتظر تأیید')
             ->assertJsonStructure(['data' => ['date', 'date_jalali', 'bookings' => [['booking_time', 'booking_time_jalali', 'customer' => ['name', 'phone'], 'service']]]]);

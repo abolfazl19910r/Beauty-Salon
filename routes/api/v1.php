@@ -100,6 +100,8 @@ Route::middleware(['auth:sanctum', 'api.audience', 'api.legal', 'throttle:api-v1
 // اپ «ماهرو همکار» — فقط متخصص (بسته‌ی ۲ اپلیکیشن)؛ متخصص و سالن از توکن
 Route::prefix('staff')->name('staff.')->middleware(['auth:sanctum', 'api.audience:staff', 'throttle:api-v1'])->group(function () {
     Route::get('today', [StaffBookingController::class, 'today'])->name('today');
+    // بسته‌ی ۵د: خانه‌ی اپ همکار (نوبت بعدی، درآمد ماه، قابل برداشت، ۷ روز آینده)
+    Route::get('home', [StaffBookingController::class, 'home'])->name('home');
 
     Route::prefix('bookings')->name('bookings.')->controller(StaffBookingController::class)->group(function () {
         Route::get('/', 'index')->name('index');
