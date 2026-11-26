@@ -177,18 +177,19 @@ class CentralLandingPageTest extends TestCase
             ->assertDontSee('secret-salon-xyz');
     }
 
-    public function test_landing_shows_the_trial_and_which_layouts_and_palettes_each_plan_and_period_opens(): void
+    public function test_landing_table_shows_the_trial_and_which_layouts_and_palettes_each_plan_and_period_opens(): void
     {
         // بسته‌ی «و» (درخواست ابوالفضل): نه فقط تعداد قالب — کدام چیدمان‌ها و پالت‌ها، در هر پلن و هر بازه، به‌علاوه‌ی کارت آزمایشی
         config(['billing.trial_days' => 14]);
         app(\App\Services\Plans\DefaultPlans::class)->sync();
 
         $page = $this->get(route('central.home'))->assertOk();
-        $page->assertSee('data-plan-card="trial"', false)
-            ->assertSee('id="templates-table"', false)
+        // بسته‌ی ۶: کارت آزمایشی جدا نیست (خط زیر تیتر) و جدول پشت «مقایسه‌ی کامل» است؛ کارت‌ها فقط شمار قالب
+        $page->assertDontSee('data-plan-card="trial"', false)
+            ->assertSee('<details class="tt rv" id="templates-table">', false)
             ->assertSee('data-theme-row="trial"', false)
             ->assertSee('data-theme-row="pro"', false)
-            ->assertSee('چیدمان: شاهکار، روزنامه‌ی سالن')
+            ->assertSee('<small>شاهکار، روزنامه‌ی سالن</small>', false)
             ->assertSee('همه‌ی ۱۶ قالب')
             ->assertSee('ریل آیکونی');
 

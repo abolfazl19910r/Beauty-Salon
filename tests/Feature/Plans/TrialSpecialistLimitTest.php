@@ -110,6 +110,7 @@ class TrialSpecialistLimitTest extends TestCase
             ->assertSee('حداکثر ۲ کارشناس');
 
         $html = $this->get(route('central.home'))->assertOk()->getContent();
-        $this->assertMatchesRegularExpression('/data-plan-card="trial".*?۲ (کارشناس|کارشناس)/su', $html);
+        // بسته‌ی ۶: کارت آزمایشی جدا برداشته شد؛ خط زیر تیتر تعرفه‌ها
+        $this->assertStringContainsString('۱۴ روز رایگان با ۲ کارشناس و ۴۰۰ قطعه پیامک', $html);
     }
 }

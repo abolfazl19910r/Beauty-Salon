@@ -476,8 +476,7 @@ section{padding:110px 0}
 .pl li{display:flex;gap:10px;font-size:14.5px}
 .pl li:before{content:"✓";color:var(--gl);font-weight:800}
 .pl li.no{color:var(--mu2)}.pl li.no:before{content:"—";color:var(--mu2)}
-.incl{margin-top:26px;text-align:center;color:var(--mu);font-size:14px;display:flex;flex-wrap:wrap;gap:8px 22px;justify-content:center}
-.incl span:before{content:"✦ ";color:var(--gl)}
+.incl{margin:26px auto 0;max-width:760px;text-align:center;color:var(--mu);font-size:14.5px;line-height:1.9}
 /* apps (۲۰۲۶-۱۱-۰۶) */
 .apps{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
 @media(max-width:760px){.apps{grid-template-columns:1fr}}
@@ -562,14 +561,26 @@ footer .enamad{margin-top:12px}
 .prc.p4 .pl .pr{font-size:clamp(26px,2.4vw,32px);white-space:nowrap}
 .prc.p4 .pl ul{align-content:start}
 #plans[data-period="1m"] .pp:not([data-p="1m"]),#plans[data-period="3m"] .pp:not([data-p="3m"]),#plans[data-period="6m"] .pp:not([data-p="6m"]),#plans[data-period="12m"] .pp:not([data-p="12m"]){display:none}
-.trialc{flex-direction:row;flex-wrap:wrap;align-items:center;gap:14px 28px;margin-bottom:26px;padding:24px 28px}
-.trialc .tc-h{flex:0 0 auto}.trialc .tc-h .pr{font-size:30px}
-.trialc ul{flex:1 1 380px;margin:0;border-top:0;padding-top:0;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-.trialc .btn{flex:0 0 auto}
-.pl li.thm span{display:block}
-.pl .td{display:block;color:var(--mu);font-size:12.5px;line-height:1.9;margin-top:2px}
 .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:4px;vertical-align:middle;border:1px solid var(--ln2)}
-.tt{margin-top:40px}.tt h3{text-align:center;font-size:22px;margin-bottom:6px}
+/* بسته‌ی ۶: کارت‌های هم‌ساختار و «مقایسه‌ی کامل» جمع‌شده */
+.prc.p4 .pl{gap:16px}
+.pl .pl-h{display:flex;flex-direction:column;gap:6px;min-height:92px}
+.pl .pl-h .for{margin:0;font-size:14px;line-height:1.8}
+.prc.p4 .pl .pr{color:var(--tx)}
+.pl .pl-cta .buy{margin-top:10px}
+.prc.p4 .pl ul{margin:0;padding-top:16px;gap:10px;flex:0 0 auto}
+.pl li.n:before,.pl li.h:before{content:none}
+.pl li.n b{font-weight:800;margin-inline-end:4px}
+.pl li.h{color:var(--mu)}
+.pl li.thm{color:var(--mu)}
+@media(max-width:620px){.pl .pl-h{min-height:0}[data-period-switch]{flex-wrap:nowrap;gap:4px}[data-period-switch] button{padding-inline:12px;font-size:13.5px}}
+.tt{margin-top:34px;border:1px solid var(--ln);border-radius:22px;background:var(--sf)}
+.tt>summary{list-style:none;cursor:pointer;padding:18px 22px;text-align:center;font-weight:700;color:var(--gl);display:flex;justify-content:center;align-items:center;gap:8px}
+.tt>summary::-webkit-details-marker{display:none}
+.tt>summary:after{content:"";width:8px;height:8px;border-inline-start:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);margin-top:-4px;transition:transform .25s}
+.tt[open]>summary:after{transform:rotate(135deg);margin-top:4px}
+.tt[open]{padding:0 18px 18px}
+.tt h3{text-align:center;font-size:22px;margin:6px 0}
 .tt-sub{text-align:center;color:var(--mu);font-size:14.5px;margin-bottom:16px}
 .tt-legend{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:center;color:var(--mu);font-size:13.5px;margin-bottom:10px}
 .tt-legend b{color:var(--tx)}
@@ -824,65 +835,58 @@ footer .enamad{margin-top:12px}
 
 <!-- ============ PRICING ============ -->
 <section id="plans" style="padding-top:0" data-period="1m"><div class="wrap">
-<div class="sh rv"><h2>چهار پلن، هر کدام برای یک اندازه سالن</h2><p>@if ($trialDays > 0){{ to_persian_num((string) $trialDays) }} روز رایگان، بدون نیاز به کارت بانکی. هر وقت راضی بودید، پلن را از داخل پنل سالن می‌خرید.@else پلن و مدت اشتراک را انتخاب کنید؛ اشتراک بلندتر ارزان‌تر است و قالب‌های بیشتری باز می‌کند.@endif</p></div>
+<div class="sh rv"><h2>چهار پلن، هر کدام برای یک اندازه سالن</h2><p>@if ($trialCard){{ to_persian_num((string) $trialCard['days']) }} روز رایگان با {{ to_persian_num((string) $trialCard['specialists']) }} کارشناس و {{ fa_num($trialCard['sms']) }} قطعه پیامک، بدون کارت بانکی. بعد، پلن را از داخل پنل انتخاب می‌کنید.@elseif ($trialDays > 0){{ to_persian_num((string) $trialDays) }} روز رایگان، بدون نیاز به کارت بانکی. هر وقت راضی بودید، پلن را از داخل پنل سالن می‌خرید.@else پلن و مدت اشتراک را انتخاب کنید؛ اشتراک بلندتر ارزان‌تر است و قالب‌های بیشتری باز می‌کند.@endif</p></div>
 @if ($planCards !== [])
-@if ($trialCard)
-{{-- بسته‌ی «و»: پلن آزمایشی کنار چهار پلن پولی (بازه ندارد) --}}
-<div class="card pl rv trialc" data-plan-card="trial">
-<div class="tc-h"><h3>{{ $trialCard['name'] }}</h3><div class="pr gold num">رایگان <small>{{ to_persian_num((string) $trialCard['days']) }} روز</small></div></div>
-<ul>
-<li>بدون کارت بانکی؛ خرید پلن هر وقت خواستید از داخل پنل</li>
-<li>{{ to_persian_num((string) $trialCard['specialists']) }} کارشناس و {{ fa_num($trialCard['sms']) }} قطعه پیامک</li>
-<li>@if ($trialCard['theme_detail']['count'] > 0){{ to_persian_num((string) $trialCard['theme_detail']['count']) }} قالب ظاهری@else قالب «طلایی ماهرو» (تیره و روشن)@endif</li>
-</ul>
-<a class="btn btn-line" href="{{ $trialCard['signup_url'] }}">شروع {{ to_persian_num((string) $trialCard['days']) }} روز رایگان</a>
-</div>
-@endif
 {{-- ⭐ بسته‌ی «و»: یک کلید بازه برای هر چهار کارت (بدون جاوااسکریپت: یک‌ماهه) --}}
 <div class="tabs rv" role="group" aria-label="مدت اشتراک" data-period-switch>
 @foreach ($periodLabels as $type => $label)
 <button type="button" data-period-btn="{{ $type }}" aria-pressed="{{ $type === '1m' ? 'true' : 'false' }}" @if ($type === '1m') aria-selected="true" @endif>{{ $label }}</button>
 @endforeach
 </div>
+{{-- بسته‌ی ۶: چهار کارت هم‌ساختار — «برای چه سالنی»، قیمت، دکمه، بعد فقط عددها و تفاوت با پلن قبلی --}}
 <div class="prc p4">
 @foreach ($planCards as $card)
 <div class="card pl rv {{ $card['recommended'] ? 'hot' : '' }}" data-plan-card="{{ $card['key'] }}">
 @if ($card['recommended'])<span class="ribbon">پیشنهاد ما</span>@endif
-<h3>{{ $card['name'] }}</h3>
-<p class="for">{{ $card['description'] }}</p>
+<div class="pl-h"><h3>{{ $card['name'] }}</h3>@if ($card['description'])<p class="for">{{ $card['description'] }}</p>@endif</div>
 @foreach ($card['periods'] as $type => $period)
 <div class="pp" data-p="{{ $type }}">
-<div class="pr gold num">{{ fa_num($period['price']) }} <small>تومان</small></div>
-<p class="per">@if ($type !== '1m')ماهانه حدود {{ fa_num($period['per_month']) }} تومان@if ($period['saving_percent'] > 0) · {{ to_persian_num((string) $period['saving_percent']) }}٪ کمتر@endif @else پرداخت ماه‌به‌ماه@endif</p>
+<div class="pr num">{{ fa_num($period['price']) }} <small>@if ($type === '1m')تومان در ماه@else تومان برای {{ ['3m' => 'سه', '6m' => 'شش', '12m' => 'دوازده'][$type] ?? '' }} ماه@endif</small></div>
+<p class="per">@if ($type !== '1m')ماهانه حدود {{ fa_num($period['per_month']) }} تومان@if ($period['saving_percent'] > 0)، {{ to_persian_num((string) $period['saving_percent']) }}٪ کمتر@endif @else پرداخت ماه‌به‌ماه@endif</p>
 </div>
 @endforeach
-<ul>
-@if ($card['previous'])<li>همه‌ی امکانات {{ $card['previous'] }}</li>@else<li>نوبت‌دهی آنلاین، پیامک تأیید و یادآوری، بیعانه</li>@endif
-@foreach ($card['adds'] as $label)<li>{{ $label }}</li>@endforeach
-<li>{{ to_persian_num((string) $card['specialists']) }} کارشناس در قیمت پلن</li>
-<li>{{ fa_num($card['sms']) }} قطعه پیامک در هر ماه</li>
 @foreach ($card['periods'] as $type => $period)
-<li class="pp thm" data-p="{{ $type }}" data-themes="{{ $period['themes'] }}"><span>@if ($period['theme_detail']['all'])همه‌ی {{ to_persian_num((string) $period['themes']) }} قالب ظاهری + طلایی ماهرو@elseif ($period['themes'] > 0){{ to_persian_num((string) $period['themes']) }} قالب ظاهری + طلایی ماهرو@else فقط قالب طلایی ماهرو (تیره و روشن)@endif
-@if ($period['themes'] > 0)<small class="td">چیدمان: {{ implode('، ', $period['theme_detail']['layouts']) }}<br>پالت: @foreach ($period['theme_detail']['palettes'] as $pal)<i class="sw" style="background:{{ $pal['swatch'] }}"></i>{{ $pal['name'] }}@if (! $loop->last)، @endif @endforeach</small>@endif</span></li>
-@endforeach
-@if ($card['admin_themes'] > 0)<li class="thm"><span>{{ to_persian_num((string) $card['admin_themes']) }} قالب دیگر برای پنل مدیر<small class="td">{{ implode('، ', $card['admin_theme_names']) }}</small></span></li>@else<li>پنل مدیر با منوی کناری پیش‌فرض</li>@endif
-</ul>
-@foreach ($card['periods'] as $type => $period)
-<div class="pp" data-p="{{ $type }}">
+<div class="pp pl-cta" data-p="{{ $type }}">
 @if ($card['trial'])
 <a class="btn {{ $card['recommended'] ? 'btn-gold' : 'btn-line' }} btn-block" href="{{ $period['signup_url'] }}">شروع {{ to_persian_num((string) $trialDays) }} روز رایگان</a>
-<a class="buy" href="{{ $period['buy_url'] }}">خرید فوری {{ $card['name'] }}، بدون دوره‌ی رایگان</a>
+<a class="buy" href="{{ $period['buy_url'] }}">خرید فوری، بدون دوره‌ی رایگان</a>
 @else
 <a class="btn {{ $card['recommended'] ? 'btn-gold' : 'btn-line' }} btn-block" href="{{ $period['buy_url'] }}">خرید و پرداخت آنلاین</a>
 @endif
 </div>
 @endforeach
+<ul>
+<li class="n"><b class="num">{{ to_persian_num((string) $card['specialists']) }}</b> کارشناس</li>
+<li class="n"><b class="num">{{ fa_num($card['sms']) }}</b> قطعه پیامک در ماه</li>
+@if ($card['previous'])<li class="h">همه‌ی امکانات {{ $card['previous'] }}، به‌اضافه‌ی:</li>@else<li>نوبت‌دهی آنلاین، پیامک تأیید و یادآوری، بیعانه</li>@endif
+@foreach ($card['adds'] as $label)<li>{{ $label }}</li>@endforeach
+@foreach ($card['periods'] as $type => $period)
+@php
+$__themeLine = ($period['themes'] === 0 && $card['admin_themes'] === 0) ? 'قالب طلایی ماهرو'
+    : ($period['theme_detail']['all'] ? 'همه‌ی ' : '').to_persian_num((string) $period['themes']).' قالب سایت'
+    .($card['admin_themes'] > 0 ? ' و '.to_persian_num((string) $card['admin_themes']).' قالب پنل' : '');
+@endphp
+<li class="pp thm" data-p="{{ $type }}" data-themes="{{ $period['themes'] }}">{{ $__themeLine }}</li>
+@endforeach
+</ul>
 </div>
 @endforeach
 </div>
+<p class="incl rv">هر کارشناس بیشتر ماهی {{ fa_num($extraSpecialistPrice) }} تومان. بدون هزینه‌ی راه‌اندازی، با تیکت پشتیبانی فارسی و به‌روزرسانی رایگان.@if ($trialDays > 0) خرید فوری بدون دوره‌ی رایگان هم از زیر دکمه‌ی هر پلن ممکن است.@endif</p>
 
-{{-- ⭐ بسته‌ی «و»: کدام پلن در کدام بازه کدام چیدمان‌ها و پالت‌ها را دارد --}}
-<div class="tt rv" id="templates-table">
+{{-- بسته‌ی ۶: جدول کامل پشت یک «مقایسه‌ی کامل» تا کارت‌ها خلوت بمانند --}}
+<details class="tt rv" id="templates-table">
+<summary>مقایسه‌ی کامل امکانات و قالب‌ها در هر پلن و مدت</summary>
 <h3>قالب‌های ظاهری در هر پلن و مدت اشتراک</h3>
 <p class="tt-sub">هر قالب = یک چیدمان × یک پالت، هر دو در نسخه‌ی تیره و روشن، برای سایت سالن، پنل مشتری، پنل کارشناس و اپ. «طلایی ماهرو» در همه‌ی پلن‌ها هست.</p>
 <div class="tt-legend">
@@ -904,7 +908,7 @@ footer .enamad{margin-top:12px}
 <td>@if ($card['admin_themes'] > 0)منوی کناری + {{ implode('، ', $card['admin_theme_names']) }}@else منوی کناری پیش‌فرض@endif</td></tr>
 @endforeach
 </tbody></table></div>
-</div>
+</details>
 @else
 <div class="prc p4">
 @foreach ($plans as $plan)
@@ -922,7 +926,6 @@ footer .enamad{margin-top:12px}
 @endforeach
 </div>
 @endif
-<div class="incl rv"><span>هر کارشناس بیشتر ماهانه {{ fa_num($extraSpecialistPrice) }} تومان</span><span>بدون هزینه‌ی راه‌اندازی</span><span>تیکت پشتیبانی فارسی</span><span>به‌روزرسانی رایگان</span></div>
 </div></section>
 
 

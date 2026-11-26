@@ -30,6 +30,10 @@ class SyncDefaultPlans extends Command
             $this->info(sprintf('سقف کارشناس پلن «آزمایشی» از %d به %d رسید.', DefaultPlans::LEGACY_TRIAL_SPECIALISTS, (int) config('billing.trial_specialists', 2)));
         }
 
+        if ($result['descriptions_updated'] !== []) {
+            $this->info('توضیح کوتاه پلن‌ها (کارت لندینگ) به‌روز شد: '.implode('، ', $result['descriptions_updated']).'.');
+        }
+
         return self::SUCCESS;
     }
 }

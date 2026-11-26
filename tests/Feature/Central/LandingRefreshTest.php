@@ -83,4 +83,40 @@ class LandingRefreshTest extends TestCase
         config(['billing.trial_days' => 0]);
         $this->get(route('central.home'))->assertDontSee('بدون کارت بانکی.')->assertSee('ساخت سالن · راه‌اندازی در یک روز');
     }
+
+    public function test_plan_cards_share_one_shape_and_show_only_theme_counts(): void
+    {
+        config(['billing.trial_days' => 14]);
+        app(\App\Services\Plans\DefaultPlans::class)->sync();
+        $html = $this->get(route('central.home'))->assertOk()->getContent();
+        $cards = substr($html, strpos($html, '<div class="prc p4">'), strpos($html, '<details class="tt rv"') - strpos($html, '<div class="prc p4">'));
+
+        $this->assertSame(4, substr_count($cards, 'data-plan-card="'));
+        $this->assertStringContainsString('برای سالن کوچک: رزرو آنلاین و پیامک‌های نوبت.', $cards);
+        $this->assertStringContainsString('همه‌ی امکانات پایه، به‌اضافه‌ی:', $cards);
+        $this->assertStringContainsString('تومان در ماه', $cards);
+        $this->assertStringContainsString('۴ قالب سایت و ۱ قالب پنل', $cards);
+        $this->assertStringContainsString('همه‌ی ۱۶ قالب سایت و ۳ قالب پنل', $cards);
+        // نام چیدمان و پالت فقط در جدول «مقایسه‌ی کامل»
+        $this->assertStringNotContainsString('چیدمان:', $cards);
+        $this->assertStringNotContainsString('class="sw"', $cards);
+        $this->assertStringContainsString('<summary>مقایسه‌ی کامل امکانات و قالب‌ها در هر پلن و مدت</summary>', $html);
+        $this->assertStringContainsString('هر کارشناس بیشتر ماهی', $html);
+    }
+
+    public function test_sync_replaces_only_untouched_old_default_descriptions(): void
+    {
+        app(\App\Services\Plans\DefaultPlans::class)->sync();
+        \App\Models\Plan::byKey('pro')->update(['description' => 'همه‌ی امکانات اصلی سالن، با ۱۰ متخصص و ۲٬۰۰۰ پیامک در ماه.']);
+        \App\Models\Plan::byKey('basic')->update(['description' => 'رزرو آنلاین و پیامک‌های نوبت برای سالن کوچک.']);
+        \App\Models\Plan::byKey('clinic')->update(['description' => 'متن دلخواه ابرمدیر']);
+
+        $result = app(\App\Services\Plans\DefaultPlans::class)->sync();
+
+        $this->assertEqualsCanonicalizing(['pro', 'basic'], $result['descriptions_updated']);
+        $this->assertSame('همه‌ی امکانات اصلی یک سالن پرکار.', \App\Models\Plan::byKey('pro')->description);
+        $this->assertSame('برای سالن کوچک: رزرو آنلاین و پیامک‌های نوبت.', \App\Models\Plan::byKey('basic')->description);
+        $this->assertSame('متن دلخواه ابرمدیر', \App\Models\Plan::byKey('clinic')->description);
+        $this->assertSame([], app(\App\Services\Plans\DefaultPlans::class)->sync()['descriptions_updated']);
+    }
 }
