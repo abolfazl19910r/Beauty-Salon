@@ -58,14 +58,25 @@ RUN --mount=type=cache,target=/tmp/cache \
     fi
 
 
-# ─── Stage 3: Final image ───────────────────────────────────
-FROM php:8.5-fpm-alpine AS production
+# ─── Stage 3: Runtime (PHP، nginx، supervisor و تنظیم‌ها؛ بی کد برنامه) ─────────
+# ۲۰۲۶-۱۱-۲۶: «production» دو تکه شد. قبلاً «single» از production (بعد از COPY کد) ساخته می‌شد، پس هر تغییر کد نصب mariadb را از
+# اینترنت تکرار می‌کرد (۴ تا ۷ دقیقه روی خط خانه و دو بار شکست با «TLS: unspecified error» / «failed to extract mariadbd»).
+# حالا بسته‌های سیستم یک بار در runtime و single-runtime کش می‌شوند و فقط لایه‌های کد عوض می‌شوند.
+FROM php:8.5-fpm-alpine AS runtime
 
 LABEL maintainer="Beauty Salon <info@beautysalon.ir>"
 LABEL description="Mahru - salon booking SaaS (Laravel 13)"
 
+# ─── آینه‌ی Alpine (اختیاری) ─────────────────────────────────
+# ۲۰۲۶-۱۱-۲۶: از خط خانه dl-cdn.alpinelinux.org بارها با «TLS: unspecified error» / «DNS: transient error» قطع شد.
+# «set ALPINE_MIRROR=https://mirror.arvancloud.ir/alpine» پیش از deploy\single\build-image.cmd همه‌ی apkها را از آینه می‌گیرد؛ خالی = همان CDN.
+ARG ALPINE_MIRROR=
+RUN if [ -n "$ALPINE_MIRROR" ]; then sed -i -E "s#https?://dl-cdn\.alpinelinux\.org/alpine#${ALPINE_MIRROR%/}#g" /etc/apk/repositories; fi \
+    && cat /etc/apk/repositories
+
 # ─── System dependencies ────────────────────────────────────
-RUN apk add --no-cache \
+# تا ۴ بار تلاش (خط ناپایدار)؛ بعد بررسی که بسته‌ی اصلی واقعاً نصب شده باشد
+RUN for i in 1 2 3 4; do apk add --no-cache \
     # Nginx
     nginx \
     # Process manager
@@ -91,7 +102,9 @@ RUN apk add --no-cache \
     # Font support برای PDF فارسی (PDF گزارش‌ها با mPDF ساخته می‌شود؛ wkhtmltopdf از Alpine 3.15 به بعد بسته ندارد و
     # «apk add wkhtmltopdf» build را می‌شکست — پکیج snappy هم هیچ‌جای کد استفاده نمی‌شود)
     fontconfig \
-    ttf-dejavu
+    ttf-dejavu \
+    && break; echo "apk try $i failed, retrying" >&2; sleep 10; done \
+    && command -v nginx && command -v supervisord && command -v age
 
 # ─── PHP Extensions ─────────────────────────────────────────
 # OPcache از PHP 8.5 همیشه داخل خود PHP کامپایل می‌شود (در image رسمی از قبل فعال است)؛ «docker-php-ext-install opcache»
@@ -99,7 +112,8 @@ RUN apk add --no-cache \
 # ⚠️ ابزار کامپایل ($PHPIZE_DEPS) صریحاً با نام مجازی «.phpize-deps» (۲۰۲۶-۱۰-۲۳): docker-php-ext-install در پایان ابزار
 # کامپایلی را که خودش نصب کرده پاک می‌کند، پس «pecl install redis» بعد از آن بی autoconf/phpize می‌شکست. با همین نام،
 # اسکریپت‌های image دیگر خودشان نصب/پاک نمی‌کنند و ما در آخر یک بار پاک می‌کنیم.
-RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+RUN for i in 1 2 3 4; do apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS && break; echo "apk try $i failed, retrying" >&2; sleep 10; done \
+    && command -v autoconf \
     && docker-php-ext-configure gd \
         --with-freetype \
         --with-jpeg \
@@ -152,6 +166,22 @@ RUN addgroup -g 1000 -S www \
     && adduser -u 1000 -S www -G www \
     && addgroup nginx www   # worker های nginx (کاربر nginx) به سوکت php-fpm با mode 0660 و گروه www دسترسی دارن
 
+# ─── Entrypoint (پیش از کد تا با تغییر کد دوباره ساخته نشود) ─────────────
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+# ⚠️ اگر git ویندوز فایل‌ها را با CRLF بیرون آورده باشد، «#!/bin/sh\r» در لینوکس پیدا نمی‌شود و کانتینر با «not found» می‌افتد
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /etc/supervisor/conf.d/supervisord.conf /etc/nginx/nginx.conf \
+        /etc/nginx/conf.d/default.conf /etc/nginx/security-headers.conf /etc/nginx/mahru/site.inc /etc/nginx/mahru/tls.conf \
+        /etc/nginx/mahru/fastcgi-remote-addr.inc /usr/local/bin/mahru-nginx-setup \
+        /usr/local/etc/php-fpm.d/zzz-beauty-salon.conf /usr/local/etc/php/conf.d/beauty-salon.ini \
+    && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/mahru-nginx-setup
+
+WORKDIR /var/www/html
+EXPOSE 80
+
+
+# ─── Stage 4: Production (runtime + کد برنامه) ───────────────────
+FROM runtime AS production
+
 # ─── App directory ──────────────────────────────────────────
 WORKDIR /var/www/html
 
@@ -182,17 +212,6 @@ RUN chown -R www:www storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache \
     && chmod 0755 /var/www/html
 
-# ─── Entrypoint ──────────────────────────────────────────────
-COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-# ⚠️ اگر git ویندوز فایل‌ها را با CRLF بیرون آورده باشد، «#!/bin/sh\r» در لینوکس پیدا نمی‌شود و کانتینر با «not found» می‌افتد
-RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /etc/supervisor/conf.d/supervisord.conf /etc/nginx/nginx.conf \
-        /etc/nginx/conf.d/default.conf /etc/nginx/security-headers.conf /etc/nginx/mahru/site.inc /etc/nginx/mahru/tls.conf \
-        /etc/nginx/mahru/fastcgi-remote-addr.inc /usr/local/bin/mahru-nginx-setup \
-        /usr/local/etc/php-fpm.d/zzz-beauty-salon.conf /usr/local/etc/php/conf.d/beauty-salon.ini \
-    && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/mahru-nginx-setup
-
-EXPOSE 80
-
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 
@@ -200,10 +219,22 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # docker compose -f docker-compose.single.yml up -d --build
 # MariaDB (بسته‌ی رسمی Alpine) فقط روی 127.0.0.1؛ صف، cache و session روی همان دیتابیس (بدون Redis). همه‌ی داده‌ها روی /data:
 # دیتابیس، storage/app (آپلودها، کلید فایربیس)، لاگ‌ها و کلید APP_KEY ساخته‌شده.
-FROM production AS single
+FROM runtime AS single-runtime
 
 # bash: deploy/backup/mahru-backup.sh (پشتیبان شبانه‌ی داخل کانتینر، ۲۰۲۶-۱۰-۲۴)
-RUN apk add --no-cache mariadb mariadb-client bash
+# ۲۰۲۶-۱۱-۲۶: بی کد برنامه، پس کش می‌شود؛ خط ناپایدار ← تا ۴ بار تلاش و بعد بررسی که mariadbd واقعاً نصب شده باشد
+RUN for i in 1 2 3 4; do apk add --no-cache mariadb mariadb-client bash && break; echo "apk try $i failed, retrying" >&2; sleep 10; done \
+    && command -v mariadbd && command -v mariadb && command -v bash
+
+FROM single-runtime AS single
+
+# کد و assetهای همان target «production» (ساخت یک بار، مالکیت مثل production: فایل‌ها www، خود ریشه‌ی پروژه root با 0755
+# تا fs.protected_regular میزبان بازنویسی .env را در ری‌استارت نشکند — docker/single/entrypoint.sh، ۲۰۲۶-۱۱-۱۱)
+COPY --from=production --chown=www:www /var/www/html /var/www/html
+COPY --from=production /usr/local/bin/composer /usr/local/bin/composer
+RUN chown root:root /var/www/html \
+    && chmod 0755 /var/www/html \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 COPY docker/single/supervisord.conf /etc/supervisor/conf.d/supervisord-single.conf
 COPY docker/single/my.cnf /etc/my.cnf.d/zz-mahru.cnf

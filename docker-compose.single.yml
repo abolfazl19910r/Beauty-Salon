@@ -17,6 +17,9 @@ services:
       context: .
       dockerfile: Dockerfile
       target: single
+      args:
+        # آینه‌ی اختیاری Alpine برای خط ناپایدار (۲۰۲۶-۱۱-۲۶): set ALPINE_MIRROR=https://mirror.arvancloud.ir/alpine
+        ALPINE_MIRROR: ${ALPINE_MIRROR:-}
     image: mahru:single
     container_name: mahru
     restart: unless-stopped
