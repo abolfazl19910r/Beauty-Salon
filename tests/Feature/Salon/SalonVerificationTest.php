@@ -85,7 +85,7 @@ class SalonVerificationTest extends TestCase
     {
         $this->asOwner()->get(route('admin.dashboard'))->assertOk()->assertDontSee('data-verification-banner', false);
         $this->asOwner()->get(route('admin.payment-gateways.index'))->assertOk()
-            ->assertSee('data-gateway-needs-verification', false)->assertSee('data-verification-banner', false)
+            ->assertSee('data-gateway-needs-verification', false)->assertDontSee('data-verification-banner', false)
             ->assertDontSee('id="add-gateway"', false);
         $before = \App\Models\SalonPaymentGateway::withoutGlobalScopes()->where('salon_id', $this->salon->id)->count();
         $this->asOwner()->post(route('admin.payment-gateways.store'), ['driver' => 'zarinpal', 'credentials' => ['merchant_id' => str_repeat('a', 36)]])

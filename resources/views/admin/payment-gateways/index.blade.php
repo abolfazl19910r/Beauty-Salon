@@ -38,7 +38,7 @@
         @endif
 
         {{-- ⭐ بسته‌ی 5ز: آدرس بازگشت همیشه روی همین دامنه است؛ دامنه‌ی دیگر در زرین‌پال خطای ‎-14 می‌دهد --}}
-        @if (\App\Payments\GatewayCatalog::isEnabled('zarinpal'))
+        @if (\App\Payments\GatewayCatalog::isEnabled('zarinpal') && $salon->isVerified())
             <div class="rounded-lg p-3 text-sm leading-7" style="background:var(--admin-accent-light); color:var(--admin-text);" id="return-domain">
                 در پنل زرین‌پال این دامنه را ثبت کنید: <b dir="ltr" class="select-all">{{ $returnDomain }}</b><br>
                 <span class="text-xs" style="color:var(--admin-text-dim);">مشتری بعد از پرداخت همیشه به همین دامنه برمی‌گردد؛ اگر درگاه زرین‌پال سالن با دامنه‌ی دیگری

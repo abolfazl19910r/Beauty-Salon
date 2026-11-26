@@ -90,4 +90,19 @@ class SalonSetupFlowTest extends TestCase
             ->assertRedirect(route('superadmin.salons.create'));
         $this->actingAs($super)->get(route('superadmin.salons.create'))->assertSee('data-file-reselect', false);
     }
+
+    public function test_the_salon_home_shows_a_new_expert_and_service_without_waiting_for_the_cache(): void
+    {
+        $salon = \App\Models\Salon::where('slug', 'rasta')->firstOrFail();
+        $this->get('/s/rasta')->assertOk();
+        $this->assertTrue(\Illuminate\Support\Facades\Cache::has("home_specialists:{$salon->id}"));
+
+        Specialist::factory()->create(['name' => 'کارشناس تازه‌ی آزمون']);
+        $this->assertFalse(\Illuminate\Support\Facades\Cache::has("home_specialists:{$salon->id}"));
+        $this->assertFalse(\Illuminate\Support\Facades\Cache::has("home_default_honest:{$salon->id}"));
+
+        $this->get('/s/rasta')->assertOk();
+        BeautyService::factory()->create(['name' => 'خدمت تازه‌ی آزمون']);
+        $this->assertFalse(\Illuminate\Support\Facades\Cache::has("home_services:{$salon->id}"));
+    }
 }

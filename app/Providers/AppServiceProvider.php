@@ -94,6 +94,10 @@ class AppServiceProvider extends ServiceProvider
         DiscountCode::observe(DiscountCodeObserver::class);
         // بسته‌ی 5ه: درگاه آخر غیرفعال/حذف شد ← «بدون پیش‌پرداخت» + هشدار به مالک
         \App\Models\SalonPaymentGateway::observe(\App\Observers\SalonPaymentGatewayObserver::class);
+        // بسته‌ی ۷: کش صفحه‌ی خانه‌ی سالن با تغییر خدمات، کارشناسان، برنامه، نظرها و گالری پاک می‌شود
+        foreach ([\App\Models\BeautyService::class, \App\Models\Specialist::class, \App\Models\SpecialistSchedule::class, \App\Models\Review::class, \App\Models\GalleryImage::class] as $homeModel) {
+            $homeModel::observe(\App\Observers\SalonHomeCacheObserver::class);
+        }
         // IP و user agent کارهای کلیدی (بسته‌ی مجوز 5د)
         foreach ([Booking::class, \App\Models\Review::class, \App\Models\SupportTicket::class, \App\Models\SupportTicketMessage::class,
             \App\Models\Salon::class, \App\Models\User::class, \App\Models\PaymentTransaction::class] as $audited) {

@@ -445,7 +445,7 @@
         </header>
         @include('partials.platform-announcements', ['panel' => 'admins'])
         @include('partials.booking-paused-banner', ['panel' => 'admins'])
-        @include('admin.verification._banner')
+        {{-- بسته‌ی ۷: نوار احراز برداشته شد؛ احراز فقط پیش‌نیاز درگاه است و کارت خود صفحه‌ی درگاه‌ها همان را می‌گوید --}}
         @include('admin.terms-update._banner')
 
         <!-- Main Content -->
