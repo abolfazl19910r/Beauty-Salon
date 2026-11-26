@@ -1,11 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, Pressable, useColorScheme, View } from 'react-native';
+import { Image, Linking, Pressable, useColorScheme, View } from 'react-native';
 
 import type { CustomerBooking, CustomerBookingStatus, SalonCard } from '@/lib/customer/types';
 import { faDigits, toman } from '@/lib/format';
 import { logoAppearance } from '@/lib/logo';
+import type { MoreItem } from './agenda';
 import { Badge, Card, Row, T } from './kit';
 import { radius, space, usePalette } from './theme';
 
@@ -17,6 +18,32 @@ const TONE: Record<CustomerBookingStatus, 'warning' | 'success' | 'info' | 'dang
   cancelled: 'danger',
   no_show: 'danger',
 };
+
+/** وضعیت پول نوبت برای مشتری (مثل وب): پرداخت شده / منتظر پیش‌پرداخت / پرداخت در سالن */
+export function PaymentBadge({ booking: b }: { booking: Pick<CustomerBooking, 'status' | 'payment_status' | 'prepayment_required' | 'actions'> }) {
+  if (b.status === 'cancelled' || b.status === 'no_show') {
+    return null;
+  }
+  if (b.payment_status === 'paid') {
+    return <Badge text="پیش‌پرداخت شده" tone="success" />;
+  }
+  return b.actions.pay ? <Badge text="منتظر پیش‌پرداخت" tone="danger" /> : <Badge text="پرداخت در سالن" tone="muted" />;
+}
+
+/** کارهای «⋯» یک نوبت مشتری (تقویم، تماس، جزئیات، لغو) */
+export function bookingMoreItems(b: CustomerBooking, phone: string | null): MoreItem[] {
+  const items: MoreItem[] = [{ label: 'جزئیات و رسید', onPress: () => router.push(`/booking/${b.id}`) }];
+  if (b.calendar_url) {
+    items.push({ label: 'افزودن به تقویم', onPress: () => void Linking.openURL(b.calendar_url!) });
+  }
+  if (phone) {
+    items.push({ label: 'تماس با سالن', onPress: () => void Linking.openURL(`tel:${phone}`) });
+  }
+  if (b.actions.cancel) {
+    items.push({ label: 'لغو نوبت…', danger: true, note: b.cancel_note, onPress: () => router.push(`/booking/${b.id}?cancel=1`) });
+  }
+  return items;
+}
 
 export function CustomerStatusBadge({ booking }: { booking: Pick<CustomerBooking, 'status' | 'status_label'> }) {
   return <Badge text={booking.status_label} tone={TONE[booking.status] ?? 'muted'} />;

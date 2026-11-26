@@ -100,7 +100,17 @@ export type CustomerBooking = {
   /** جلسه‌ی دوره‌ی درمانی؛ null برای نوبت عادی */
   course?: CourseBrief | null;
   actions: { pay: boolean; cancel: boolean; reschedule: boolean; rate: boolean };
+  /** بسته‌ی ۵د (سرور قدیمی ندارد): برچسب‌ها با رقم فارسی، کار اصلی مثل وب، پیامد لغو و فایل تقویم امضاشده */
+  date_label?: string | null;
+  day_label?: string | null;
+  time_label?: string | null;
+  primary?: { kind: CustomerPrimaryKind; label: string }[];
+  cancel_note?: string | null;
+  calendar_url?: string | null;
 };
+
+export type CustomerPrimaryKind = 'pay' | 'directions' | 'reschedule' | 'review' | 'rebook' | 'details';
+export type CustomerBookingTab = 'upcoming' | 'past' | 'cancelled';
 
 export type Gateway = {
   id: number;
@@ -177,6 +187,18 @@ export type Home = {
   wallet_balance: number;
   unread_notifications: number;
   features?: string[];
+  /** بسته‌ی ۵د (سرور قدیمی ندارد): بخش‌های داشبورد وب */
+  date_label?: string;
+  next_booking?: CustomerBooking | null;
+  next_is_today?: boolean;
+  can_change?: boolean;
+  change_hours?: number;
+  salon_contact?: { address: string | null; phone: string | null; directions_url: string | null };
+  loyalty_enabled?: boolean;
+  next_bookings?: CustomerBooking[];
+  to_rate?: CustomerBooking | null;
+  rebook?: { service: { id: number; name: string } | null; specialist: { id: number; name: string } | null; date_label: string } | null;
+  suggestion?: { id: number; name: string } | null;
 };
 
 export type CustomerWallet = { balance: number; total_deposited: number; total_spent: number };

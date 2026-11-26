@@ -28,6 +28,9 @@ export default function Account() {
 
       <View style={{ gap: space(2) }}>
         <MenuRow icon="wallet-outline" title="کیف پول" subtitle={home.data ? toman(home.data.wallet_balance) : undefined} onPress={() => router.push('/wallet')} />
+        {home.data?.loyalty_enabled !== false ? (
+          <MenuRow icon="gift-outline" title="باشگاه مشتریان" subtitle={home.data && home.data.loyalty_points > 0 ? `${faDigits(home.data.loyalty_points)} امتیاز` : 'جایزه‌ها و کدهای تخفیف'} onPress={() => router.push('/club')} />
+        ) : null}
         <MenuRow icon="medkit-outline" title="دوره‌های درمانی" subtitle="دوره‌های من و خرید دوره" onPress={() => router.push('/courses')} />
         <MenuRow icon="notifications-outline" title="اعلان‌ها" onPress={() => router.push('/notifications')} trailing={unread > 0 ? <Badge text={faDigits(unread)} tone="gold" /> : null} />
         <MenuRow icon="notifications-circle-outline" title="دریافت اعلان" subtitle="اجازه، اعلان آزمایشی و تنظیم باتری گوشی" onPress={() => router.push('/push')} />

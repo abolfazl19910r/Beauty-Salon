@@ -21,7 +21,7 @@ const sage = {
 const base = {
   background: '#15110E', surface: '#1C1712', surfaceMuted: '#251E17', border: 'b', borderStrong: 'bs', text: '#F4EDE0', textMuted: '#B3A48C',
   gold: '#E3C985', goldSoft: 'gs', button: '#D8B96A', onGold: '#221A0C', success: '#9CC58F', successSoft: 'x', warning: 'w', warningSoft: 'x',
-  danger: 'd', dangerSoft: 'x', info: 'i', infoSoft: 'x', accent2: '#E3C985', onAccent2: '#221A0C',
+  danger: 'd', dangerSoft: 'x', info: 'i', infoSoft: 'x', accent2: '#E3C985', onAccent2: '#221A0C', strong: '#F4EDE0', onStrong: '#15110E',
 };
 
 describe('salon theme', () => {

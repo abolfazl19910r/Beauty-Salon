@@ -131,7 +131,7 @@ it('picks the salon by code, signs up with the SMS code and lands on home', asyn
   expect(calls.find((c) => c.url.endsWith('/register'))?.body).toEqual({ name: 'مریم رضایی', phone: '09121111111', password: 'secret123', password_confirmation: 'secret123', accept_terms: true });
   fireEvent.press(screen.getByText('ساخت حساب'));
 
-  await screen.findByText('سلام مریم');
+  await screen.findByText('سلام، مریم');
   expect(calls.find((c) => c.url.endsWith('/register/verify'))?.body).toEqual({ challenge: 'CH9', code: '123456', device_name: 'Redmi Note 8' });
   expect(mockSecure.get('mahru.token')).toBe('7|cus');
   expect(calls.find((c) => c.url.includes('/customer/home'))?.auth).toBe('Bearer 7|cus');
@@ -239,7 +239,8 @@ it('books without prepayment: no bank, the whole price at the salon, and a daily
   fireEvent.press(screen.getByText('ثبت نوبت'));
   await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('نوبت ثبت شد', 'بعد از تأیید سالن خبرتان می‌کنیم.'));
   expect(calls.some((c) => c.url.includes('/pay'))).toBe(false);
-  await screen.findByText('پرداخت در سالن (بدون پیش‌پرداخت)');
+  // بسته‌ی ۵د: جزئیات نوبت — برچسب «پرداخت در سالن» و همان ردیف مبلغ
+  expect((await screen.findAllByText('پرداخت در سالن')).length).toBeGreaterThan(0);
   expect(screen.queryByText(/پرداخت پیش‌پرداخت/)).toBeNull();
 });
 
@@ -380,7 +381,7 @@ it('lets a signed-in customer scan a specialist QR of the same salon from home (
 
   const router = renderRouter('./src/customer', { initialUrl: '/home' });
 
-  fireEvent.press(await screen.findByText('اسکن QR کارشناس یا سالن'));
+  fireEvent.press(await screen.findByLabelText('اسکن QR کارشناس یا سالن'));
   await waitFor(() => expect(mockCamera.props?.onBarcodeScanned).toBeTruthy());
   await act(async () => {
     await mockCamera.props.onBarcodeScanned({ data: 'http://192.168.1.2:8000/s/rasta/specialists/5?src=qr' });
@@ -445,7 +446,7 @@ it('after a major change the terms page comes first; accepting records it and go
   fireEvent(screen.getByLabelText('پذیرش نسخه‌ی تازه'), 'valueChange', true);
   fireEvent.press(screen.getByText('پذیرش و ادامه'));
 
-  await screen.findByText('سلام مریم');
+  await screen.findByText('سلام، مریم');
   expect(calls.find((c) => c.url.endsWith('/customer/legal/accept'))?.body).toEqual({ accept_terms: true });
 });
 
@@ -508,4 +509,70 @@ it('the customer answers the salon photo consent request on the course page (202
   await waitFor(() => expect(calls.find((c) => c.method === 'POST' && c.url.endsWith('/customer/courses/12/photo-consent'))?.body).toEqual({ decision: 'agree' }));
   expect(await screen.findByText('پس گرفتن رضایت')).toBeTruthy();
   expect(screen.getByText(/موافقت — اپ مشتری/)).toBeTruthy();
+});
+
+it('home shows the next booking card, no zero points, the next bookings and book again (5D)', async () => {
+  await signedIn();
+  const next = {
+    ...BOOKING, id: 50, status: 'pending', status_label: 'منتظر تأیید سالن', prepayment_required: false, prepayment_amount: 0,
+    date_label: 'جمعه ۶ آذر', day_label: 'فردا جمعه ۶ آذر', time_label: '۱۴:۳۰', calendar_url: 'https://x/s/rasta/calendar/50.ics?signature=a',
+    cancel_note: 'پولی پرداخت نشده؛ لغو هزینه‌ای ندارد.', primary: [{ kind: 'reschedule', label: 'تغییر زمان' }],
+    actions: { pay: false, cancel: true, reschedule: true, rate: false },
+  };
+  const unpaid = { ...BOOKING, id: 51, date_label: 'شنبه ۱۴ آذر', time_label: '۰۹:۰۰', service: { id: 4, name: 'رنگ کامل مو', price: 963996 }, prepayment_amount: 50000 };
+  routes = (url) => {
+    if (url.includes('/customer/home')) {
+      return [200, ok({
+        ...HOME, loyalty_points: 0, awaiting_payment_count: 0, date_label: 'پنج‌شنبه ۵ آذر', next_booking: next, next_is_today: false, can_change: true, change_hours: 24,
+        salon_contact: { address: 'تهران، خیابان ولیعصر', phone: '02112345678', directions_url: 'https://maps.example/x' }, loyalty_enabled: true,
+        next_bookings: [unpaid], to_rate: null, rebook: { service: { id: 17, name: 'اصلاح ساده ابرو' }, specialist: { id: 5, name: 'سارا' }, date_label: '۲۶ مهر' },
+        suggestion: { id: 18, name: 'کراتینه مو' },
+      })];
+    }
+    if (url.includes('/customer/bookings')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, counts: { upcoming: 2, past: 0, cancelled: 0 } })];
+    return notFound;
+  };
+
+  renderRouter('./src/customer', { initialUrl: '/home' });
+
+  expect(await screen.findByText('نوبت بعدی، فردا جمعه ۶ آذر')).toBeTruthy();
+  expect(screen.getByText('۱۴:۳۰')).toBeTruthy();
+  expect(screen.getByText('مسیریابی')).toBeTruthy();
+  expect(screen.getByText('تغییر زمان یا لغو تا ۲۴ ساعت پیش از نوبت ممکن است.')).toBeTruthy();
+  expect(screen.getByText('هنوز امتیازی ندارید')).toBeTruthy();
+  expect(screen.queryByText('۰')).toBeNull();
+  expect(screen.getByText('منتظر پیش‌پرداخت')).toBeTruthy();
+  expect(screen.getByText('پرداخت ۵۰٬۰۰۰ تومان')).toBeTruthy();
+  expect(screen.getByText('آخرین بار ۲۶ مهر')).toBeTruthy();
+  expect(screen.getByText('پرطرفدار این سالن')).toBeTruthy();
+
+  fireEvent.press(screen.getByText('مسیریابی'));
+  expect(Linking.openURL).toHaveBeenLastCalledWith('https://maps.example/x');
+
+  fireEvent.press(screen.getAllByLabelText('کارهای بیشتر این نوبت')[0]);
+  fireEvent.press(await screen.findByText('افزودن به تقویم'));
+  expect(Linking.openURL).toHaveBeenLastCalledWith('https://x/s/rasta/calendar/50.ics?signature=a');
+});
+
+it('my bookings have tabs with counts and the server primary action per row (5D)', async () => {
+  await signedIn();
+  const done = { ...BOOKING, id: 60, status: 'completed', status_label: 'انجام شده', date_label: 'یکشنبه ۲۶ مهر', time_label: '۱۰:۰۰', primary: [{ kind: 'review', label: 'ثبت نظر' }, { kind: 'rebook', label: 'رزرو دوباره' }], actions: { pay: false, cancel: false, reschedule: false, rate: true } };
+  const meta = { current_page: 1, last_page: 1, total: 1, per_page: 20, counts: { upcoming: 1, past: 1, cancelled: 0 } };
+  routes = (url) => {
+    if (url.includes('/customer/bookings') && url.includes('tab=past')) return [200, ok([done], meta)];
+    if (url.includes('/customer/bookings') && url.includes('tab=')) return [200, ok([{ ...BOOKING, date_label: 'دوشنبه ۲۸ مهر', time_label: '۱۰:۰۰', primary: [{ kind: 'pay', label: 'پرداخت' }] }], meta)];
+    if (url.includes('/customer/home')) return [200, ok(HOME)];
+    return notFound;
+  };
+
+  renderRouter('./src/customer', { initialUrl: '/bookings' });
+
+  expect(await screen.findByText('پیش رو ۱')).toBeTruthy();
+  expect(screen.getByText('پرداخت ۱۵۰٬۰۰۰ تومان')).toBeTruthy();
+  expect(screen.getByText('منتظر پیش‌پرداخت')).toBeTruthy();
+  expect(screen.getByText('۲۸')).toBeTruthy();
+
+  fireEvent.press(screen.getByText('گذشته ۱'));
+  expect(await screen.findByText('ثبت نظر')).toBeTruthy();
+  expect(calls.some((c) => c.url.includes('tab=past'))).toBe(true);
 });

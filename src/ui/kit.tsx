@@ -61,11 +61,11 @@ export function T({
   );
 }
 
-export function Screen({ children, scroll = true, padded = true, refreshControl }: { children: ReactNode; scroll?: boolean; padded?: boolean; refreshControl?: React.ReactElement<any> }) {
+export function Screen({ children, scroll = true, padded = true, refreshControl, safeTop }: { children: ReactNode; scroll?: boolean; padded?: boolean; refreshControl?: React.ReactElement<any>; safeTop?: boolean }) {
   const p = usePalette();
   const inner = padded ? { padding: space(4), gap: space(3) } : undefined;
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: p.background }}>
+    <SafeAreaView edges={safeTop ? ['top', 'bottom', 'left', 'right'] : ['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: p.background }}>
       {scroll ? (
         <ScrollView contentContainerStyle={[inner, { paddingBottom: space(10) }]} keyboardShouldPersistTaps="handled" refreshControl={refreshControl}>
           {children}
@@ -94,16 +94,19 @@ export function Row({ children, style, gap = 2 }: { children: ReactNode; style?:
   return <View style={[{ flexDirection: 'row', alignItems: 'center', gap: space(gap) }, style]}>{children}</View>;
 }
 
-type ButtonKind = 'primary' | 'secondary' | 'danger' | 'ghost';
+type ButtonKind = 'primary' | 'strong' | 'secondary' | 'danger' | 'ghost' | 'dangerText';
 
 export function Button({ title, onPress, kind = 'primary', loading, disabled, small }: { title: string; onPress: () => void; kind?: ButtonKind; loading?: boolean; disabled?: boolean; small?: boolean }) {
   const p = usePalette();
   const { radius } = useLayoutMetrics();
   const colors: Record<ButtonKind, { bg: string; fg: string; border: string }> = {
     primary: { bg: p.button, fg: p.onGold, border: p.button },
+    strong: { bg: p.strong, fg: p.onStrong, border: p.strong },
     secondary: { bg: p.surface, fg: p.text, border: p.border },
     danger: { bg: 'transparent', fg: p.danger, border: p.danger },
     ghost: { bg: 'transparent', fg: p.gold, border: 'transparent' },
+    // بسته‌ی ۵د: «لغو نوبت…» متنی قرمز (مثل وب)، نه دکمه‌ی قاب‌دار
+    dangerText: { bg: 'transparent', fg: p.danger, border: 'transparent' },
   };
   const c = colors[kind];
   const inactive = disabled || loading;

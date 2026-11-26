@@ -22,6 +22,9 @@ const light = {
   onGold: '#221A0C',
   accent2: '#8A6A22',
   onAccent2: '#FFFFFF',
+  // بسته‌ی ۵د: دکمه‌ی کار اصلی (همان نام و رنگ همه‌جا، مثل پنل وب): ماهرو = رنگ متن روی زمینه؛ قالب پولی = رنگ اصلی پالت
+  strong: '#21190F',
+  onStrong: '#FBF8F2',
   success: '#3F7A34',
   successSoft: 'rgba(63,122,52,0.14)',
   warning: '#9A6A00',
@@ -46,6 +49,8 @@ const dark: typeof light = {
   onGold: '#221A0C',
   accent2: '#E3C985',
   onAccent2: '#221A0C',
+  strong: '#F4EDE0',
+  onStrong: '#15110E',
   success: '#9CC58F',
   successSoft: 'rgba(156,197,143,0.14)',
   warning: '#E0B25C',
@@ -83,6 +88,8 @@ export function applySalonTheme(base: Palette, theme: SalonTheme | null, scheme:
     // بسته‌ی ۵الف/۵ب: رنگ دوم پالت؛ سرور قدیمی ← همان رنگ تأکید
     accent2: c.accent2 ?? (scheme === 'dark' ? c.accentStrong : c.accent),
     onAccent2: c.onAccent2 ?? c.onAccent,
+    strong: c.accent,
+    onStrong: c.onAccent,
   };
 }
 

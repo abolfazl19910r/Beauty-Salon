@@ -12,6 +12,7 @@ import type {
   CoursePackage,
   CoursePayOptions,
   CustomerBooking,
+  CustomerBookingTab,
   CustomerNotification,
   CustomerWallet,
   DiscountCode,
@@ -139,6 +140,18 @@ export function useBookings(scope: 'upcoming' | 'past') {
     queryKey: ckeys.bookings(scope),
     initialPageParam: 1,
     queryFn: ({ pageParam }) => api.get<CustomerBooking[]>('/customer/bookings', { scope, page: pageParam }),
+    getNextPageParam: (last) => nextPage(last.meta),
+  });
+}
+
+/** بسته‌ی ۵د: «نوبت‌های من» با تب «پیش رو / گذشته / لغوشده»؛ شمار هر تب در meta.counts */
+export function useBookingsTab(tab: CustomerBookingTab, enabled = true) {
+  const api = useApi();
+  return useInfiniteQuery({
+    enabled,
+    queryKey: ['c', 'bookings', 'tab', tab],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) => api.get<CustomerBooking[]>('/customer/bookings', { tab, page: pageParam }),
     getNextPageParam: (last) => nextPage(last.meta),
   });
 }
