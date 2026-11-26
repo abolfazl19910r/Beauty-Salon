@@ -78,7 +78,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: v.name,
     slug: v.slug,
     scheme: v.scheme,
-    version: '0.4.1',
+    version: '0.5.0',
     orientation: 'portrait',
     icon: `${v.assets}/icon.png`,
     userInterfaceStyle: 'automatic',
@@ -87,7 +87,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       package: v.package,
       // ۱۸ (0.4.0): بسته‌ی ۵ب — ۴ قالب ترکیبی سرور (template) و رنگ دوم پالت؛ ۱۷ (0.3.9): production آدرس سرور ذخیره‌شده را نادیده می‌گیرد و صفحه‌ی «آدرس سرور» (حتی با لینک mahru://server) بسته است؛ ۱۶ (0.3.8): بسته‌ی 5ه — نوبت بدون پیش‌پرداخت، پیام سقف نوبت، برچسب «بدقول» در اپ همکار؛ ۱۵ (0.3.7): «قوانین به‌روز شد» (پذیرش دوباره بعد از تغییر مهم) و رضایت عکس از زبان خود مشتری (درخواست کادر، موافقت/مخالفت در اپ)؛ ۱۴ (0.3.6): بسته‌ی مجوز 5د — پذیرش قوانین در ثبت‌نام، شرایط خرید پیش از ثبت نوبت، متن رضایت عکس و پس گرفتن آن؛ ۱۳ (0.3.5): دامنه‌ی arisheh.ir (سرور پیش‌فرض و App Links)؛ ۱۲ (0.3.4): «فعال‌سازی حساب متخصص» در صفحه‌ی ورود؛ ۱۱ (0.3.3): نوبت لغوشده/نیامده بی «دریافت در سالن»، پیش‌پرداخت فقط وقتی پرداخت شده؛ ۱۰ (0.3.2): «امروز» همکار با دریافت در سالن، نیامد و لغوشده‌ها؛ ۹ (0.3.1): اسکنر QR بعد از ورود؛ ۸ (0.3.0): بسته‌ی ۵ (App Links، بررسی نسخه‌ی تازه) — نصب روی نسخه‌ی قبلی به‌صورت Update. هر APK تازه‌ای که آپلود می‌شود باید
       // versionCode بزرگ‌تری داشته باشد (ابرمدیر ← نسخه‌های اپ، از خود APK می‌خواند)
-      versionCode: 19,
+      versionCode: 20,
       ...(variant === 'customer' ? { intentFilters: customerIntentFilters(production) } : {}),
       googleServicesFile: GOOGLE_SERVICES_JSON,
       adaptiveIcon: {
