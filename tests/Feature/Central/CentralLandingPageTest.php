@@ -49,20 +49,19 @@ class CentralLandingPageTest extends TestCase
         }
     }
 
-    /** دوره‌های درمانی (بسته‌ی ب) فقط وقتی پلن فروش امکان را دارد؛ برداشتن تیک امکان در پنل سوپرادمین ادعا را برمی‌دارد */
-    public function test_section_labels_are_persian(): void
+    public function test_section_titles_are_persian(): void
     {
-        // بسته‌ی «ح»، ۱: سرتیترهای کوچک بخش‌ها انگلیسی بودند (Why Mahru، Features، Pricing…)
+        // بسته‌ی «ح»، ۱: سرتیترهای کوچک بخش‌ها انگلیسی بودند (Why Mahru، Features، Pricing…)؛ بسته‌ی ۶: سرتیترهای کوچک برداشته شد
         $html = $this->get(route('central.home'))->assertOk()->getContent();
 
-        preg_match_all('/class="kicker">([^<]*)</u', $html, $labels);
-        $this->assertNotEmpty($labels[1]);
-        foreach ($labels[1] as $label) {
-            $this->assertDoesNotMatchRegularExpression('/[A-Za-z]/', $label, "برچسب انگلیسی: {$label}");
+        preg_match_all('/<h2[^>]*>(.*?)<\/h2>/su', $html, $titles);
+        $this->assertGreaterThan(5, count($titles[1]));
+        foreach ($titles[1] as $title) {
+            $this->assertDoesNotMatchRegularExpression('/[A-Za-z]/', strip_tags($title), "تیتر انگلیسی: {$title}");
         }
-        $this->assertStringContainsString('چرا ماهرو', $html);
     }
 
+    /** دوره‌های درمانی (بسته‌ی ب) فقط وقتی پلن فروش امکان را دارد؛ برداشتن تیک امکان در پنل سوپرادمین ادعا را برمی‌دارد */
     public function test_treatment_courses_are_promised_only_when_the_sale_plan_has_them(): void
     {
         $plan = \App\Models\Plan::create(['key' => 'full', 'name' => 'کامل', 'price_1m' => 1500000, 'is_active' => true, 'is_public' => true, 'sms_quota_per_month' => 2000]);

@@ -110,6 +110,7 @@ h1,h2,h3,h4{line-height:1.4;font-weight:800}
 .aur i:nth-child(2){top:48%;left:-200px;background:#7a5a1c;animation-delay:-9s}
 .aur i:nth-child(3){bottom:-240px;right:28%;background:#c9a455;opacity:calc(var(--aur)*.55);animation-delay:-15s}
 @keyframes fl{to{transform:translate(-90px,70px) scale(1.18)}}
+@media(max-width:767px){.aur,.grain{display:none}}
 .grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:var(--grain);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E")}
 main,footer,header{position:relative;z-index:1}
 /* buttons */
@@ -234,7 +235,6 @@ html[data-theme="light"] .notch{background:#2A2119}
    ========================================================= */
 section{padding:110px 0}
 .sh{text-align:center;max-width:740px;margin:0 auto 60px}
-.kicker{display:inline-block;font:600 13px "Vazirmatn";letter-spacing:0;color:var(--gl);margin-bottom:14px}
 .sh h2{font-size:clamp(28px,4vw,46px);font-weight:900;margin-bottom:16px;letter-spacing:-.01em}
 .sh p{color:var(--mu);font-size:17.5px}
 .card{border:1px solid var(--ln);border-radius:var(--r-lg);background:var(--bg2);transition:transform .4s var(--ease),border-color .4s,box-shadow .4s,background-color .5s}
@@ -404,12 +404,6 @@ section{padding:110px 0}
 /* =========================================================
    STATS
    ========================================================= */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center}
-@media(max-width:700px){.stats{grid-template-columns:1fr}}
-.stats>div{padding:40px 22px}
-.stats>div:hover{transform:translateY(-5px);border-color:var(--ln2)}
-.stats b{display:block;font-size:56px;line-height:1.15;font-weight:700}
-.stats span{color:var(--mu);font-size:15px}
 /* =========================================================
    DAY TIMELINE
    ========================================================= */
@@ -643,8 +637,8 @@ footer .enamad{margin-top:12px}
 </div></div>
 <div><div class="lbl"><span>۲. روز</span><span id="mon"></span></div><div class="days" id="days"></div></div>
 <div><div class="lbl"><span>۳. ساعت</span><span>آرایشگر: نگار</span></div><div class="slots" id="slots">
-<button class="slot" type="button">10:00</button><button class="slot busy" type="button" disabled>11:30</button><button class="slot" type="button">13:00</button>
-<button class="slot" type="button">14:30</button><button class="slot busy" type="button" disabled>16:00</button><button class="slot" type="button">17:30</button>
+<button class="slot" type="button">۱۰:۰۰</button><button class="slot busy" type="button" disabled>۱۱:۳۰</button><button class="slot" type="button">۱۳:۰۰</button>
+<button class="slot" type="button">۱۴:۳۰</button><button class="slot busy" type="button" disabled>۱۶:۰۰</button><button class="slot" type="button">۱۷:۳۰</button>
 </div></div>
 </div>
 <button class="book" id="bookBtn" type="button" disabled>تأیید و رزرو نوبت</button>
@@ -663,7 +657,7 @@ footer .enamad{margin-top:12px}
 
 <!-- ============ WHY ============ -->
 <section id="why"><div class="wrap">
-<div class="sh rv"><span class="kicker">چرا ماهرو</span><h2>تلفن و دفترچه را کنار بگذارید، <span class="gold">مشتری را نگه دارید</span></h2><p>بیشتر سالن‌ها نوبت را از دست نمی‌دهند چون مشتری ندارند؛ چون نوبت‌ها در تماس‌های بی‌پاسخ، پیام‌های گم‌شده و دفترچه‌های درهم می‌ماند.</p></div>
+<div class="sh rv"><h2>تلفن و دفترچه را کنار بگذارید، مشتری را نگه دارید</h2><p>بیشتر سالن‌ها نوبت را از دست نمی‌دهند چون مشتری ندارند؛ چون نوبت‌ها در تماس‌های بی‌پاسخ، پیام‌های گم‌شده و دفترچه‌های درهم می‌ماند.</p></div>
 <div class="ba">
 <div class="card pane before rv"><span class="tag b">وضعیت فعلی</span><h3>بدون ماهرو</h3><p>هر روز ساعت‌ها از وقت تیم صرف هماهنگی می‌شود.</p><ul><li>تماس و پیام در ساعت شلوغی بی‌پاسخ می‌ماند</li><li>نوبت‌ها تداخل پیدا می‌کنند و مشتری ناراضی می‌شود</li><li>فراموشی نوبت، ساعت کاری و درآمد را هدر می‌دهد</li><li>سابقه‌ی مشتری و گزارش مالی جایی ثبت نمی‌شود</li></ul></div>
 <div class="card pane after rv d1"><span class="tag a">با ماهرو</span><h3 class="gold">همه‌چیز خودکار</h3><p>هر نوبت، از رزرو تا پیگیری، بدون دخالت دست انجام می‌شود.</p><ul><li>مشتری ۲۴ ساعته از لینک اختصاصی سالن نوبت می‌گیرد</li><li>تقویم مدت هر خدمت را حساب می‌کند و تداخل نمی‌دهد</li><li>پیامک تأیید و یادآوری، غیبت‌ها را کم می‌کند</li><li>مشتری‌ای که مدتی نیامده، خودکار پیامک دعوت و کد تخفیف می‌گیرد</li><li>پرونده‌ی مشتری، امتیاز وفاداری و گزارش درآمد همیشه در دسترس است</li></ul></div>
@@ -671,7 +665,7 @@ footer .enamad{margin-top:12px}
 
 <!-- ============ FEATURES ============ -->
 <section id="features" style="padding-top:0"><div class="wrap">
-<div class="sh rv"><span class="kicker">امکانات</span><h2>هرچه یک <span class="gold">سالن حرفه‌ای</span> لازم دارد</h2><p>هر امکان برای کار روزمره‌ی سالن طراحی شده، نه برای پُر کردن فهرست قابلیت‌ها.</p></div>
+<div class="sh rv"><h2>هرچه یک سالن حرفه‌ای لازم دارد</h2><p>هر امکان برای کار روزمره‌ی سالن طراحی شده، نه برای پُر کردن فهرست قابلیت‌ها.</p></div>
 <div class="bento">
 <div class="card tile w4 rv">
 <div class="row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div><div><h3>رزرو آنلاین ۲۴ ساعته</h3><p>هر سالن یک لینک اختصاصی دارد. مشتری خدمت و آرایشگر دلخواه را انتخاب می‌کند، فقط ساعت‌های خالی را می‌بیند و در چند ثانیه نوبتش ثبت می‌شود.</p></div></div>
@@ -680,7 +674,7 @@ footer .enamad{margin-top:12px}
 <div class="card tile rv d1">
 <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg></div>
 <h3>یادآوری پیامکی</h3><p>پیامک تأیید بعد از رزرو و یادآوری پیش از نوبت، خودکار.</p>
-<div class="vis"><div class="sms">مریم عزیز، نوبت شما امروز ساعت ۱۶:۳۰ است. منتظرتان هستیم ✨<small>سالن رزگلد · لغو: ۲</small></div></div>
+<div class="vis"><div class="sms">مریم عزیز، نوبت شما امروز ساعت ۱۶:۳۰ است. منتظرتان هستیم.<small>سالن رزگلد · لغو: ۲</small></div></div>
 </div>
 <div class="card tile rv">
 <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9.5" r="2.5"/><path d="M16 14.5c2.8.3 5 2.5 5 5.5"/></svg></div>
@@ -707,7 +701,7 @@ footer .enamad{margin-top:12px}
 
 <!-- ============ PRODUCT ============ -->
 <section id="product"><div class="wrap">
-<div class="sh rv"><span class="kicker">پنل مدیریت</span><h2>کل سالن، <span class="gold">در یک صفحه</span></h2><p>تقویم پرسنل، پرونده‌ی مشتریان و گزارش درآمد؛ همه با چند کلیک. (داده‌ها نمونه هستند)</p></div>
+<div class="sh rv"><h2>کل سالن، در یک صفحه</h2><p>تقویم پرسنل، پرونده‌ی مشتریان و گزارش درآمد؛ همه با چند کلیک. (داده‌ها نمونه هستند)</p></div>
 <div class="ptabs rv" role="tablist" aria-label="نماهای پنل"><button role="tab" type="button" aria-selected="true" aria-controls="v-cal" id="t-cal">تقویم امروز</button><button role="tab" type="button" aria-selected="false" aria-controls="v-cli" id="t-cli">مشتریان</button><button role="tab" type="button" aria-selected="false" aria-controls="v-rep" id="t-rep">گزارش مالی</button></div>
 <div class="dash rv">
 <aside class="side" aria-hidden="true">
@@ -724,7 +718,7 @@ footer .enamad{margin-top:12px}
 <div class="kpis"><div class="kpi"><small>نوبت‌های امروز</small><b class="num">۱۲</b><em>۳ رزرو آنلاین شبانه</em></div><div class="kpi"><small>درآمد پیش‌بینی‌شده</small><b class="num">۱۸٫۴ م</b><em>تومان</em></div><div class="kpi"><small>بیعانه‌ی دریافتی</small><b class="num">۲٫۱ م</b><em>تومان</em></div><div class="kpi"><small>ساعت خالی</small><b class="num">۲</b><em style="color:var(--mu)">روی لینک باز است</em></div></div>
 <div class="cal-wrap"><div class="cal" aria-label="تقویم نمونه">
 <div class="hd" style="justify-content:center">ساعت</div><div class="hd"><span class="av">ن</span>نگار</div><div class="hd"><span class="av">س</span>سارا</div><div class="hd"><span class="av">ا</span>الهه</div>
-<div class="times"><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span></div>
+<div class="times"><span>۱۰</span><span>۱۱</span><span>۱۲</span><span>۱۳</span><span>۱۴</span><span>۱۵</span><span>۱۶</span><span>۱۷</span></div>
 <div class="col"><div class="appt" style="--s:0;--d:.75"><b>مریم رضایی</b><small>کوتاهی و براشینگ</small></div><div class="appt alt" style="--s:1;--d:1"><b>شیدا امینی</b><small>براشینگ</small></div><div class="appt" style="--s:3;--d:2"><b>نازنین کریمی</b><small>رنگ و لایت · بیعانه ✓</small></div><div class="appt new" style="--s:6.5;--d:1.25"><b>هانیه شکوهی</b><small>رزرو آنلاین · ۰۱:۴۰ بامداد</small></div><div class="now"></div></div>
 <div class="col"><div class="appt alt" style="--s:.5;--d:1.5"><b>پریسا محمدی</b><small>مانیکور ژلی</small></div><div class="appt" style="--s:2.5;--d:1"><b>آیدا نوری</b><small>پدیکور</small></div><div class="appt" style="--s:5;--d:1.5"><b>الناز رحیمی</b><small>کاشت ناخن</small></div></div>
 <div class="col"><div class="appt" style="--s:1;--d:1.25"><b>رها صادقی</b><small>پاکسازی پوست</small></div><div class="appt alt" style="--s:3.5;--d:.75"><b>سمیرا یزدانی</b><small>اصلاح ابرو</small></div><div class="appt" style="--s:4.5;--d:2"><b>مینا جعفری</b><small>میکاپ مجلسی</small></div></div>
@@ -764,7 +758,7 @@ footer .enamad{margin-top:12px}
 
 <!-- ============ HOW ============ -->
 <section id="how"><div class="wrap">
-<div class="sh rv"><span class="kicker">چطور کار می‌کند</span><h2>سه قدم تا <span class="gold">اولین رزرو</span></h2><p>بدون برنامه‌نویسی، بدون نصب و با راهنمایی قدم‌به‌قدم.</p></div>
+<div class="sh rv"><h2>سه قدم تا اولین رزرو</h2><p>بدون برنامه‌نویسی، بدون نصب و با راهنمایی قدم‌به‌قدم.</p></div>
 <div class="how">
 <div class="steps rv" id="steps">
 <button class="st on" type="button"><b>۱</b><div><h3>سالن را بسازید</h3><p>نام سالن، خدمات، قیمت، مدت‌زمان و پرسنل را وارد کنید. لینک اختصاصی سالن همان لحظه ساخته می‌شود.</p></div></button>
@@ -776,30 +770,23 @@ footer .enamad{margin-top:12px}
 <div class="pn"><h5>لینک اختصاصی شما آماده است</h5><div class="lnk">arisheh.ir/rosegold</div><div class="share">
 <svg class="qr" viewBox="0 0 21 21" shape-rendering="crispEdges" aria-hidden="true"><path fill="#1A1410" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM8 0h1v2H8zM10 1h2v1h-2zM9 3h2v2H9zM12 4h1v3h-1zM8 6h1v2H8zM10 8h3v1h-3zM0 8h2v1H0zM3 9h3v1H3zM14 8h2v2h-2zM17 9h3v1h-3zM8 10h2v2H8zM11 11h3v1h-3zM15 11h1v3h-1zM18 12h3v1h-3zM0 11h1v2H0zM2 12h3v1H2zM9 13h2v2H9zM12 14h2v1h-2zM17 14h2v2h-2zM8 16h1v3H8zM10 17h3v1h-3zM14 16h2v1h-2zM16 18h3v1h-3zM13 19h2v2h-2zM10 20h2v1h-2zM19 20h2v1h-2z"/></svg>
 <div class="chs"><span>بیوی اینستاگرام</span><span>گوگل‌مپ</span><span>پیام‌رسان‌ها</span></div></div></div>
-<div class="pn"><h5>امروز در سالن</h5><div class="nt"><span class="av">✓</span><div>نوبت جدید ثبت شد<small>نازنین کریمی · رنگ و لایت</small></div><time>09:12</time></div><div class="nt"><span class="av">★</span><div>یادآوری ارسال شد<small>مریم رضایی · ۲ ساعت قبل</small></div><time>08:00</time></div><div class="nt"><span class="av">₮</span><div>بیعانه دریافت شد<small>پریسا محمدی · مانیکور ژلی</small></div><time>07:41</time></div></div>
+<div class="pn"><h5>امروز در سالن</h5><div class="nt"><span class="av">✓</span><div>نوبت جدید ثبت شد<small>نازنین کریمی · رنگ و لایت</small></div><time>۰۹:۱۲</time></div><div class="nt"><span class="av">★</span><div>یادآوری ارسال شد<small>مریم رضایی · ۲ ساعت قبل</small></div><time>۰۸:۰۰</time></div><div class="nt"><span class="av">₮</span><div>بیعانه دریافت شد<small>پریسا محمدی · مانیکور ژلی</small></div><time>۰۷:۴۱</time></div></div>
 </div></div></div></section>
-
-<!-- ============ STATS ============ -->
-<section style="padding-bottom:0"><div class="wrap"><div class="stats">
-<div class="card rv"><b class="gold num" data-to="24">۰</b><span>ساعت شبانه‌روز، سالن شما برای رزرو باز است</span></div>
-<div class="card rv d1"><b class="gold num" data-to="30">۰</b><span>ثانیه یا کمتر، زمان لازم برای رزرو یک نوبت</span></div>
-<div class="card rv d2"><b class="gold num" data-to="1">۰</b><span>روز، برای راه‌اندازی کامل و گرفتن اولین نوبت</span></div>
-</div></div></section>
 
 <!-- ============ A DAY WITH MAHRU ============ -->
 <section id="day"><div class="wrap">
-<div class="sh rv"><span class="kicker">یک روز با ماهرو</span><h2>یک روز کاری، <span class="gold">بدون یک تماس</span></h2><p>این‌ها کارهایی است که ماهرو در طول روز، بی‌صدا برای سالن شما انجام می‌دهد.</p></div>
+<div class="sh rv"><h2>یک روز کاری، بدون یک تماس</h2><p>این‌ها کارهایی است که ماهرو در طول روز، بی‌صدا برای سالن شما انجام می‌دهد.</p></div>
 <div class="tl">
-<div class="tl-i rv"><time>01:40</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><div class="card"><h3>رزرو نیمه‌شب از اینستاگرام</h3><p>مشتری از لینک بیو، نوبت رنگ و لایت را برای فردا می‌گیرد و بیعانه را آنلاین پرداخت می‌کند.</p></div></div>
-<div class="tl-i rv"><time>08:00</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg></span><div class="card"><h3>یادآوری‌ها ارسال می‌شود</h3><p>همه‌ی مشتری‌های امروز پیش از نوبتشان پیامک یادآوری می‌گیرند.</p></div></div>
-<div class="tl-i rv"><time>11:15</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg></span><div class="card"><h3>یک لغو، یک فرصت</h3><p>مشتری نوبتش را لغو می‌کند و آن ساعت بلافاصله دوباره روی لینک رزرو باز می‌شود.</p></div></div>
-<div class="tl-i rv"><time>17:30</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 5.6 6 .7-4.5 4.1 1.2 5.9L12 15.4 6.7 18.3l1.2-5.9L3.4 8.3l6-.7z"/></svg></span><div class="card"><h3>امتیاز وفاداری ثبت می‌شود</h3><p>بعد از هر خدمت، امتیاز به پرونده‌ی مشتری اضافه می‌شود و سابقه‌ی سلیقه‌اش ذخیره می‌ماند.</p></div></div>
-<div class="tl-i rv"><time>21:00</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></span><div class="card"><h3>گزارش روز آماده است</h3><p>درآمد، نوبت‌های انجام‌شده و عملکرد هر آرایشگر؛ قبل از اینکه چراغ سالن را خاموش کنید.</p></div></div>
+<div class="tl-i rv"><time>۰۱:۴۰</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><div class="card"><h3>رزرو نیمه‌شب از اینستاگرام</h3><p>مشتری از لینک بیو، نوبت رنگ و لایت را برای فردا می‌گیرد و بیعانه را آنلاین پرداخت می‌کند.</p></div></div>
+<div class="tl-i rv"><time>۰۸:۰۰</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg></span><div class="card"><h3>یادآوری‌ها ارسال می‌شود</h3><p>همه‌ی مشتری‌های امروز پیش از نوبتشان پیامک یادآوری می‌گیرند.</p></div></div>
+<div class="tl-i rv"><time>۱۱:۱۵</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg></span><div class="card"><h3>یک لغو، یک فرصت</h3><p>مشتری نوبتش را لغو می‌کند و آن ساعت بلافاصله دوباره روی لینک رزرو باز می‌شود.</p></div></div>
+<div class="tl-i rv"><time>۱۷:۳۰</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 5.6 6 .7-4.5 4.1 1.2 5.9L12 15.4 6.7 18.3l1.2-5.9L3.4 8.3l6-.7z"/></svg></span><div class="card"><h3>امتیاز وفاداری ثبت می‌شود</h3><p>بعد از هر خدمت، امتیاز به پرونده‌ی مشتری اضافه می‌شود و سابقه‌ی سلیقه‌اش ذخیره می‌ماند.</p></div></div>
+<div class="tl-i rv"><time>۲۱:۰۰</time><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></span><div class="card"><h3>گزارش روز آماده است</h3><p>درآمد، نوبت‌های انجام‌شده و عملکرد هر آرایشگر؛ قبل از اینکه چراغ سالن را خاموش کنید.</p></div></div>
 </div></div></section>
 
 <!-- ============ AUDIENCES ============ -->
 <section id="for" style="padding-top:0"><div class="wrap">
-<div class="sh rv"><span class="kicker">مناسب شما</span><h2>برای هر نوع <span class="gold">سالن</span></h2><p>ماهرو با ساختار خدمات و پرسنل شما سازگار می‌شود.</p></div>
+<div class="sh rv"><h2>برای هر نوع سالن</h2><p>ماهرو با ساختار خدمات و پرسنل شما سازگار می‌شود.</p></div>
 <div class="tabs rv" id="tabs" role="tablist" aria-label="نوع سالن"><button role="tab" type="button" aria-selected="true">آرایشگاه و سالن مو</button><button role="tab" type="button" aria-selected="false">ناخن و زیبایی</button><button role="tab" type="button" aria-selected="false">پوست، مو و لیزر</button></div>
 <div class="rv">
 <div class="card aud on" role="tabpanel"><div><h3>آرایشگاه و سالن مو</h3><p>رنگ، لایت و کوتاهی زمان‌های متفاوتی می‌خواهند. ماهرو مدت هر خدمت را جدا حساب می‌کند تا تداخلی پیش نیاید.</p></div><ul><li>زمان‌بندی خدمات طولانی مثل رنگ و لایت</li><li>انتخاب آرایشگر مورد علاقه‌ی مشتری</li><li>پیگیری خودکار مشتریانی که مدتی نیامده‌اند</li></ul></div>
@@ -809,7 +796,7 @@ footer .enamad{margin-top:12px}
 
 <!-- ============ PRICING ============ -->
 <section id="plans" style="padding-top:0" data-period="1m"><div class="wrap">
-<div class="sh rv"><span class="kicker">تعرفه‌ها</span><h2>چهار پلن، <span class="gold">هر کدام برای یک اندازه سالن</span></h2><p>@if ($trialDays > 0){{ to_persian_num((string) $trialDays) }} روز رایگان، بدون نیاز به کارت بانکی. هر وقت راضی بودید، پلن را از داخل پنل سالن می‌خرید.@else پلن و مدت اشتراک را انتخاب کنید؛ اشتراک بلندتر ارزان‌تر است و قالب‌های بیشتری باز می‌کند.@endif</p></div>
+<div class="sh rv"><h2>چهار پلن، هر کدام برای یک اندازه سالن</h2><p>@if ($trialDays > 0){{ to_persian_num((string) $trialDays) }} روز رایگان، بدون نیاز به کارت بانکی. هر وقت راضی بودید، پلن را از داخل پنل سالن می‌خرید.@else پلن و مدت اشتراک را انتخاب کنید؛ اشتراک بلندتر ارزان‌تر است و قالب‌های بیشتری باز می‌کند.@endif</p></div>
 @if ($planCards !== [])
 @if ($trialCard)
 {{-- بسته‌ی «و»: پلن آزمایشی کنار چهار پلن پولی (بازه ندارد) --}}
@@ -914,7 +901,7 @@ footer .enamad{margin-top:12px}
 <!-- ============ APPS ============ -->
 {{-- ۲۰۲۶-۱۱-۰۶: اپ‌ها فقط از سایت خود ماهرو (App Store/Google Play از ایران ممکن نیست) — باید جایی دیده شوند --}}
 <section id="apps" style="padding-top:0"><div class="wrap">
-<div class="sh rv"><span class="kicker">اپ‌های ماهرو</span><h2>روی گوشی، <span class="gold">یک لمس فاصله</span></h2><p>رزرو با لینک سالن روی هر مرورگری کار می‌کند؛ برای راحتی بیشتر، اپ اندروید هم هست.</p></div>
+<div class="sh rv"><h2>روی گوشی، یک لمس فاصله</h2><p>رزرو با لینک سالن روی هر مرورگری کار می‌کند؛ برای راحتی بیشتر، اپ اندروید هم هست.</p></div>
 <div class="apps">
 <div class="card rv" data-landing-apps-customer><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div><h3>اپ ماهرو برای مشتری‌ها</h3><p>مشتری با لینک یا QR سالن شما اپ را نصب می‌کند و مستقیم وارد صفحه‌ی همان سالن می‌شود؛ رزرو، یادآوری و سابقه‌ی نوبت‌ها در یک جا. روی آیفون، سایت سالن مثل اپ به صفحه‌ی اصلی اضافه می‌شود.</p><a class="btn btn-line" href="{{ \App\Support\CentralUrl::route('app-download.show') }}">دانلود اپ</a></div>
 <div class="card rv d1" data-landing-apps-staff><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a5.5 5.5 0 0 1 3.5 6"/></svg></div><h3>ماهرو همکار برای کارشناسان</h3><p>کارشناسان سالن نوبت‌های امروز، تقویم و کیف پولشان را در اپ «ماهرو همکار» می‌بینند؛ ورود با همان شماره و رمز پنل، بدون وارد کردن آدرس.</p><a class="btn btn-line" href="{{ \App\Support\CentralUrl::route('app-download.staff') }}">دانلود ماهرو همکار</a></div>
@@ -931,7 +918,7 @@ footer .enamad{margin-top:12px}
 
 <!-- ============ FAQ ============ -->
 <section id="faq" style="padding-top:0"><div class="wrap">
-<div class="sh rv"><span class="kicker">پرسش‌های پرتکرار</span><h2>سؤالات <span class="gold">متداول</span></h2></div>
+<div class="sh rv"><h2>سؤالات متداول</h2></div>
 <div class="faq rv">
 <details open><summary>برای شروع به چه چیزی نیاز دارم؟</summary><p>فقط اطلاعات سالن و فهرست خدمات‌تان. سالن را خودتان در چند دقیقه می‌سازید (یا درخواست دمو بدهید تا با هم بسازیم) و بقیه‌ی تنظیمات داخل پنل انجام می‌شود.</p></details>
 <details><summary>مشتریان باید برنامه‌ای نصب کنند؟</summary><p>لازم نیست؛ رزرو از طریق لینک اختصاصی سالن و روی هر مرورگری انجام می‌شود؛ روی موبایل، تبلت و کامپیوتر. ولی اپ اندروید هم هست و مشتری با لینک یا QR سالن آن را نصب می‌کند؛ روی آیفون هم سایت سالن به صفحه‌ی اصلی اضافه می‌شود.</p></details>
@@ -1029,9 +1016,9 @@ const mcta=$1('#mcta'),hero=$1('.hero'),start=$1('#start');let heroVis=true,star
 const mio=new IntersectionObserver(es=>{es.forEach(e=>{if(e.target===hero)heroVis=e.isIntersecting;else startVis=e.isIntersecting});mcta.classList.toggle('show',!heroVis&&!startVis)},{threshold:.1});
 mio.observe(hero);mio.observe(start);
 
-/* ---------- reveal + counters ---------- */
+/* ---------- reveal ---------- */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;const t=e.target;t.classList.add('in');io.unobserve(t);
-$('[data-to]',t).concat(t.matches('[data-to]')?[t]:[]).forEach(c=>{const to=+c.dataset.to,s=performance.now();if(rm){c.textContent=fa(to);return}(function f(n){const p=Math.min((n-s)/1400,1);c.textContent=fa(Math.round(to*(1-Math.pow(1-p,3))));p<1&&requestAnimationFrame(f)})(s)})}),{threshold:.15,rootMargin:'0px 0px -40px 0px'});
+}),{threshold:.15,rootMargin:'0px 0px -40px 0px'});
 $('.rv,.tile,.tl-i').forEach(e=>io.observe(e));
 
 /* ---------- spotlight ---------- */
