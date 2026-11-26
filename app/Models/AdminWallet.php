@@ -49,7 +49,7 @@ class AdminWallet extends Model
             'type' => 'commission',
             'amount' => $amount,
             'balance_after' => $this->balance,
-            'description' => $description ?? "کمیسیون از نوبت #{$bookingId}",
+            'description' => $description ?? 'کمیسیون از نوبت '.\App\Support\Fa::ref($bookingId),
         ]);
 
         return $transaction;
@@ -71,7 +71,7 @@ class AdminWallet extends Model
             'type' => 'adjustment',
             'amount' => -$amount,
             'balance_after' => $this->balance,
-            'description' => $description ?? "برگشت کمیسیون به‌خاطر لغو نوبت #{$bookingId}",
+            'description' => $description ?? 'برگشت کمیسیون به‌خاطر لغو نوبت '.\App\Support\Fa::ref($bookingId),
         ]);
     }
 

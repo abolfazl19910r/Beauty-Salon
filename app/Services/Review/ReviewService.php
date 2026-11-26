@@ -114,7 +114,7 @@ class ReviewService
             try {
                 $booking->user->addLoyaltyPoints(
                     10,
-                    "ثبت نظر برای نوبت #{$booking->id}",
+                    'ثبت نظر برای نوبت '.\App\Support\Fa::ref($booking->id),
                     $booking->id
                 );
             } catch (\Exception $e) {

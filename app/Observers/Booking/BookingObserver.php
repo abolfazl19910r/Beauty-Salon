@@ -200,14 +200,14 @@ class BookingObserver
                 $wallet->addIncome(
                     $specialistIncome,
                     $booking->id,
-                    "درآمد از نوبت #{$booking->id} - {$booking->service->name}"
+                    'درآمد از نوبت '.\App\Support\Fa::ref($booking->id)." - {$booking->service->name}"
                 );
 
                 $adminWallet = AdminWallet::getWallet();
                 $adminWallet->addCommission(
                     $adminCommission,
                     $booking->id,
-                    "کمیسیون از نوبت #{$booking->id} - کارشناس: {$specialist->name}"
+                    'کمیسیون از نوبت '.\App\Support\Fa::ref($booking->id)." - کارشناس: {$specialist->name}"
                 );
             });
 
@@ -287,7 +287,7 @@ class BookingObserver
                         $refundTransaction = $customerWallet->addRefund(
                             $refundAmount,
                             $booking->id,
-                            "بازگشت وجه از نوبت #{$booking->id} - لغو توسط کارشناس"
+                            'بازگشت وجه از نوبت '.\App\Support\Fa::ref($booking->id).' - لغو توسط کارشناس'
                         );
                         $refundDetails = [
                             'method' => 'wallet',
@@ -300,7 +300,7 @@ class BookingObserver
                         AdminWallet::getWallet()->addCommission(
                             $specialistPenalty,
                             $booking->id,
-                            "جریمه لغو نوبت #{$booking->id} توسط کارشناس"
+                            'جریمه لغو نوبت '.\App\Support\Fa::ref($booking->id).' توسط کارشناس'
                         );
                     }
                 } elseif ($cancelledBy === 'customer') {
@@ -316,7 +316,7 @@ class BookingObserver
                         $refundTransaction = $customerWallet->addRefund(
                             $refundAmount,
                             $booking->id,
-                            "بازگشت وجه از نوبت #{$booking->id} - با جریمه لغو"
+                            'بازگشت وجه از نوبت '.\App\Support\Fa::ref($booking->id).' - با جریمه لغو'
                         );
                         $refundDetails = [
                             'method' => 'wallet',
@@ -336,7 +336,7 @@ class BookingObserver
                         AdminWallet::getWallet()->addCommission(
                             $customerFee,
                             $booking->id,
-                            "جریمه لغو نوبت #{$booking->id} توسط مشتری"
+                            'جریمه لغو نوبت '.\App\Support\Fa::ref($booking->id).' توسط مشتری'
                         );
                     }
                 } elseif ($cancelledBy === 'admin') {
@@ -345,7 +345,7 @@ class BookingObserver
                     $refundTransaction = $customerWallet->addRefund(
                         $refundAmount,
                         $booking->id,
-                        "بازگشت وجه از نوبت #{$booking->id} - لغو توسط مدیر"
+                        'بازگشت وجه از نوبت '.\App\Support\Fa::ref($booking->id).' - لغو توسط مدیر'
                     );
                     $refundDetails = ['method' => 'wallet', 'cancelled_by' => 'admin'];
                 }
@@ -394,7 +394,7 @@ class BookingObserver
 
             $specialistWallet->reverseIncome(
                 $incomeTransaction,
-                "برگشت سهم به‌خاطر لغو نوبت #{$booking->id}"
+                'برگشت سهم به‌خاطر لغو نوبت '.\App\Support\Fa::ref($booking->id)
             );
 
             if ($wasSettled) {
@@ -416,7 +416,7 @@ class BookingObserver
             $adminWallet->deductCommission(
                 (float) $commissionTransaction->amount,
                 $booking->id,
-                "برگشت کمیسیون به‌خاطر لغو نوبت #{$booking->id}"
+                'برگشت کمیسیون به‌خاطر لغو نوبت '.\App\Support\Fa::ref($booking->id)
             );
         }
     }
@@ -578,7 +578,7 @@ class BookingObserver
             $pointsPerAmount = $pointsPerAmount > 0 ? $pointsPerAmount : 10000;
 
             $points = 5 + floor($booking->prepayment_amount / $pointsPerAmount);
-            $user->addLoyaltyPoints($points, "رزرو نوبت #{$booking->id}", $booking->id);
+            $user->addLoyaltyPoints($points, 'رزرو نوبت '.\App\Support\Fa::ref($booking->id), $booking->id);
         } catch (\Exception $e) {
             Log::error('❌ Loyalty Points Error', [
                 'booking_id' => $booking->id,
@@ -602,7 +602,7 @@ class BookingObserver
 
             $points = $rule['fixed'] + (int) floor((float) ($booking->service?->price ?? 0) / $rule['per_amount']);
             if ($points > 0) {
-                $user->addLoyaltyPoints($points, "نوبت انجام‌شده #{$booking->id}", $booking->id);
+                $user->addLoyaltyPoints($points, 'نوبت انجام‌شده '.\App\Support\Fa::ref($booking->id), $booking->id);
             }
         } catch (\Exception $e) {
             Log::error('❌ No-prepayment loyalty points failed', ['booking_id' => $booking->id, 'error' => $e->getMessage()]);

@@ -46,7 +46,7 @@ class BookingPaymentStarter
         }
 
         if ($walletToman > 0) {
-            $this->walletShare->hold($user, $booking, $walletToman, "پرداخت بخشی از نوبت #{$booking->id} از کیف پول (مابقی از درگاه)");
+            $this->walletShare->hold($user, $booking, $walletToman, 'پرداخت بخشی از نوبت '.\App\Support\Fa::ref($booking->id).' از کیف پول (مابقی از درگاه)');
         }
 
         $result = $this->paymentService->createPayment($booking, $prepayment - $walletToman, $preferredGatewayId, $walletToman, $callbackUrl);
@@ -72,7 +72,7 @@ class BookingPaymentStarter
         ], 'WALLET-'.$booking->id.'-'.time(), 'پرداخت از کیف پول با موفقیت انجام شد', function () use ($user, $booking, $amount) {
             $wallet = $user->getOrCreateWallet();
             $wallet = $wallet->newQuery()->lockForUpdate()->findOrFail($wallet->id);
-            $wallet->deductPayment($amount, $booking->id, "پرداخت نوبت #{$booking->id} از کیف پول");
+            $wallet->deductPayment($amount, $booking->id, 'پرداخت نوبت '.\App\Support\Fa::ref($booking->id).' از کیف پول');
         });
     }
 

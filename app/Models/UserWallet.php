@@ -43,7 +43,7 @@ class UserWallet extends Model
             'type' => 'refund',
             'amount' => $amount,
             'balance_after' => $this->balance,
-            'description' => $description ?? "بازگشت وجه از نوبت #{$bookingId}",
+            'description' => $description ?? 'بازگشت وجه از نوبت '.\App\Support\Fa::ref($bookingId),
             'metadata' => $metadata ?: null,
         ]);
 
@@ -64,7 +64,7 @@ class UserWallet extends Model
             'type' => 'payment',
             'amount' => -$amount,
             'balance_after' => $this->balance,
-            'description' => $description ?? "پرداخت برای نوبت #{$bookingId}",
+            'description' => $description ?? 'پرداخت برای نوبت '.\App\Support\Fa::ref($bookingId),
             'metadata' => $metadata ?: null,
         ]);
 

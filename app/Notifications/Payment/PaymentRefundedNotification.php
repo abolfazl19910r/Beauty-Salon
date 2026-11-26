@@ -48,7 +48,7 @@ class PaymentRefundedNotification extends Notification implements ShouldQueue
 
     private function build(?string $salonName): string
     {
-        $subject = $this->bookingId ? "پرداخت شما برای نوبت #{$this->bookingId}" : 'پرداخت شما';
+        $subject = $this->bookingId ? 'پرداخت شما برای نوبت '.\App\Support\Fa::ref($this->bookingId) : 'پرداخت شما';
 
         $lines = [$salonName ?: config('brand.name')];
         $lines[] = match ($this->reason) {

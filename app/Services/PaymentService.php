@@ -221,7 +221,7 @@ class PaymentService
     {
         if (! $this->isAvailable()) {
             if ($walletToman > 0) {
-                $booking->user->getOrCreateWallet()->addRefund($walletToman, $booking->id, "بازگشت سهم کیف پول نوبت #{$booking->id} — پرداخت آنلاین در دسترس نیست");
+                $booking->user->getOrCreateWallet()->addRefund($walletToman, $booking->id, 'بازگشت سهم کیف پول نوبت '.\App\Support\Fa::ref($booking->id).' — پرداخت آنلاین در دسترس نیست');
             }
 
             return $this->unavailableResult();

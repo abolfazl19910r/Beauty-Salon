@@ -255,7 +255,7 @@
                             @csrf @method('PUT')
                             <input type="hidden" name="status" value="cancelled">
                             <button type="submit"
-                                    data-confirm-delete data-confirm-message="آیا از لغو نوبت #{{ $booking->id }} اطمینان دارید؟"
+                                    data-confirm-delete data-confirm-message="آیا از لغو نوبت {{ \App\Support\Fa::ref($booking->id) }} اطمینان دارید؟"
                                     class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium text-m-onsolid transition-colors"
                                     style="background:rgb(var(--m-bad));"
                                     data-ui-hover="background: rgb(var(--m-bad))"

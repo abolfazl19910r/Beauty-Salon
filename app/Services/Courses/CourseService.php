@@ -354,8 +354,8 @@ class CourseService
         app(CurrentSalon::class)->withSalon((int) $booking->salon_id, function () use ($specialist, $booking, $course, $value) {
             $commission = round($value * $specialist->getEffectiveCommissionRate() / 100, 2);
             $specialist->getOrCreateWallet()->addIncome($value - $commission, $booking->id,
-                "درآمد جلسه‌ی {$booking->course_session_number} دوره‌ی «{$course->name}» — نوبت #{$booking->id}");
-            AdminWallet::getWallet()->addCommission($commission, $booking->id, "کمیسیون جلسه‌ی دوره — نوبت #{$booking->id}");
+                "درآمد جلسه‌ی {$booking->course_session_number} دوره‌ی «{$course->name}» — نوبت ".\App\Support\Fa::ref($booking->id));
+            AdminWallet::getWallet()->addCommission($commission, $booking->id, 'کمیسیون جلسه‌ی دوره — نوبت '.\App\Support\Fa::ref($booking->id));
         });
     }
 

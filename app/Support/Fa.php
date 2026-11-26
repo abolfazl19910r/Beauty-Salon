@@ -40,6 +40,15 @@ final class Fa
     }
 
     /** رقم فارسی ← لاتین (برای خواندن ورودی کاربر) */
+    /**
+     * شماره‌ی نوبت/تراکنش در متنی که کاربر می‌بیند: «#۱۲۳» — فقط رقم‌ها فارسی، بی جداکننده‌ی هزارگان
+     * (نام خدمت یا کارشناسِ همان متن دست نمی‌خورد). لاگ‌ها و خروجی دستورهای سرور لاتین می‌مانند.
+     */
+    public static function ref(int|string|null $id): string
+    {
+        return '#'.self::digits((string) $id);
+    }
+
     public static function latin(mixed $value): string
     {
         return str_replace([...self::PERSIAN, ...self::ARABIC], [...self::LATIN, ...self::LATIN], (string) $value);

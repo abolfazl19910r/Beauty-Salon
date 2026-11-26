@@ -85,7 +85,7 @@ class BookingWalletShare
         }
 
         $bookingId = (int) $transaction->payable_id;
-        $user->getOrCreateWallet()->addRefund($toman, $bookingId, "بازگشت سهم کیف پول نوبت #{$bookingId} — {$reason}");
+        $user->getOrCreateWallet()->addRefund($toman, $bookingId, 'بازگشت سهم کیف پول نوبت '.\App\Support\Fa::ref($bookingId)." — {$reason}");
 
         return $toman;
     }

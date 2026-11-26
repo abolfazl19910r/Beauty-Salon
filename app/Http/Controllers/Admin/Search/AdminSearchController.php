@@ -110,7 +110,7 @@ class AdminSearchController extends Controller
                 return [
                     'id' => $booking->id,
                     'type' => 'booking',
-                    'title' => "رزرو #{$booking->id} - {$booking->user->name}",
+                    'title' => 'رزرو '.\App\Support\Fa::ref($booking->id)." - {$booking->user->name}",
                     'subtitle' => $booking->service->name.' | '.Verta::instance($booking->booking_time)->format('Y/m/d H:i'),
                     'status' => $booking->status,
                     'url' => route('admin.bookings.show', $booking->id),

@@ -93,4 +93,11 @@ class FaTest extends TestCase
 
         $this->assertSame('۱٬۲۳۴|۵٬۰۰۰|سه‌شنبه ۳ آذر', Blade::render('@fa($a)|@money($b)|@faDate($c)', ['a' => 1234, 'b' => 5000, 'c' => '2026-11-24']));
     }
+
+    public function test_ref_is_a_persian_number_without_thousands_separator(): void
+    {
+        $this->assertSame('#۱', Fa::ref(1));
+        $this->assertSame('#۱۲۳۴۵', Fa::ref(12345)); // شماره است، نه مبلغ: بی «٬»
+        $this->assertSame('#۷', Fa::ref('7'));
+    }
 }

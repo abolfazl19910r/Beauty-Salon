@@ -65,7 +65,7 @@ class SpecialistWallet extends Model
             'type' => 'income',
             'amount' => $amount,
             'balance_after' => $this->balance,
-            'description' => $description ?? "درآمد از نوبت #{$bookingId}",
+            'description' => $description ?? 'درآمد از نوبت '.\App\Support\Fa::ref($bookingId),
             'metadata' => [
                 'settlement_date' => now()->addDays($settlementDelay)->toDateString(),
                 'status' => 'pending',
@@ -123,7 +123,7 @@ class SpecialistWallet extends Model
             'type' => 'adjustment',
             'amount' => -$amount,
             'balance_after' => $this->balance,
-            'description' => $description ?? "برگشت سهم به‌خاطر لغو نوبت #{$originalTransaction->booking_id}",
+            'description' => $description ?? 'برگشت سهم به‌خاطر لغو نوبت '.\App\Support\Fa::ref($originalTransaction->booking_id),
         ]);
     }
 
