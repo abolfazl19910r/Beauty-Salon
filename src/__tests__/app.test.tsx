@@ -38,7 +38,13 @@ const BOOKING = {
   booking_time_jalali: '1405/07/19 10:00', duration_minutes: 60, service: { id: 1, name: 'کوتاهی مو', price: 500000 },
   customer: { id: 9, name: 'مریم', phone: '09121111111' }, prepayment_amount: 100000, discount_amount: 0, remaining_amount: 400000,
   source: null, notes: null, cancellation_reason: null, cancelled_by: null, actions: { confirm: true, cancel: true, complete: false },
+  date_label: 'یکشنبه ۱۹ مهر', day_label: 'فردا یکشنبه ۱۹ مهر', time_label: '۱۰:۰۰', primary_action: 'confirm',
 };
+
+/** GET staff/home (بسته‌ی ۵د) */
+const home = (over: Record<string, unknown> = {}) => ({
+  date_label: 'شنبه ۱۸ مهر', next: null, month_label: 'مهر', month_income: 0, withdrawable: 0, rating: null, waiting_count: 0, today_count: 0, upcoming: [], ...over,
+});
 
 type Route = (url: string, init: RequestInit) => [number, unknown];
 let routes: Route;
@@ -62,7 +68,7 @@ it('logs in with password then code and lands on today', async () => {
   routes = (url) => {
     if (url.endsWith('/staff/login')) return [200, ok({ challenge: 'CH1', expires_in: 600, code_expires_in: 120, resend_after: 60, phone_hint: '0912***0007' })];
     if (url.endsWith('/staff/login/verify')) return [201, ok({ token: '5|abc', token_type: 'Bearer', token_id: 5, expires_at: '2027-01-08T00:00:00Z', account: ACCOUNT })];
-    if (url.includes('/staff/today')) return [200, ok({ date: '2026-10-11', date_jalali: '1405/07/19', date_label: 'یکشنبه، ۱۹ مهر ۱۴۰۵', summary: { count: 1, pending_count: 1, revenue: 100000 }, bookings: [BOOKING] })];
+    if (url.includes('/staff/home')) return [200, ok(home({ next: BOOKING }))];
     if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
     if (url.endsWith('/push/device')) return [200, ok({ registered: true, provider: 'fcm', server_enabled: true, last_receipt_at: null, disabled_reason: null })];
     return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
@@ -84,9 +90,11 @@ it('logs in with password then code and lands on today', async () => {
   await screen.findByText('مریم');
   expect(calls.find((c) => c.url.endsWith('/verify'))?.body).toEqual({ challenge: 'CH1', code: '123456', device_name: 'Galaxy A17' });
   expect(mockSecure.get('mahru.token')).toBe('5|abc');
-  expect(calls.find((c) => c.url.includes('/staff/today'))?.auth).toBe('Bearer 5|abc');
-  expect(screen.getAllByText('در انتظار تأیید')).toHaveLength(2); // کارت خلاصه + نشان نوبت
-  expect(screen.getByText('سلام سارا احمدی')).toBeTruthy();
+  expect(calls.find((c) => c.url.includes('/staff/home'))?.auth).toBe('Bearer 5|abc');
+  // بسته‌ی ۵د: خانه با «نوبت بعدی» و کار مستقیم همان پنل وب
+  expect(screen.getByText('سلام، سارا')).toBeTruthy();
+  expect(screen.getByText('نوبت بعدی، فردا یکشنبه ۱۹ مهر')).toBeTruthy();
+  expect(screen.getByText('تأیید نوبت')).toBeTruthy();
 
   // پوش (بسته‌ی ۴): بعد از ورود گوشی با توکن FCM برای همین نشست ثبت می‌شود
   await waitFor(() => expect(calls.find((c) => c.url.endsWith('/push/device'))?.body).toMatchObject({ provider: 'fcm', token: 'fcm-test-token-0001', manufacturer: null }));
@@ -262,14 +270,13 @@ it('marks a past booking as no-show', async () => {
   expect(await screen.findByText('نیامد')).toBeTruthy();
 });
 
-it('today shows the amount to collect, unpaid prepayment and a collapsed list of cancellations', async () => {
+it('home shows the next booking with the amount to collect, the month numbers and the coming week (5D)', async () => {
   mockSecure.set('mahru.token', '5|abc');
   await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
-  const manual = { ...BOOKING, id: 42, status: 'confirmed', status_label: 'تأیید شده', payment_status: 'unpaid', remaining_amount: 450000, due_at_salon: 500000, actions: { confirm: false, cancel: true, complete: true } };
-  const noShow = { ...BOOKING, id: 43, status: 'no_show', status_label: 'نیامد', customer: { id: 10, name: 'نگار', phone: '0912' }, actions: { confirm: false, cancel: false, complete: false } };
-  const cancelled = { ...BOOKING, id: 44, status: 'cancelled', status_label: 'لغو شده', customer: { id: 11, name: 'لیلا', phone: '0913' }, cancellation_reason: 'سفر', cancelled_by: 'customer', actions: { confirm: false, cancel: false, complete: false } };
+  const manual = { ...BOOKING, id: 42, status: 'confirmed', status_label: 'تأیید شده', payment_status: 'unpaid', remaining_amount: 450000, due_at_salon: 500000, primary_action: 'details', actions: { confirm: false, cancel: true, complete: false } };
+  const later = { ...BOOKING, id: 45, status: 'confirmed', status_label: 'تأیید شده', customer: { id: 12, name: 'لیلا', phone: '0913' }, date_label: 'سه‌شنبه ۲۱ مهر', time_label: '۱۶:۰۰', primary_action: 'details', actions: { confirm: false, cancel: true, complete: false } };
   routes = (url) => {
-    if (url.includes('/staff/today')) return [200, ok({ date: '2026-10-11', date_jalali: '1405/07/19', date_label: 'x', summary: { count: 1, pending_count: 0, revenue: 0, cancelled_count: 1 }, bookings: [manual, noShow], cancelled: [cancelled] })];
+    if (url.includes('/staff/home')) return [200, ok(home({ next: manual, upcoming: [later], withdrawable: 1939500 }))];
     if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
     if (url.endsWith('/push/device')) return [200, ok({ registered: true, provider: 'fcm', server_enabled: true, last_receipt_at: null, disabled_reason: null })];
     return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
@@ -278,14 +285,68 @@ it('today shows the amount to collect, unpaid prepayment and a collapsed list of
   renderRouter('./src/app', { initialUrl: '/' });
 
   await screen.findByText('مریم');
-  expect(screen.getByText('دریافت در سالن: ۵۰۰٬۰۰۰ تومان')).toBeTruthy();
+  expect(screen.getByText('دریافت در سالن')).toBeTruthy();
+  expect(screen.getByText('۵۰۰٬۰۰۰ تومان')).toBeTruthy();
   expect(screen.getByText('پیش‌پرداخت نشده')).toBeTruthy();
-  expect(screen.getByText('نیامد')).toBeTruthy();
-  expect(screen.queryByText('لیلا')).toBeNull();
+  expect(screen.getByText('جزئیات')).toBeTruthy(); // تأییدشده‌ای که ساعتش نرسیده «انجام شد» نمی‌گیرد
+  expect(screen.queryByText('انجام شد')).toBeNull();
+  expect(screen.getByText('هنوز درآمدی در مهر نیست')).toBeTruthy();
+  expect(screen.getByText('۱٬۹۳۹٬۵۰۰ تومان')).toBeTruthy();
+  expect(screen.getByText('لیلا')).toBeTruthy();
+  expect(screen.getByText('سه‌شنبه ۲۱ مهر')).toBeTruthy();
+});
 
-  fireEvent.press(screen.getByText(/دیدن لغوشده‌های امروز/));
-  expect(await screen.findByText('لیلا')).toBeTruthy();
-  expect(screen.getByText('دلیل: سفر')).toBeTruthy();
+it('bookings have tabs with counts, a search and one primary action per row (5D)', async () => {
+  mockSecure.set('mahru.token', '5|abc');
+  await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
+  const started = { ...BOOKING, id: 46, status: 'confirmed', status_label: 'تأیید شده', primary_action: 'complete', actions: { confirm: false, cancel: true, complete: true, no_show: true } };
+  routes = (url) => {
+    if (url.includes('/staff/bookings') && url.includes('tab=')) {
+      const meta = { current_page: 1, last_page: 1, total: 1, per_page: 20, counts: { upcoming: 8, pending: 2, past: 3, cancelled: 1 } };
+      return [200, ok(url.includes('tab=pending') ? [BOOKING] : [started], meta)];
+    }
+    if (url.includes('/staff/bookings/46')) return [200, ok(started)];
+    if (url.includes('/staff/home')) return [200, ok(home())];
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+
+  renderRouter('./src/app', { initialUrl: '/bookings' });
+
+  expect(await screen.findByText('پیش رو ۸')).toBeTruthy();
+  expect(screen.getByText('منتظر تأیید ۲')).toBeTruthy();
+  expect(screen.getByText('انجام شد')).toBeTruthy();
+
+  fireEvent.press(screen.getByText('منتظر تأیید ۲'));
+  expect(await screen.findByText('تأیید')).toBeTruthy();
+  await waitFor(() => expect(calls.some((c) => c.url.includes('tab=pending'))).toBe(true));
+
+  fireEvent.changeText(screen.getByLabelText('جستجوی نام یا شماره‌ی مشتری'), 'مریم');
+  await waitFor(() => expect(calls.some((c) => c.url.includes('q=%D9%85%D8%B1%DB%8C%D9%85'))).toBe(true));
+
+  // «⋯»: «مشتری نیامد…» فقط بعد از ساعت نوبت
+  fireEvent.press(screen.getByText(/^پیش رو/)); // شمار جستجوی تازه هنوز در راه است
+  fireEvent.press((await screen.findAllByLabelText('کارهای بیشتر این نوبت'))[0]);
+  expect(await screen.findByText('مشتری نیامد…')).toBeTruthy();
+  expect(screen.getByText('لغو نوبت…')).toBeTruthy();
+});
+
+it('a confirmed booking whose time has not come explains when «انجام شد» opens (5D)', async () => {
+  mockSecure.set('mahru.token', '5|abc');
+  await require('@react-native-async-storage/async-storage').setItem('mahru.account', JSON.stringify(ACCOUNT));
+  const future = { ...BOOKING, status: 'confirmed', status_label: 'تأیید شده', day_label: 'یکشنبه ۱۵ آذر', time_label: '۱۷:۳۰', primary_action: 'details', actions: { confirm: false, cancel: true, complete: false, no_show: false } };
+  routes = (url) => {
+    if (url.includes('/staff/bookings/41')) return [200, ok(future)];
+    if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
+    return [404, { success: false, error: { code: 'not_found', message: 'x' } }];
+  };
+
+  renderRouter('./src/app', { initialUrl: '/booking/41' });
+
+  expect(await screen.findByText(/«انجام شد» از ساعت ۱۷:۳۰ یکشنبه ۱۵ آذر فعال می‌شود/)).toBeTruthy();
+  expect(screen.queryByText('انجام شد')).toBeNull();
+  expect(screen.getByText('لغو نوبت…')).toBeTruthy();
+  expect(screen.getByText('تماس ۰۹۱۲۱۱۱۱۱۱۱')).toBeTruthy();
 });
 
 it('an unreliable customer and a booking without prepayment are labelled for staff (5e)', async () => {
@@ -297,7 +358,7 @@ it('an unreliable customer and a booking without prepayment are labelled for sta
     actions: { confirm: true, cancel: true, complete: false },
   };
   routes = (url) => {
-    if (url.includes('/staff/today')) return [200, ok({ date: '2026-10-11', date_jalali: '1405/07/19', date_label: 'x', summary: { count: 1, pending_count: 1, revenue: 0, cancelled_count: 0 }, bookings: [flagged], cancelled: [] })];
+    if (url.includes('/staff/home')) return [200, ok(home({ next: flagged }))];
     if (url.includes('/staff/bookings/41')) return [200, ok(flagged)];
     if (url.includes('/staff/notifications')) return [200, ok([], { current_page: 1, last_page: 1, total: 0, per_page: 20, unread_count: 0 })];
     if (url.endsWith('/push/device')) return [200, ok({ registered: true, provider: 'fcm', server_enabled: true, last_receipt_at: null, disabled_reason: null })];
@@ -311,7 +372,8 @@ it('an unreliable customer and a booking without prepayment are labelled for sta
   expect(screen.getByText('بدون پیش‌پرداخت')).toBeTruthy();
   expect(screen.queryByText('پیش‌پرداخت نشده')).toBeNull();
 
-  fireEvent.press(screen.getByText('مریم'));
+  fireEvent.press(screen.getByLabelText('کارهای بیشتر این نوبت'));
+  fireEvent.press(await screen.findByText('جزئیات'));
   await screen.findByText('دریافت در سالن (بدون پیش‌پرداخت)');
   expect(screen.getByText('بدقول: ۲ بار نیامد در ۹۰ روز')).toBeTruthy();
 });

@@ -10,6 +10,8 @@ import type {
   Leave,
   PageMeta,
   Schedule,
+  StaffBookingTab,
+  StaffHome,
   Today,
   Transaction,
   Wallet,
@@ -19,6 +21,7 @@ import type {
 /** کلیدهای cache — پس از هر تغییر، کلیدهای وابسته باطل می‌شوند */
 export const keys = {
   today: ['today'] as const,
+  home: ['home'] as const,
   bookings: (filter: string) => ['bookings', filter] as const,
   booking: (id: number) => ['booking', id] as const,
   calendar: (from: string, to: string) => ['calendar', from, to] as const,
@@ -39,6 +42,23 @@ const nextPage = (meta: ApiMeta) => {
 export function useToday() {
   const api = useApi();
   return useQuery({ queryKey: keys.today, queryFn: async () => (await api.get<Today>('/staff/today')).data });
+}
+
+/** بسته‌ی ۵د: خانه‌ی اپ همکار */
+export function useStaffHome() {
+  const api = useApi();
+  return useQuery({ queryKey: keys.home, queryFn: async () => (await api.get<StaffHome>('/staff/home')).data });
+}
+
+/** بسته‌ی ۵د: نوبت‌ها با تب و جستجو، مثل پنل وب؛ شمار هر تب در meta.counts */
+export function useBookingsTab(tab: StaffBookingTab, q: string) {
+  const api = useApi();
+  return useInfiniteQuery({
+    queryKey: keys.bookings(`tab:${tab}:${q}`),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) => api.get<Booking[]>('/staff/bookings', { tab, q: q || undefined, page: pageParam }),
+    getNextPageParam: (last) => nextPage(last.meta),
+  });
 }
 
 export function useBookings(status: string | null, from: string, to: string) {
@@ -65,6 +85,7 @@ export function useBookingAction() {
     onSuccess: (booking) => {
       qc.setQueryData(keys.booking(booking.id), booking);
       void qc.invalidateQueries({ queryKey: keys.today });
+      void qc.invalidateQueries({ queryKey: keys.home });
       void qc.invalidateQueries({ queryKey: ['bookings'] });
       void qc.invalidateQueries({ queryKey: ['calendar'] });
     },

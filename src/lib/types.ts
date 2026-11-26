@@ -63,7 +63,27 @@ export type Booking = {
   /** جلسه‌ی دوره‌ی درمانی (بسته‌ی ب)؛ null برای نوبت عادی */
   course?: { id: number; name: string; session_number: number | null; sessions_total: number; label: string | null; photo_consent: boolean } | null;
   actions: { confirm: boolean; cancel: boolean; complete: boolean; no_show?: boolean };
+  /** بسته‌ی ۵د (سرور قدیمی ندارد): برچسب‌های آماده با رقم فارسی و کار اصلی همان پنل وب */
+  date_label?: string | null;
+  day_label?: string | null;
+  time_label?: string | null;
+  primary_action?: 'confirm' | 'complete' | 'details';
 };
+
+/** GET staff/home (بسته‌ی ۵د) */
+export type StaffHome = {
+  date_label: string;
+  next: Booking | null;
+  month_label: string;
+  month_income: number;
+  withdrawable: number;
+  rating: number | null;
+  waiting_count: number;
+  today_count: number;
+  upcoming: Booking[];
+};
+
+export type StaffBookingTab = 'upcoming' | 'pending' | 'past' | 'cancelled';
 
 /**
  * رضایت عکس دوره (سرور ۲۰۲۶-۱۰-۲۸): خود مشتری در اپ، سایت یا لینک پیامک تصمیم می‌گیرد؛ ثبت حضوری کادر راه دوم است.

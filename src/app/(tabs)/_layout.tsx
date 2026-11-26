@@ -7,8 +7,9 @@ import { fonts, usePalette } from '@/ui/theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
+/** بسته‌ی ۵د: «امروز» ← «خانه» (نوبت بعدی، درآمد ماه، ۷ روز آینده؛ نام فایل today می‌ماند) */
 const TABS: { name: string; title: string; icon: IconName }[] = [
-  { name: 'today', title: 'امروز', icon: 'sunny-outline' },
+  { name: 'today', title: 'خانه', icon: 'home-outline' },
   { name: 'bookings', title: 'نوبت‌ها', icon: 'list-outline' },
   { name: 'calendar', title: 'تقویم', icon: 'calendar-outline' },
   { name: 'wallet', title: 'کیف پول', icon: 'wallet-outline' },
@@ -29,7 +30,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: p.gold,
+        tabBarActiveTintColor: p.text,
         tabBarInactiveTintColor: p.textMuted,
         tabBarStyle: { backgroundColor: p.surface, borderTopColor: p.border },
         tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 },
@@ -43,7 +44,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           key={tab.name}
           name={tab.name}
-          options={{ title: tab.title, tabBarIcon: ({ color, size }) => <Ionicons name={tab.icon} color={color} size={size} /> }}
+          options={{ title: tab.title, headerShown: tab.name !== 'today', tabBarIcon: ({ color, size }) => <Ionicons name={tab.icon} color={color} size={size} /> }}
         />
       ))}
     </Tabs>
