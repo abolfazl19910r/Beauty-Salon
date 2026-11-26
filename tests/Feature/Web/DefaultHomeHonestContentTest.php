@@ -44,4 +44,11 @@ class DefaultHomeHonestContentTest extends TestCase
         $this->assertStringContainsString('storage/gallery/a.jpg', $html);
         $this->assertMatchesRegularExpression('/data-stat>۴<\/p>\s*<p[^>]*>امتیاز/u', $html, 'میانگین امتیاز واقعی، رقم فارسی در خود HTML');
     }
+
+    public function test_a_service_without_a_description_shows_its_duration_not_sample_text(): void
+    {
+        \App\Models\BeautyService::factory()->create(['name' => 'خدمت بی‌توضیح', 'description' => null, 'duration' => 45]);
+
+        $this->get('/s/rasta')->assertOk()->assertDontSee('توضیح کوتاهی درباره این خدمت')->assertSee('۴۵ دقیقه');
+    }
 }

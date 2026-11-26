@@ -195,7 +195,8 @@
                                 </svg>
                             </div>
                             <h3 class="font-serif-fa text-xl font-bold mb-2">{{ $service->name }}</h3>
-                            <p class="text-sm text-m-tx/70 leading-7 mb-4">{{ $service->description ?? 'توضیح کوتاهی درباره این خدمت در اینجا نمایش داده می‌شود.' }}</p>
+                            {{-- بسته‌ی ۷: متن نمونه‌ی قالب («توضیح کوتاهی… نمایش داده می‌شود») به مشتری نشان داده می‌شد؛ بی توضیح، مدت خدمت --}}
+                            <p class="text-sm text-m-tx/70 leading-7 mb-4">{{ filled($service->description) ? $service->description : fa_num((int) $service->duration).' دقیقه' }}</p>
                             <div class="flex items-center justify-between text-sm border-t border-m-gold/10 pt-4">
                                 <span class="text-m-gold2 font-bold persian-number">{{ fa_num($service->price) }} تومان</span>
                                 <span class="text-m-tx/60 persian-number">{{ fa_num($service->duration) }} دقیقه</span>

@@ -66,11 +66,12 @@ class ZarinpalDriver implements PaymentGatewayDriver
                     'callback_url' => $request->callbackUrl,
                     'description' => $request->description,
                     // order_id (شماره‌ی سفارش، مستند در request) — قسط‌های یک فاکتور در پنل زرین‌پال با INV-{id} به هم وصل‌اند
+                    // بسته‌ی ۷ (آزمون production): «تست اتصال» موبایل ندارد و "mobile": "" با ‎-9 (خطای اعتبارسنجی) رد می‌شد؛ مقدار خالی فرستاده نمی‌شود
                     'metadata' => array_filter([
-                        'mobile' => $request->mobile ?? '',
-                        'email' => $request->email ?? '',
+                        'mobile' => $request->mobile,
+                        'email' => $request->email,
                         'order_id' => $request->orderId,
-                    ], fn ($v) => $v !== null),
+                    ], fn ($v) => $v !== null && $v !== '') ?: new \stdClass,
                 ]);
         } catch (Throwable $e) {
             // پیام کاربر عمومی می‌ماند؛ علت واقعی (DNS، timeout، SSL، VPN) در لاگ «Payment Request Failed» می‌آید — قبلاً full_response خالی بود

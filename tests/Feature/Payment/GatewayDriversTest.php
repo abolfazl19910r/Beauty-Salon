@@ -39,6 +39,21 @@ class GatewayDriversTest extends TestCase
         $this->assertSame('https://sandbox.zarinpal.com/pg/v4/payment/request.json', $result->raw['endpoint']);
     }
 
+    public function test_zarinpal_never_sends_empty_metadata_fields(): void
+    {
+        // بسته‌ی ۷ (آزمون production): «تست اتصال» موبایل و سفارش ندارد؛ "mobile": "" و metadata آرایه‌ی [] با ‎-9 رد می‌شد
+        Http::fake(['*' => Http::response(['data' => ['code' => 100, 'authority' => 'A0000000000000000000000000000000000T']], 200)]);
+
+        $test = (new ZarinpalDriver(['merchant_id' => 'x'], sandbox: true))->start(new GatewayStartRequest(10000, 'https://salon.test/', 'تست اتصال درگاه', transactionId: 1));
+        $this->assertTrue($test->success);
+        Http::assertSent(fn (Request $r) => str_contains($r->body(), '"metadata":{}') && ! str_contains($r->body(), '"mobile"'));
+        Http::fake(['*' => Http::response(['data' => ['code' => 100, 'authority' => 'A0000000000000000000000000000000000T']], 200)]);
+
+        (new ZarinpalDriver(['merchant_id' => 'x'], sandbox: true))->start($this->start());
+        Http::assertSent(fn (Request $r) => (json_decode($r->body(), true)['metadata']['mobile'] ?? null) === '09121234567'
+            && ! array_key_exists('email', json_decode($r->body(), true)['metadata']));
+    }
+
     // ── زیبال ──
 
     public function test_zibal_start_sends_rial_and_redirects_to_the_start_page(): void
