@@ -42,6 +42,6 @@ class DefaultHomeHonestContentTest extends TestCase
         $this->assertStringContainsString('کار تمیز و به‌موقع بود.', $html);
         $this->assertStringNotContainsString('تأییدنشده نباید بیاید', $html);
         $this->assertStringContainsString('storage/gallery/a.jpg', $html);
-        $this->assertStringContainsString('data-target="4"', $html, 'میانگین امتیاز واقعی');
+        $this->assertMatchesRegularExpression('/data-stat>۴<\/p>\s*<p[^>]*>امتیاز/u', $html, 'میانگین امتیاز واقعی، رقم فارسی در خود HTML');
     }
 }

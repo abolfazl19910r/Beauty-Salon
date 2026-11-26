@@ -161,7 +161,8 @@
             <div class="max-w-6xl mx-auto px-4 grid grid-cols-2 {{ count($statTiles) >= 4 ? 'md:grid-cols-4' : (count($statTiles) === 3 ? 'md:grid-cols-3' : '') }} gap-8 text-center">
                 @foreach ($statTiles as $tile)
                     <div>
-                        <p class="counter font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2" data-target="{{ $tile['value'] }}" @if ($tile['decimal']) data-decimal="1" @endif>0</p>
+                        {{-- بسته‌ی ۷: عدد واقعی در خود HTML (رقم فارسی)؛ شمارنده‌ی «0» تا اسکرول (Googlebot صفر می‌دید) برداشته شد --}}
+                        <p class="font-serif-fa text-3xl md:text-5xl font-bold text-m-gold2" data-stat>{{ fa_num($tile['value'], $tile['decimal'] ? 1 : 0) }}</p>
                         <p class="mt-2 text-sm md:text-base text-m-tx/70">{{ $tile['label'] }}</p>
                     </div>
                 @endforeach
@@ -377,33 +378,6 @@
                 });
             }, { threshold: 0.15 });
             fadeEls.forEach(el => fadeObserver.observe(el));
-
-            /* ---------- Counters (count-up) ---------- */
-            const counters = document.querySelectorAll('.counter');
-            const counterObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (!entry.isIntersecting) return;
-                    const el = entry.target;
-                    const target = parseFloat(el.dataset.target);
-                    const isFloat = target % 1 !== 0;
-                    const duration = 1500;
-                    const startTime = performance.now();
-
-                    const step = (now) => {
-                        const progress = Math.min((now - startTime) / duration, 1);
-                        const value = target * progress;
-                        el.textContent = isFloat ? value.toFixed(1) : Math.floor(value).toLocaleString('fa-IR');
-                        if (progress < 1) {
-                            requestAnimationFrame(step);
-                        } else {
-                            el.textContent = isFloat ? target.toFixed(1) : target.toLocaleString('fa-IR');
-                        }
-                    };
-                    requestAnimationFrame(step);
-                    counterObserver.unobserve(el);
-                });
-            }, { threshold: 0.4 });
-            counters.forEach(el => counterObserver.observe(el));
 
             /* ---------- Testimonials slider ---------- */
             // بخش نظرها فقط وقتی نظر واقعی هست رندر می‌شود (بسته‌ی مجوز 5د)

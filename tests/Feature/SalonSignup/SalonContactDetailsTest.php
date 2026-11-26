@@ -137,7 +137,7 @@ class SalonContactDetailsTest extends TestCase
             ->assertSee('اصفهان، چهارباغ عباسی')
             ->assertSee('03131234567')
             ->assertSee('شنبه تا چهارشنبه: ۰۹:۰۰ تا ۲۱:۰۰')
-            ->assertSee('data-target="4"', false)
+            ->assertSee('data-stat>۴<', false)
             ->assertDontSee('شیراز، خیابان زند')
             ->assertDontSee('07131234567')
             // متن‌های ثابت مشترک قبلی دیگه هیچ‌جا نیستن
