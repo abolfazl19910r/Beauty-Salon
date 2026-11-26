@@ -200,4 +200,12 @@ class BookingPaymentModeTest extends TestCase
         $this->assertStringContainsString('۶۰ دقیقه', $html);
         $this->assertStringContainsString('۱۱:۰۰', $html);
     }
+
+    public function test_booking_form_calendar_groups_days_under_month_headings(): void
+    {
+        $html = $this->actingAs(User::factory()->create())->get(route('bookings.create'))->assertOk()->getContent();
+        $this->assertStringContainsString('heading.dataset.monthHeading', $html);
+        $this->assertStringContainsString("'آذر', 'دی'", $html);
+        $this->assertStringContainsString('col-span-full', $html);
+    }
 }

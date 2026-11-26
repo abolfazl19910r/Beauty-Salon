@@ -294,6 +294,7 @@
             }
 
             const jWeekdays = ['ی', 'د', 'س', 'چ', 'پ', 'ج', 'ش']; // According to JavaScript getDay() (0=Sunday)
+            const jMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
 
             // رقم فارسی در متن دیدنی (بسته‌ی ۴ ظاهری، آزمون ویندوز): مقدار فرم‌ها لاتین می‌ماند
             const faDigits = v => String(v).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
@@ -545,7 +546,20 @@
                 hideEl('dates-empty');
 
                 let prefillBtn = null;
+                let lastMonth = null;
                 dates.forEach(date => {
+                    // عنوان ماه بالای هر گروه: «آذر ۱۴۰۵» … «دی ۱۴۰۵» (آزمون پروداکشن: ۳۰ آذر بی‌خبر به ۱ دی می‌رسید)
+                    const d = new Date(String(date).slice(0, 10) + 'T00:00:00');
+                    const [jy, jm] = gregorianToJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
+                    if (jy + '-' + jm !== lastMonth) {
+                        lastMonth = jy + '-' + jm;
+                        const heading = document.createElement('div');
+                        heading.className = 'col-span-full text-xs font-bold text-m-gold2 persian-number pt-2 first:pt-0';
+                        heading.dataset.monthHeading = '';
+                        heading.textContent = jMonths[jm - 1] + ' ' + faDigits(jy);
+                        grid.appendChild(heading);
+                    }
+
                     const btn = document.createElement('div');
                     btn.className = 'date-btn text-center p-2.5 rounded-xl text-xs persian-number';
                     btn.innerHTML = formatJalaliDayLabel(date);

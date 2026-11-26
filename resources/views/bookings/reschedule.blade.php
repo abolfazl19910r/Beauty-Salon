@@ -188,12 +188,15 @@
                 }
             }
 
+            const jMonthsR = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            const faDigitsR = v => String(v).replace(/\d/g, n => '۰۱۲۳۴۵۶۷۸۹'[n]);
+
             function formatDayLabel(isoStr) {
                 try {
                     const d = new Date(isoStr + 'T00:00:00');
                     const [, , jd] = gregorianToJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
                     return '<span class="block text-xs opacity-60">' + jWeekdays[d.getDay()] + '</span>'
-                        + '<span class="block font-bold persian-number">' + jd + '</span>';
+                        + '<span class="block font-bold persian-number">' + faDigitsR(jd) + '</span>';
                 } catch(e) {
                     return isoStr;
                 }
@@ -228,7 +231,21 @@
 
                 const grid = document.getElementById('dates-grid');
                 grid.innerHTML = '';
+                let lastMonth = null;
                 dates.forEach(d => {
+                    // عنوان ماه بالای هر گروه، مثل فرم رزرو
+                    const g = new Date(String(d).slice(0, 10) + 'T00:00:00');
+                    const [jy, jm] = gregorianToJalali(g.getFullYear(), g.getMonth() + 1, g.getDate());
+                    if (jy + '-' + jm !== lastMonth) {
+                        lastMonth = jy + '-' + jm;
+                        const heading = document.createElement('div');
+                        heading.className = 'col-span-full text-xs font-bold persian-number pt-2 first:pt-0';
+                        heading.style.color = 'var(--rasta-gold)';
+                        heading.dataset.monthHeading = '';
+                        heading.textContent = jMonthsR[jm - 1] + ' ' + faDigitsR(jy);
+                        grid.appendChild(heading);
+                    }
+
                     const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.dataset.date = d;

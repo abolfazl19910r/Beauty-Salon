@@ -66,6 +66,9 @@ class BookingRescheduleControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertViewHas('booking');
+        // تقویم: عنوان ماه بالای هر گروه روز («آذر ۱۴۰۵» … «دی ۱۴۰۵»)؛ رنگ‌آمیزی واقعی با Playwright سنجیده شد
+        $response->assertSee('heading.dataset.monthHeading', false);
+        $response->assertSee("'آذر', 'دی'", false);
     }
 
     /**
