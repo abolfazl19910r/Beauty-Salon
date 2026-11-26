@@ -102,6 +102,8 @@ class LandingRefreshTest extends TestCase
         $this->assertStringNotContainsString('class="sw"', $cards);
         $this->assertStringContainsString('<summary>مقایسه‌ی کامل امکانات و قالب‌ها در هر پلن و مدت</summary>', $html);
         $this->assertStringContainsString('هر کارشناس بیشتر ماهی', $html);
+        // آزمون Chrome ویندوز: قیمت دوازده‌ماهه («۲۲٬۱۵۰٬۰۰۰ تومان برای دوازده ماه») کارت چهارم را از صفحه بیرون می‌برد
+        $this->assertStringContainsString('@media(min-width:1181px){.prc.p4{grid-template-columns:repeat(4,minmax(0,1fr))}}', $html);
     }
 
     public function test_sync_replaces_only_untouched_old_default_descriptions(): void

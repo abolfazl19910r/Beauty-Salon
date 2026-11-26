@@ -563,7 +563,9 @@ footer .enamad{margin-top:12px}
 #plans[data-period="1m"] .pp:not([data-p="1m"]),#plans[data-period="3m"] .pp:not([data-p="3m"]),#plans[data-period="6m"] .pp:not([data-p="6m"]),#plans[data-period="12m"] .pp:not([data-p="12m"]){display:none}
 .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:4px;vertical-align:middle;border:1px solid var(--ln2)}
 /* بسته‌ی ۶: کارت‌های هم‌ساختار و «مقایسه‌ی کامل» جمع‌شده */
-.prc.p4 .pl{gap:16px}
+.prc.p4 .pl{gap:16px;min-width:0}
+@media(min-width:1181px){.prc.p4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.prc.p4 .pl .pr{white-space:normal}.prc.p4 .pl .pr small{white-space:nowrap}
 .pl .pl-h{display:flex;flex-direction:column;gap:6px;min-height:92px}
 .pl .pl-h .for{margin:0;font-size:14px;line-height:1.8}
 .prc.p4 .pl .pr{color:var(--tx)}
